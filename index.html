@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Sound</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="title-bar">
+        Capture Sound
+    </div>
+    
+    <div class="recorder-container">
+        <canvas id="visualizer"></canvas>
+        <div class="controls">
+            <button class="record-button" id="recordButton">
+                <span class="record-icon"></span>
+            </button>
+            <button class="download-button" id="downloadButton" style="display: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4v12m0 0l-4-4m4 4l4-4m-10 4v4h12v-4"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
