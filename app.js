@@ -43,7 +43,7 @@ class AudioRecorder {
             
             // Create analyzer node
             this.analyser = this.audioContext.createAnalyser();
-            this.analyser.fftSize = 256;
+            this.analyser.fftSize = 2048; // Increased for better waveform resolution
             
             // Connect microphone to analyzer
             const source = this.audioContext.createMediaStreamSource(stream);
@@ -71,32 +71,46 @@ class AudioRecorder {
     }
 
     startVisualization() {
-        const bufferLength = this.analyser.frequencyBinCount;
+        const bufferLength = this.analyser.fftSize;//frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
-        const barWidth = this.visualizer.width / bufferLength;
         
         const draw = () => {
             if (!this.analyser) return;
             
             requestAnimationFrame(draw);
-            this.analyser.getByteFrequencyData(dataArray);
+            this.analyser.getByteTimeDomainData(dataArray);
             
-            this.visualizerCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            this.visualizerCtx.fillStyle = 'rgb(216, 216, 216)';
             this.visualizerCtx.fillRect(0, 0, this.visualizer.width, this.visualizer.height);
             
+            this.visualizerCtx.lineWidth = 2;
+            this.visualizerCtx.strokeStyle = 'rgba(51, 51, 51, 1)';
+            this.visualizerCtx.beginPath();
+            
+            const sliceWidth = this.visualizer.width / bufferLength;
+            let x = 0;
+            
+            const centerY = this.visualizer.height / 2;
+            console.log(this.visualizer.height, centerY);
+            // Draw center line
+            // this.visualizerCtx.fillStyle = 'rgba(221, 221, 221, 1)';
+            // this.visualizerCtx.fillRect(0, centerY - 1, this.visualizer.width, 2);
+            
             for (let i = 0; i < bufferLength; i++) {
-                const barHeight = (dataArray[i] / 255) * this.visualizer.height;
+                const v = dataArray[i] / 128.0; // Convert to float
+                const y = (v * this.visualizer.height - centerY) / 2;
                 
-                const hue = (i / bufferLength) * 360;
-                this.visualizerCtx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                if (i === 0) {
+                    this.visualizerCtx.moveTo(x, y);
+                } else {
+                    this.visualizerCtx.lineTo(x, y);
+                }
                 
-                this.visualizerCtx.fillRect(
-                    i * barWidth,
-                    this.visualizer.height - barHeight,
-                    barWidth - 1,
-                    barHeight
-                );
+                x += sliceWidth;
             }
+            
+            this.visualizerCtx.lineTo(this.visualizer.width, centerY);
+            this.visualizerCtx.stroke();
         };
         
         draw();

@@ -4,27 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capture Sound</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home.css">
 </head>
 <body>
-    <div class="title-bar">
-        Capture Sound
-    </div>
-    
-    <div class="recorder-container">
-        <canvas id="visualizer"></canvas>
-        <div class="controls">
-            <button class="record-button" id="recordButton">
-                <span class="record-icon"></span>
-            </button>
-            <button class="download-button" id="downloadButton" style="display: none;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 4v12m0 0l-4-4m4 4l4-4m-10 4v4h12v-4"/>
-                </svg>
-            </button>
+    <div class="main-container">
+        <div class="title-bar">
+            <div class="title">Capture Sound</div>
+            <button class="login-button" onclick="showLoginModal()">Login</button>
+        </div>
+        
+        <div class="content-container">
+            <div class="welcome-container">
+                <h1>Welcome to Capture Sound</h1>
+                <p>Listen to the city through this web app</p>
+                <a href="recorder.html" class="start-button">Start Listening</a>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="hideLoginModal()">&times;</span>
+                <h2>Login</h2>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="submit-button">Login</button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- <script src="app.js"></script> -->
+    <script>
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Here you would typically handle the login logic
+            console.log('Login attempt:', { username, password });
+            
+            // For now, just close the modal
+            hideLoginModal();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target == modal) {
+                hideLoginModal();
+            }
+        }
+    </script>
 </body>
 </html> 

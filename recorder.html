@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Capture Sound</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="recorder.css">
+    </head>
+    <body>
+        <div class="title-bar">Capture Sound</div>
+        
+        <div class="container">
+            <a href="https://wavesurfer.xyz/docs/classes/plugins_record.RecordPlugin" class="docs-link">Record plugin docs</a>
+
+            <div class="controls">
+                <button id="record">Record</button>
+                <button id="pause" style="display: none;">Pause</button>
+                <select id="mic-select">
+                    <option value="" hidden>Select mic</option>
+                </select>
+            </div>
+
+            <div class="options">
+                <label class="option">
+                    <input type="checkbox" id="scrollingWaveform" />
+                    Scrolling waveform
+                </label>
+                <label class="option">
+                    <input type="checkbox" id="continuousWaveform" checked="checked" />
+                    Continuous waveform
+                </label>
+            </div>
+
+            <p id="progress">00:00</p>
+
+            <div id="mic"></div>
+
+            <div id="recordings"></div>
+        </div>
+
+        <!-- Load WaveSurfer.js and its plugins -->
+        <script src="https://unpkg.com/wavesurfer.js@7"></script>
+        <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
+        <!-- Load our script after WaveSurfer.js -->
+        <script src="recorder.js"></script>
+    </body>
+</html>
