@@ -72,8 +72,12 @@ select {
 }
 
 .options {
+    position: absolute;
+    top: 16px;
+    left: 120px;
+    max-width: 5rem;
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     margin: 1rem 0;
 }
 

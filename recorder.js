@@ -90,7 +90,6 @@ const createWaveSurfer = () => {
     // Set up event handlers after Record is initialized
     const pauseButton = document.querySelector('#pause')
     const recButton = document.querySelector('#record')
-    const micSelect = document.querySelector('#mic-select')
 
     console.log('Setting up event handlers...')
 
@@ -228,9 +227,8 @@ const createWaveSurfer = () => {
         recButton.disabled = true
         console.log('Starting recording...')
 
-        // get selected device
-        const deviceId = micSelect.value
-        record.startRecording({ deviceId })
+        // Start recording with default device
+        record.startRecording()
             .then(() => {
                 console.log('Recording started successfully')
                 recButton.textContent = 'Stop'
