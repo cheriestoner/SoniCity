@@ -325,12 +325,17 @@ select {
 
 /* View Navigation */
 .view-navigation {
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
+    gap: 5rem;
+    /* margin-top: 2rem; */
+    padding-top: 0.5rem;
     border-top: 1px solid #ddd;
+    z-index:1000;
 }
 
 .nav-button {
