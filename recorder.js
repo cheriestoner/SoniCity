@@ -4,6 +4,7 @@ console.log('recorder.js starting...');
 let wavesurfer, record
 let scrollingWaveform = false
 let continuousWaveform = true
+let selectedSlot = null  // Track the selected slot
 
 // Function to get CSS variable value
 const getCssVariable = (variableName) => {
@@ -31,7 +32,7 @@ const createWaveSurfer = () => {
       waveColor: waveColor,
       progressColor: progressColor,
       height: 128,
-      normalize: true,
+      normalize: false,
       fillParent: true,
     })
 
@@ -60,6 +61,70 @@ const createWaveSurfer = () => {
 
     console.log('Setting up event handlers...')
 
+    // Function to update global controls based on selected slot
+    const updateGlobalControls = () => {
+        const globalControls = document.querySelector('#global-controls')
+        const globalPlay = document.querySelector('#global-play img')
+        const globalDownload = document.querySelector('#global-download')
+        const waveformContainer = selectedSlot?.querySelector('.waveform')
+        
+        if (selectedSlot && !selectedSlot.classList.contains('empty')) {
+            globalControls.classList.remove('disabled')
+            const wavesurfer = waveformContainer.wavesurfer
+            const recordedUrl = selectedSlot.dataset.recordedUrl
+
+            // Update play button
+            document.querySelector('#global-play').onclick = () => wavesurfer.playPause()
+            wavesurfer.on('pause', () => {
+                globalPlay.src = 'icons/play-circle.svg'
+            })
+            wavesurfer.on('play', () => {
+                globalPlay.src = 'icons/pause-circle.svg'
+            })
+
+            // Update download link
+            globalDownload.href = recordedUrl
+            globalDownload.download = selectedSlot.dataset.filename
+
+            // Update delete button
+            document.querySelector('#global-delete').onclick = () => {
+                URL.revokeObjectURL(recordedUrl)
+                wavesurfer.destroy()
+                selectedSlot.innerHTML = ''
+                selectedSlot.classList.remove('selected')
+                selectedSlot.classList.add('empty')
+                selectedSlot = null
+                updateGlobalControls()
+            }
+        } else {
+            globalControls.classList.add('disabled')
+            globalPlay.src = 'icons/play-circle.svg'
+            globalDownload.removeAttribute('href')
+            globalDownload.removeAttribute('download')
+        }
+    }
+
+    // Add click handlers for all slots
+    document.querySelectorAll('.recording-slot').forEach(slot => {
+        slot.onclick = () => {
+            if (record.isRecording()) return
+
+            if (selectedSlot) {
+                selectedSlot.classList.remove('selected')
+            }
+            
+            if (selectedSlot === slot) {
+                selectedSlot = null
+            } else {
+                slot.classList.add('selected')
+                selectedSlot = slot
+            }
+            
+            updateGlobalControls()
+            recButton.disabled = !slot.classList.contains('empty')
+        }
+    })
+
     // Pause button handler
     pauseButton.onclick = () => {
         console.log('Pause button clicked')
@@ -82,6 +147,31 @@ const createWaveSurfer = () => {
             recButton.textContent = 'Record'
             pauseButton.style.display = 'none'
             return
+        }
+
+        // Check if a slot is selected
+        if (!selectedSlot) {
+            console.log('No slot selected')
+            alert('Please select a slot first')
+            return
+        }
+
+        // If slot has existing recording, clean it up
+        if (!selectedSlot.classList.contains('empty')) {
+            // Find and revoke existing URL
+            const existingLink = selectedSlot.querySelector('.downlink')
+            if (existingLink) {
+                URL.revokeObjectURL(existingLink.href)
+            }
+            
+            // Find and destroy existing wavesurfer instance
+            const existingWaveform = selectedSlot.querySelector('.waveform')
+            if (existingWaveform && existingWaveform.wavesurfer) {
+                existingWaveform.wavesurfer.destroy()
+            }
+            
+            // Clear the slot
+            selectedSlot.innerHTML = ''
         }
 
         recButton.disabled = true
@@ -125,71 +215,35 @@ const createWaveSurfer = () => {
 
     // Render recorded audio
     record.on('record-end', (blob) => {
-        console.log('Recording ended, creating playback instance')
-        const container = document.querySelector('#recordings')
+        if (!selectedSlot) return
+
         const recordedUrl = URL.createObjectURL(blob)
+        selectedSlot.classList.remove('selected', 'empty')
+        
+        // Store URL and filename for global controls
+        selectedSlot.dataset.recordedUrl = recordedUrl
+        selectedSlot.dataset.filename = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
 
-        // Create recording item container
-        const recordingItem = document.createElement('div')
-        recordingItem.className = 'recording-item'
-        container.appendChild(recordingItem)
+        // Create waveform container
+        const waveformContainer = document.createElement('div')
+        waveformContainer.className = 'waveform'
+        selectedSlot.appendChild(waveformContainer)
 
-        // Get colors from CSS variables for recorded audio
-        const recordingWaveColor = getCssVariable('--recording-waveform-color');
-        const recordingProgressColor = getCssVariable('--recording-progress-color');
-
-        // Create wavesurfer from the recorded audio
+        // Create wavesurfer instance
         const wavesurfer = WaveSurfer.create({
-            container: recordingItem,
-            waveColor: recordingWaveColor,
-            progressColor: recordingProgressColor,
+            container: waveformContainer,
+            waveColor: getCssVariable('--recording-waveform-color'),
+            progressColor: getCssVariable('--recording-progress-color'),
             url: recordedUrl,
-            height: 128,
+            height: 80,
+            normalize: false,
         })
+        
+        waveformContainer.wavesurfer = wavesurfer
 
-        // Create controls container
-        const controls = document.createElement('div')
-        controls.className = 'recording-controls'
-        recordingItem.appendChild(controls)
-
-        // Play button with icon
-        const playButton = document.createElement('button')
-        const playIcon = document.createElement('img')
-        playIcon.src = 'icons/play-circle.svg'
-        playIcon.alt = 'Play'
-        playButton.appendChild(playIcon)
-        playButton.onclick = () => wavesurfer.playPause()
-        wavesurfer.on('pause', () => {
-            playIcon.src = 'icons/play-circle.svg'
-        })
-        wavesurfer.on('play', () => {
-            playIcon.src = 'icons/pause-circle.svg'
-        })
-        controls.appendChild(playButton)
-
-        // Download link with icon
-        const downloadLink = document.createElement('a')
-        downloadLink.href = recordedUrl
-        downloadLink.download = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
-        downloadLink.className = 'downlink'
-        const downloadIcon = document.createElement('img')
-        downloadIcon.src = 'icons/arrowdown.svg'
-        downloadIcon.alt = 'Download'
-        downloadLink.appendChild(downloadIcon)
-        controls.appendChild(downloadLink)
-
-        // Delete button with icon
-        const deleteButton = document.createElement('button')
-        const deleteIcon = document.createElement('img')
-        deleteIcon.src = 'icons/trash.svg'
-        deleteIcon.alt = 'Delete'
-        deleteButton.appendChild(deleteIcon)
-        deleteButton.onclick = () => {
-            URL.revokeObjectURL(recordedUrl)  // Clean up the URL object
-            wavesurfer.destroy()  // Destroy wavesurfer instance
-            recordingItem.remove()  // Remove the recording item from DOM
-        }
-        controls.appendChild(deleteButton)
+        selectedSlot = null
+        recButton.disabled = true
+        updateGlobalControls()
     })
 
     record.on('record-start', () => {
