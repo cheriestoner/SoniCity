@@ -5,6 +5,13 @@ let wavesurfer, record
 let scrollingWaveform = false
 let continuousWaveform = true
 
+// Function to get CSS variable value
+const getCssVariable = (variableName) => {
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue(variableName)
+        .trim();
+}
+
 const createWaveSurfer = () => {
     console.log('Creating WaveSurfer instance...')
     
@@ -14,11 +21,15 @@ const createWaveSurfer = () => {
       wavesurfer.destroy()
     }
 
+    // Get colors from CSS variables
+    const waveColor = getCssVariable('--waveform-color');
+    const progressColor = getCssVariable('--waveform-progress-color');
+
     // Create a new Wavesurfer instance
     wavesurfer = WaveSurfer.create({
       container: '#mic',
-      waveColor: 'rgb(200, 0, 200)',
-      progressColor: 'rgb(100, 0, 100)',
+      waveColor: waveColor,
+      progressColor: progressColor,
       height: 128,
       normalize: true,
       fillParent: true,
@@ -118,29 +129,71 @@ const createWaveSurfer = () => {
         const container = document.querySelector('#recordings')
         const recordedUrl = URL.createObjectURL(blob)
 
+        // Create recording item container
+        const recordingItem = document.createElement('div')
+        recordingItem.className = 'recording-item'
+        container.appendChild(recordingItem)
+
+        // Get colors from CSS variables for recorded audio
+        const recordingWaveColor = getCssVariable('--recording-waveform-color');
+        const recordingProgressColor = getCssVariable('--recording-progress-color');
+
         // Create wavesurfer from the recorded audio
         const wavesurfer = WaveSurfer.create({
-            container,
-            waveColor: 'rgb(200, 100, 0)',
-            progressColor: 'rgb(100, 50, 0)',
+            container: recordingItem,
+            waveColor: recordingWaveColor,
+            progressColor: recordingProgressColor,
             url: recordedUrl,
             height: 128,
         })
 
-        // Play button
-        const button = container.appendChild(document.createElement('button'))
-        button.textContent = 'Play'
-        button.onclick = () => wavesurfer.playPause()
-        wavesurfer.on('pause', () => (button.textContent = 'Play'))
-        wavesurfer.on('play', () => (button.textContent = 'Pause'))
+        // Create controls container
+        const controls = document.createElement('div')
+        controls.className = 'recording-controls'
+        recordingItem.appendChild(controls)
 
-        // Download link
-        const link = container.appendChild(document.createElement('a'))
-        Object.assign(link, {
-            href: recordedUrl,
-            download: 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm',
-            textContent: 'Download recording',
+        // Play button with icon
+        const playButton = document.createElement('button')
+        const playIcon = document.createElement('img')
+        playIcon.src = 'play-circle.svg'
+        playIcon.alt = 'Play'
+        playButton.appendChild(playIcon)
+        playButton.onclick = () => wavesurfer.playPause()
+        wavesurfer.on('pause', () => {
+            playIcon.src = 'play-circle.svg'
         })
+        wavesurfer.on('play', () => {
+            playIcon.src = 'pause-circle.svg'
+        })
+        controls.appendChild(playButton)
+
+        // Download link with icon
+        const downloadLink = document.createElement('a')
+        downloadLink.href = recordedUrl
+        downloadLink.download = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
+        downloadLink.className = 'downlink'
+        const downloadIcon = document.createElement('img')
+        downloadIcon.src = 'arrowdown.svg'
+        downloadIcon.alt = 'Download'
+        downloadLink.appendChild(downloadIcon)
+        controls.appendChild(downloadLink)
+
+        // Delete button with icon
+        const deleteButton = document.createElement('button')
+        deleteButton.className = 'delete-btn'
+        const deleteIcon = document.createElement('img')
+        deleteIcon.src = 'trash.svg'
+        deleteIcon.alt = 'Delete'
+        deleteButton.appendChild(deleteIcon)
+        deleteButton.onclick = () => {
+            // Stop playback if playing
+            wavesurfer.stop()
+            // Remove the recording item from the DOM
+            recordingItem.remove()
+            // Revoke the object URL to free up memory
+            URL.revokeObjectURL(recordedUrl)
+        }
+        controls.appendChild(deleteButton)
     })
 
     record.on('record-start', () => {

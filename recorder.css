@@ -1,3 +1,10 @@
+:root {
+    --waveform-color: rgb(38, 69, 41);
+    --waveform-progress-color: rgb(28, 157, 26);
+    --recording-waveform-color: rgb(26, 57, 94);
+    --recording-progress-color: rgb(0, 109, 217);
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -95,27 +102,45 @@ select {
 
 .recording-item {
     background-color: white;
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.recording-item button {
-    background-color: #4CAF50;
+.recording-controls {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 0.25rem;
 }
 
-.recording-item button:hover {
-    background-color: #45a049;
+.recording-controls button,
+.recording-controls .downlink,
+.recording-controls .delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    background: none;
+    transition: transform 0.2s;
+    width: 32px;
+    height: 32px;
 }
 
-.recording-item a {
-    color: #2196F3;
-    text-decoration: none;
-    margin-left: 1rem;
+.recording-controls button:hover,
+.recording-controls .downlink:hover,
+.recording-controls .delete-btn:hover {
+    transform: scale(1.1);
 }
 
-.recording-item a:hover {
-    text-decoration: underline;
+.recording-controls img {
+    width: 32px;
+    height: 32px;
 }
 
 #progress {
@@ -134,4 +159,18 @@ select {
 
 .docs-link:hover {
     text-decoration: underline;
+}
+
+/* Override default button styles for recording controls */
+.recording-controls button {
+    min-width: unset;
+    padding: 0;
+    background: none;
+    width: 32px;
+    height: 32px;
+}
+
+.recording-controls button:hover {
+    background: none;
+    transform: scale(1.1);
 } 
