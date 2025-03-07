@@ -7,53 +7,105 @@
         <link rel="stylesheet" href="recorder.css">
     </head>
     <body>
-        <div class="title-bar">Capture Sound</div>
+        <!-- <div class="title-bar">Capture Sound</div> -->
         
         <div class="container">
-        
-            <div class="controls">
-                <button id="record">Record</button>
-                <button id="pause" style="display: none;">Pause</button>
-                <select id="mic-select">
-                    <option value="" hidden>Select mic</option>
-                </select>
+            <!-- Recorder View -->
+            <div id="recorder-view" class="view active">
+                <div class="controls">
+                    <button id="record">Record</button>
+                    <button id="pause" style="display: none;">Pause</button>
+                    <select id="mic-select">
+                        <option value="" hidden>Select mic</option>
+                    </select>
+                </div>
+
+                <div class="options">
+                    <label class="option">
+                        <input type="checkbox" id="scrollingWaveform" />
+                        Scrolling waveform
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" id="continuousWaveform" checked="checked" />
+                        Continuous waveform
+                    </label>
+                </div>
+
+                <div id="mic">
+                    <div id="progress">00:00</div>
+                </div>
+
+                <div id="recording-slots">
+                    <div class="recording-slot empty">
+                        <div class="slot-number">1</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">2</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">3</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">4</div>
+                    </div>
+                </div>
+
+                <div id="global-controls" class="disabled">
+                    <button id="global-play">
+                        <img src="icons/play-circle.svg" alt="Play">
+                    </button>
+                    <button id="global-edit">
+                        <img src="icons/edit.svg" alt="Edit">
+                    </button>
+                    <a id="global-download" class="downlink">
+                        <img src="icons/arrowdown.svg" alt="Download">
+                    </a>
+                    <button id="global-delete">
+                        <img src="icons/trash.svg" alt="Delete">
+                    </button>
+                </div>
             </div>
 
-            <div class="options">
-                <label class="option">
-                    <input type="checkbox" id="scrollingWaveform" />
-                    Scrolling waveform
-                </label>
-                <label class="option">
-                    <input type="checkbox" id="continuousWaveform" checked="checked" />
-                    Continuous waveform
-                </label>
+            <!-- Survey View -->
+            <div id="survey-view" class="view">
+                <h2>Sound Survey</h2>
+                <form id="survey-form">
+                    <div class="survey-item">
+                        <label>How would you rate the sound quality?</label>
+                        <div class="rating">
+                            <input type="radio" name="quality" value="1"> 1
+                            <input type="radio" name="quality" value="2"> 2
+                            <input type="radio" name="quality" value="3"> 3
+                            <input type="radio" name="quality" value="4"> 4
+                            <input type="radio" name="quality" value="5"> 5
+                        </div>
+                    </div>
+
+                    <div class="survey-item">
+                        <label>What type of environment are you in?</label>
+                        <select name="environment">
+                            <option value="">Select environment</option>
+                            <option value="quiet">Quiet room</option>
+                            <option value="noisy">Noisy environment</option>
+                            <option value="outdoor">Outdoor</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="survey-item">
+                        <label>Additional comments:</label>
+                        <textarea name="comments" rows="4"></textarea>
+                    </div>
+
+                    <button type="submit">Submit Survey</button>
+                </form>
             </div>
 
-            <div id="mic">
-                <div id="progress">00:00</div>
+            <!-- Navigation -->
+            <div class="view-navigation">
+                <button id="nav-recorder" class="nav-button active">Recorder</button>
+                <button id="nav-survey" class="nav-button">Survey</button>
             </div>
-
-            <div id="recording-slots">
-                <div class="recording-slot empty"></div>
-                <div class="recording-slot empty"></div>
-                <div class="recording-slot empty"></div>
-                <div class="recording-slot empty"></div>
-            </div>
-
-            <div id="global-controls" class="disabled">
-                <button id="global-play">
-                    <img src="icons/play-circle.svg" alt="Play">
-                </button>
-                <a id="global-download" class="downlink">
-                    <img src="icons/arrowdown.svg" alt="Download">
-                </a>
-                <button id="global-delete">
-                    <img src="icons/trash.svg" alt="Delete">
-                </button>
-            </div>
-
-            <div id="recordings"></div>
         </div>
 
         <!-- Load WaveSurfer.js and its plugins -->

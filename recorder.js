@@ -1,3 +1,36 @@
+// View switching
+document.addEventListener('DOMContentLoaded', () => {
+    const navRecorder = document.querySelector('#nav-recorder')
+    const navSurvey = document.querySelector('#nav-survey')
+    const recorderView = document.querySelector('#recorder-view')
+    const surveyView = document.querySelector('#survey-view')
+
+    navRecorder.onclick = () => {
+        recorderView.classList.add('active')
+        surveyView.classList.remove('active')
+        navRecorder.classList.add('active')
+        navSurvey.classList.remove('active')
+    }
+
+    navSurvey.onclick = () => {
+        surveyView.classList.add('active')
+        recorderView.classList.remove('active')
+        navSurvey.classList.add('active')
+        navRecorder.classList.remove('active')
+    }
+
+    // Handle survey submission
+    document.querySelector('#survey-form').onsubmit = (e) => {
+        e.preventDefault()
+        const formData = new FormData(e.target)
+        const data = Object.fromEntries(formData)
+        console.log('Survey submitted:', data)
+        // Here you can add code to handle the survey data
+        alert('Survey submitted successfully!')
+        e.target.reset()
+    }
+})
+
 // Record plugin
 console.log('recorder.js starting...');
 
@@ -82,6 +115,12 @@ const createWaveSurfer = () => {
                 globalPlay.src = 'icons/pause-circle.svg'
             })
 
+            // Update edit button
+            document.querySelector('#global-edit').onclick = () => {
+                // Edit functionality will be added later
+                console.log('Edit button clicked for slot:', selectedSlot)
+            }
+
             // Update download link
             globalDownload.href = recordedUrl
             globalDownload.download = selectedSlot.dataset.filename
@@ -90,7 +129,11 @@ const createWaveSurfer = () => {
             document.querySelector('#global-delete').onclick = () => {
                 URL.revokeObjectURL(recordedUrl)
                 wavesurfer.destroy()
+                const number = selectedSlot.querySelector('.slot-number')
                 selectedSlot.innerHTML = ''
+                if (number) {
+                    selectedSlot.appendChild(number)
+                }
                 selectedSlot.classList.remove('selected')
                 selectedSlot.classList.add('empty')
                 selectedSlot = null
@@ -170,8 +213,16 @@ const createWaveSurfer = () => {
                 existingWaveform.wavesurfer.destroy()
             }
             
+            // Store the number
+            const number = selectedSlot.querySelector('.slot-number')
+            
             // Clear the slot
             selectedSlot.innerHTML = ''
+            
+            // Restore the number
+            if (number) {
+                selectedSlot.appendChild(number)
+            }
         }
 
         recButton.disabled = true
@@ -220,14 +271,22 @@ const createWaveSurfer = () => {
         const recordedUrl = URL.createObjectURL(blob)
         selectedSlot.classList.remove('selected', 'empty')
         
-        // Store URL and filename for global controls
-        selectedSlot.dataset.recordedUrl = recordedUrl
-        selectedSlot.dataset.filename = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
-
+        // Store the number
+        const number = selectedSlot.querySelector('.slot-number')
+        
         // Create waveform container
         const waveformContainer = document.createElement('div')
         waveformContainer.className = 'waveform'
         selectedSlot.appendChild(waveformContainer)
+
+        // Restore the number if it exists
+        if (number) {
+            selectedSlot.appendChild(number)
+        }
+
+        // Store URL and filename for global controls
+        selectedSlot.dataset.recordedUrl = recordedUrl
+        selectedSlot.dataset.filename = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
 
         // Create wavesurfer instance
         const wavesurfer = WaveSurfer.create({
