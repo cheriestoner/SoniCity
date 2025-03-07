@@ -155,15 +155,15 @@ const createWaveSurfer = () => {
         // Play button with icon
         const playButton = document.createElement('button')
         const playIcon = document.createElement('img')
-        playIcon.src = 'play-circle.svg'
+        playIcon.src = 'icons/play-circle.svg'
         playIcon.alt = 'Play'
         playButton.appendChild(playIcon)
         playButton.onclick = () => wavesurfer.playPause()
         wavesurfer.on('pause', () => {
-            playIcon.src = 'play-circle.svg'
+            playIcon.src = 'icons/play-circle.svg'
         })
         wavesurfer.on('play', () => {
-            playIcon.src = 'pause-circle.svg'
+            playIcon.src = 'icons/pause-circle.svg'
         })
         controls.appendChild(playButton)
 
@@ -173,25 +173,21 @@ const createWaveSurfer = () => {
         downloadLink.download = 'recording.' + blob.type.split(';')[0].split('/')[1] || 'webm'
         downloadLink.className = 'downlink'
         const downloadIcon = document.createElement('img')
-        downloadIcon.src = 'arrowdown.svg'
+        downloadIcon.src = 'icons/arrowdown.svg'
         downloadIcon.alt = 'Download'
         downloadLink.appendChild(downloadIcon)
         controls.appendChild(downloadLink)
 
         // Delete button with icon
         const deleteButton = document.createElement('button')
-        deleteButton.className = 'delete-btn'
         const deleteIcon = document.createElement('img')
-        deleteIcon.src = 'trash.svg'
+        deleteIcon.src = 'icons/trash.svg'
         deleteIcon.alt = 'Delete'
         deleteButton.appendChild(deleteIcon)
         deleteButton.onclick = () => {
-            // Stop playback if playing
-            wavesurfer.stop()
-            // Remove the recording item from the DOM
-            recordingItem.remove()
-            // Revoke the object URL to free up memory
-            URL.revokeObjectURL(recordedUrl)
+            URL.revokeObjectURL(recordedUrl)  // Clean up the URL object
+            wavesurfer.destroy()  // Destroy wavesurfer instance
+            recordingItem.remove()  // Remove the recording item from DOM
         }
         controls.appendChild(deleteButton)
     })

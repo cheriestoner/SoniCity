@@ -118,8 +118,7 @@ select {
 }
 
 .recording-controls button,
-.recording-controls .downlink,
-.recording-controls .delete-btn {
+.recording-controls .downlink {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -133,8 +132,7 @@ select {
 }
 
 .recording-controls button:hover,
-.recording-controls .downlink:hover,
-.recording-controls .delete-btn:hover {
+.recording-controls .downlink:hover {
     transform: scale(1.1);
 }
 
