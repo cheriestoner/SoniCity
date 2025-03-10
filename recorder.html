@@ -13,8 +13,12 @@
             <!-- Recorder View -->
             <div id="recorder-view" class="view active">
                 <div class="controls">
-                    <button id="record">Record</button>
-                    <button id="pause" style="display: none;">Pause</button>
+                    <button id="record">
+                        <img src="icons/mic-off.svg" alt="Record">
+                    </button>
+                    <button id="pause" style="display: none;">
+                        <img src="icons/pause-square.svg" alt="Pause">
+                    </button>
                 </div>
 
                 <div class="options">
@@ -61,6 +65,20 @@
                         <img src="icons/trash.svg" alt="Delete">
                     </button>
                 </div>
+
+                <div id="editor-container" style="display: none;">
+                    <div id="editor-waveform"></div>
+                    <div class="editor-controls">
+                        <button id="editor-play">
+                            <img src="icons/play-circle.svg" alt="Play">
+                        </button>
+                        <button id="editor-trim">
+                            <img src="icons/scissors.svg" alt="Trim">
+                        </button>
+                    </div>
+                </div>
+
+                <div id="recordings"></div>
             </div>
 
             <!-- Survey View -->
@@ -108,6 +126,7 @@
         <!-- Load WaveSurfer.js and its plugins -->
         <script src="https://unpkg.com/wavesurfer.js@7"></script>
         <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
         <!-- Load our script after WaveSurfer.js -->
         <script src="recorder.js"></script>
     </body>
