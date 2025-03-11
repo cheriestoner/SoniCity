@@ -38,6 +38,9 @@ let wavesurfer, record, editorWavesurfer, editorRegions
 let scrollingWaveform = false
 let continuousWaveform = true
 let selectedSlot = null  // Track the selected slot
+let audioContext = null
+let micStream = null
+let feedbackNode = null
 
 // Function to get CSS variable value
 const getCssVariable = (variableName) => {
@@ -51,7 +54,7 @@ const createWaveSurfer = () => {
     
   // Destroy the previous wavesurfer instance
   if (wavesurfer) {
-      console.log('Destroying previous instance')
+        console.log('Destroying previous instance')
     wavesurfer.destroy()
   }
 
@@ -62,11 +65,11 @@ const createWaveSurfer = () => {
   // Create a new Wavesurfer instance
   wavesurfer = WaveSurfer.create({
     container: '#mic',
-      waveColor: waveColor,
-      progressColor: progressColor,
-      height: 110,
-      normalize: false,
-      fillParent: true,
+        waveColor: waveColor,
+        progressColor: progressColor,
+        height: 110,
+        normalize: false,
+        fillParent: true,
     })
 
     console.log('WaveSurfer instance created:', wavesurfer ? 'success' : 'failed')
@@ -85,6 +88,59 @@ const createWaveSurfer = () => {
     } catch (error) {
         console.error('Error creating Record plugin:', error)
         return
+    }
+
+    // Set up feedback loop handler
+    const feedbackCheckbox = document.querySelector('#feedbackLoop')
+    let audioElement = null  // Track the audio element
+
+    feedbackCheckbox.onchange = async (e) => {
+        if (e.target.checked) {
+            try {
+                // Initialize audio context if not exists
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+                }
+
+                // Get microphone stream if not exists
+                if (!micStream) {
+                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                }
+
+                // Create and connect nodes
+                const source = audioContext.createMediaStreamSource(micStream)
+                feedbackNode = audioContext.createMediaStreamDestination()
+                source.connect(feedbackNode)
+
+                // Play the feedback through speakers
+                audioElement = new Audio()
+                audioElement.srcObject = feedbackNode.stream
+                audioElement.play()
+            } catch (error) {
+                console.error('Error setting up feedback loop:', error)
+                e.target.checked = false
+                alert('Could not enable feedback loop. Please check your microphone permissions.')
+            }
+        } else {
+            // Stop and disconnect feedback loop
+            if (audioElement) {
+                audioElement.pause()
+                audioElement.srcObject = null
+                audioElement = null
+            }
+            if (feedbackNode) {
+                feedbackNode.disconnect()
+                feedbackNode = null
+            }
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop())
+                micStream = null
+            }
+            if (audioContext) {
+                audioContext.close()
+                audioContext = null
+            }
+        }
     }
 
     // Set up event handlers after Record is initialized
@@ -131,11 +187,28 @@ const createWaveSurfer = () => {
                     // Create new editor wavesurfer instance
                     editorWavesurfer = WaveSurfer.create({
                         container: '#editor-waveform',
-                        waveColor: getCssVariable('--waveform-color'),
-                        progressColor: getCssVariable('--waveform-progress-color'),
                         height: 128,
                         normalize: false,
-                        url: recordedUrl
+                        url: recordedUrl,
+                        plugins: [
+                            WaveSurfer.Spectrogram.create({
+                                labels: true,
+                                // height: 200,
+                                // splitChannels: true,
+                                // scale: 'mel', // or 'linear', 'logarithmic', 'bark', 'erb'
+                                // frequencyMax: 8000,
+                                // frequencyMin: 0,
+                                // fftSamples: 1024,
+                                // labelsBackground: 'rgba(0, 0, 0, 0.1)',
+                                // labels: false,
+                                height: 128,
+                                colorMap: "gray",
+                                splitChannels: false,
+                                scale: 'logarithmic',
+                                frequencyMin: 0,
+                                frequencyMax: 8000,        // Adjust based on your needs
+                            })
+                        ]
                     })
 
                     // Initialize regions plugin
@@ -146,7 +219,15 @@ const createWaveSurfer = () => {
                     const editorPlayIcon = editorPlay.querySelector('img')
                     
                     editorPlay.onclick = () => {
-                        editorWavesurfer.playPause()
+                        const region = editorRegions.getRegions()[0]
+                        if (!region) return
+
+                        if (editorWavesurfer.isPlaying()) {
+                            editorWavesurfer.pause()
+                        } else {
+                            // Start playback from region start
+                            editorWavesurfer.play(region.start, region.end)
+                        }
                     }
 
                     editorWavesurfer.on('pause', () => {
@@ -154,6 +235,14 @@ const createWaveSurfer = () => {
                     })
                     editorWavesurfer.on('play', () => {
                         editorPlayIcon.src = 'icons/pause-circle.svg'
+                    })
+
+                    // Stop playback when reaching region end
+                    editorWavesurfer.on('timeupdate', (currentTime) => {
+                        const region = editorRegions.getRegions()[0]
+                        if (region && currentTime >= region.end) {
+                            editorWavesurfer.pause()
+                        }
                     })
 
                     // Add trim functionality
@@ -359,6 +448,23 @@ const createWaveSurfer = () => {
                 recButton.disabled = false
             })
     }
+
+    // Set up settings popup handler
+    const settingsButton = document.querySelector('#settings-button')
+    const settingsPopup = document.querySelector('#settings-popup')
+    
+    // Toggle settings popup
+    settingsButton.onclick = (e) => {
+        e.stopPropagation()
+        settingsPopup.style.display = settingsPopup.style.display === 'none' ? 'block' : 'none'
+    }
+
+    // Close popup when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!settingsPopup.contains(e.target) && e.target !== settingsButton) {
+            settingsPopup.style.display = 'none'
+        }
+    })
 
     // Waveform options handlers
     document.querySelector('#scrollingWaveform').onclick = (e) => {

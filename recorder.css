@@ -29,22 +29,35 @@ body {
 
 .controls {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    /* gap: 0.5rem; */
     margin-bottom: 1rem;
+    width: 100%;
+}
+
+.left-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.right-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;  /* For popup positioning */
 }
 
 .controls button {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* padding: 0.5rem; */
     border: none;
     border-radius: 4px;
     background: none;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: unset;  /* Override default button min-width */
+    min-width: unset;
 }
 
 .controls button:hover {
@@ -78,20 +91,54 @@ select {
     min-width: 200px;
 }
 
-.options {
-    position: absolute;
-    top: 16px;
-    left: 120px;
-    max-width: 5rem;
+#settings-button {
     display: flex;
-    gap: 1rem;
-    margin: 1rem 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-.option {
+#settings-button img {
+    width: 24px;
+    height: 24px;
+}
+
+#settings-button:hover {
+    transform: scale(1.1);
+}
+
+.settings-popup {
+    position: absolute;
+    top: 100%;
+    right: 0;  /* Align to the right side */
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.settings-popup .option {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin: 0.5rem 0;
+    white-space: nowrap;
+}
+
+.settings-popup .option:first-child {
+    margin-top: 0;
+}
+
+.settings-popup .option:last-child {
+    margin-bottom: 0;
 }
 
 #mic {
@@ -441,7 +488,7 @@ select {
 
 #editor-waveform {
     width: 100%;
-    height: 128px;
+    height: 256px;
     background-color: #f5f5f5;
     border-radius: 4px;
 }

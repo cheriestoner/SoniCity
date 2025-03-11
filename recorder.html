@@ -13,23 +13,33 @@
             <!-- Recorder View -->
             <div id="recorder-view" class="view active">
                 <div class="controls">
-                    <button id="record">
-                        <img src="icons/mic-off.svg" alt="Record">
-                    </button>
-                    <button id="pause" style="display: none;">
-                        <img src="icons/pause-square.svg" alt="Pause">
-                    </button>
-                </div>
-
-                <div class="options">
-                    <label class="option">
-                        <input type="checkbox" id="scrollingWaveform" />
-                        Scrolling waveform
-                    </label>
-                    <label class="option">
-                        <input type="checkbox" id="continuousWaveform" checked="checked" />
-                        Continuous waveform
-                    </label>
+                    <div class="left-controls">
+                        <button id="record">
+                            <img src="icons/mic-off.svg" alt="Record">
+                        </button>
+                        <button id="pause" style="display: none;">
+                            <img src="icons/pause-square.svg" alt="Pause">
+                        </button>
+                    </div>
+                    <div class="right-controls">
+                        <label class="option">
+                            <input type="checkbox" id="feedbackLoop" />
+                            Feedback loop
+                        </label>
+                        <button id="settings-button">
+                            <img src="icons/settings.svg" alt="Settings">
+                        </button>
+                        <div id="settings-popup" class="settings-popup" style="display: none;">
+                            <label class="option">
+                                <input type="checkbox" id="scrollingWaveform" />
+                                Scrolling waveform
+                            </label>
+                            <label class="option">
+                                <input type="checkbox" id="continuousWaveform" checked="checked" />
+                                Continuous waveform
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="mic">
@@ -127,6 +137,7 @@
         <script src="https://unpkg.com/wavesurfer.js@7"></script>
         <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
         <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+        <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.min.js"></script>
         <!-- Load our script after WaveSurfer.js -->
         <script src="recorder.js"></script>
     </body>
