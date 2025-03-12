@@ -39,6 +39,20 @@
                 </form>
             </div>
         </div>
+
+        <!-- Camera Modal -->
+        <div id="camera-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button id="take-photo">Take Photo</button>
+                    <button id="retake-photo" style="display: none;">Retake</button>
+                    <button id="save-photo" style="display: none;">Save</button>
+                    <button id="close-camera">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- <script src="app.js"></script> -->

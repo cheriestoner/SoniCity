@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 console.log('recorder.js starting...');
 
 let wavesurfer, record, editorWavesurfer, editorRegions
-let scrollingWaveform = false
-let continuousWaveform = true
+let scrollingWaveform = true
+let continuousWaveform = false
 let selectedSlot = null  // Track the selected slot
 let audioContext = null
 let micStream = null
@@ -92,44 +92,73 @@ const createWaveSurfer = () => {
 
     // Set up feedback loop handler
     const feedbackCheckbox = document.querySelector('#feedbackLoop')
-    let audioElement = null  // Track the audio element
+    const gainSlider = document.querySelector('#gainSlider')
+    let gainNode = null
+
+    // Initialize gain value (now 100 = 1x amplification)
+    let currentGain = gainSlider.value / 100
+
+    gainSlider.addEventListener('input', (e) => {
+        currentGain = e.target.value / 100  // Convert percentage to gain multiplier
+        if (gainNode) {
+            gainNode.gain.value = currentGain
+        }
+    })
 
     feedbackCheckbox.onchange = async (e) => {
         if (e.target.checked) {
             try {
                 // Initialize audio context if not exists
                 if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                        // Request low latency operation
+                        latencyHint: 'interactive',
+                        sampleRate: 48000
+                    })
                 }
 
                 // Get microphone stream if not exists
                 if (!micStream) {
-                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                    micStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            // Request low latency audio
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            autoGainControl: false,
+                            latency: 0
+                        }
+                    })
                 }
 
                 // Create and connect nodes
                 const source = audioContext.createMediaStreamSource(micStream)
-                feedbackNode = audioContext.createMediaStreamDestination()
-                source.connect(feedbackNode)
+                const destination = audioContext.destination
+                
+                // Create gain node with current gain value
+                gainNode = audioContext.createGain()
+                gainNode.gain.value = currentGain
 
-                // Play the feedback through speakers
-                audioElement = new Audio()
-                audioElement.srcObject = feedbackNode.stream
-                audioElement.play()
+                // Connect the nodes
+                source.connect(gainNode)
+                gainNode.connect(destination)
+                
+                // Store the nodes for cleanup
+                feedbackNode = {
+                    source,
+                    gainNode,
+                    destination
+                }
+
             } catch (error) {
                 console.error('Error setting up feedback loop:', error)
                 e.target.checked = false
                 alert('Could not enable feedback loop. Please check your microphone permissions.')
             }
         } else {
-            // Stop and disconnect feedback loop
-            if (audioElement) {
-                audioElement.pause()
-                audioElement.srcObject = null
-                audioElement = null
-            }
+            // Disconnect feedback loop
             if (feedbackNode) {
-                feedbackNode.disconnect()
+                feedbackNode.source.disconnect()
+                feedbackNode.gainNode.disconnect()
                 feedbackNode = null
             }
             if (micStream) {
@@ -140,6 +169,7 @@ const createWaveSurfer = () => {
                 audioContext.close()
                 audioContext = null
             }
+            gainNode = null
         }
     }
 
@@ -329,16 +359,106 @@ const createWaveSurfer = () => {
             // Update delete button
             document.querySelector('#global-delete').onclick = () => {
                 URL.revokeObjectURL(recordedUrl)
+                if (selectedSlot.dataset.photoUrl) {
+                    URL.revokeObjectURL(selectedSlot.dataset.photoUrl)
+                }
                 wavesurfer.destroy()
                 const number = selectedSlot.querySelector('.slot-number')
                 selectedSlot.innerHTML = ''
                 if (number) {
                     selectedSlot.appendChild(number)
                 }
+                selectedSlot.style.backgroundImage = ''
                 selectedSlot.classList.remove('selected')
                 selectedSlot.classList.add('empty')
                 selectedSlot = null
                 updateGlobalControls()
+            }
+
+            // Update camera button
+            document.querySelector('#global-camera').onclick = () => {
+                const cameraModal = document.querySelector('#camera-modal')
+                const video = document.querySelector('#camera-preview')
+                const canvas = document.querySelector('#photo-canvas')
+                const takePhotoBtn = document.querySelector('#take-photo')
+                const retakePhotoBtn = document.querySelector('#retake-photo')
+                const savePhotoBtn = document.querySelector('#save-photo')
+                const closeBtn = document.querySelector('#close-camera')
+                let stream = null
+
+                // Show modal and start camera
+                cameraModal.style.display = 'block'
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(mediaStream => {
+                        stream = mediaStream
+                        video.srcObject = stream
+                    })
+                    .catch(error => {
+                        console.error('Error accessing camera:', error)
+                        alert('Could not access camera. Please check your camera permissions.')
+                        cameraModal.style.display = 'none'
+                    })
+
+                // Take photo
+                takePhotoBtn.onclick = () => {
+                    canvas.width = video.videoWidth
+                    canvas.height = video.videoHeight
+                    canvas.getContext('2d').drawImage(video, 0, 0)
+                    video.style.display = 'none'
+                    canvas.style.display = 'block'
+                    takePhotoBtn.style.display = 'none'
+                    retakePhotoBtn.style.display = 'inline'
+                    savePhotoBtn.style.display = 'inline'
+                }
+
+                // Retake photo
+                retakePhotoBtn.onclick = () => {
+                    video.style.display = 'block'
+                    canvas.style.display = 'none'
+                    takePhotoBtn.style.display = 'inline'
+                    retakePhotoBtn.style.display = 'none'
+                    savePhotoBtn.style.display = 'none'
+                }
+
+                // Save photo
+                savePhotoBtn.onclick = () => {
+                    canvas.toBlob(blob => {
+                        // Revoke previous photo URL if exists
+                        if (selectedSlot.dataset.photoUrl) {
+                            URL.revokeObjectURL(selectedSlot.dataset.photoUrl)
+                        }
+                        
+                        const photoUrl = URL.createObjectURL(blob)
+                        selectedSlot.style.backgroundImage = `url(${photoUrl})`
+                        selectedSlot.dataset.photoUrl = photoUrl
+                        
+                        // Close camera
+                        closeCamera()
+                    }, 'image/jpeg', 0.8)
+                }
+
+                // Close camera
+                const closeCamera = () => {
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop())
+                    }
+                    video.srcObject = null
+                    cameraModal.style.display = 'none'
+                    video.style.display = 'block'
+                    canvas.style.display = 'none'
+                    takePhotoBtn.style.display = 'inline'
+                    retakePhotoBtn.style.display = 'none'
+                    savePhotoBtn.style.display = 'none'
+                }
+
+                closeBtn.onclick = closeCamera
+
+                // Close on outside click
+                cameraModal.onclick = (e) => {
+                    if (e.target === cameraModal) {
+                        closeCamera()
+                    }
+                }
             }
         } else {
             globalControls.classList.add('disabled')
@@ -534,6 +654,13 @@ const createWaveSurfer = () => {
 
   record.on('record-progress', (time) => {
     updateProgress(time)
+    // Stop recording after 30 seconds (30000 milliseconds)
+    if (time >= 30000) {
+        console.log('Recording reached 30 seconds, stopping...')
+        record.stopRecording()
+        recIcon.src = 'icons/mic-off.svg'
+        pauseButton.style.display = 'none'
+    }
   })
 
     pauseButton.style.display = 'none'

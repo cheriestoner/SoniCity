@@ -1,0 +1,68 @@
+#camera-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#camera-preview, #photo-canvas {
+    width: 100%;
+    max-width: 640px;
+    background: #000;
+    border-radius: 4px;
+}
+
+.camera-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.camera-controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.camera-controls button:hover {
+    background: #0056b3;
+}
+
+/* Style for slots with background images */
+.recording-slot {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Ensure waveform is visible over the background image */
+.recording-slot .waveform {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    margin: 4px;
+    position: relative;
+    z-index: 1;
+} 

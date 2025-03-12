@@ -4,6 +4,7 @@
         <title>Capture Sound</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="camera.css">
         <link rel="stylesheet" href="recorder.css">
     </head>
     <body>
@@ -14,12 +15,20 @@
             <div id="recorder-view" class="view active">
                 <div class="controls">
                     <div class="left-controls">
-                        <button id="record">
-                            <img src="icons/mic-off.svg" alt="Record">
-                        </button>
-                        <button id="pause" style="display: none;">
-                            <img src="icons/pause-square.svg" alt="Pause">
-                        </button>
+
+                        <div class="record-button-group">
+                            <button id="record">
+                                <img src="icons/mic-off.svg" alt="Record">
+                            </button>
+                            <button id="pause" style="display: none;">
+                                <img src="icons/pause-square.svg" alt="Pause">
+                            </button>
+                        </div>
+                        
+                        <div class="gain-control">
+                            <input type="range" id="gainSlider" min="0" max="200" value="100">
+                            <label for="gainSlider">Gain</label>
+                        </div>
                     </div>
                     <div class="right-controls">
                         <label class="option">
@@ -67,6 +76,9 @@
                     </button>
                     <button id="global-edit">
                         <img src="icons/edit.svg" alt="Edit">
+                    </button>
+                    <button id="global-camera">
+                        <img src="icons/camera.svg" alt="Take Photo">
                     </button>
                     <a id="global-download" class="downlink">
                         <img src="icons/arrowdown.svg" alt="Download">
@@ -140,5 +152,27 @@
         <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.min.js"></script>
         <!-- Load our script after WaveSurfer.js -->
         <script src="recorder.js"></script>
+
+        <!-- Hidden elements for photo capture -->
+        <div id="camera-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button id="take-photo">
+                        <img src="icons/camera.svg" alt="Take Photo">
+                    </button>
+                    <button id="retake-photo" style="display: none;">
+                        <img src="icons/refresh-cw.svg" alt="Retake">
+                    </button>
+                    <button id="save-photo" style="display: none;">
+                        <img src="icons/check.svg" alt="Save">
+                    </button>
+                    <button id="close-camera">
+                        <img src="icons/x.svg" alt="Close">
+                    </button>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
