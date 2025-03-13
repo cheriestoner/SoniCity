@@ -339,8 +339,35 @@ const createWaveSurfer = () => {
                             start: 0,
                             end: editorWavesurfer.getDuration(),
                             color: 'rgba(0, 109, 217, 0.2)',
-                            drag: false,
-                            resize: true
+                            drag: true,
+                            resize: true,
+                            minLength: 0.1,  // Minimum region length of 0.1 seconds
+                            maxLength: editorWavesurfer.getDuration(),  // Maximum length is full duration
+                        })
+
+                        // Make the entire waveform clickable for region selection
+                        const waveformContainer = document.querySelector('#editor-waveform')
+                        waveformContainer.style.cursor = 'pointer'
+                        
+                        waveformContainer.addEventListener('click', (e) => {
+                            const region = editorRegions.getRegions()[0]
+                            if (region) {
+                                region.setOptions({ drag: true })
+                                const bbox = waveformContainer.getBoundingClientRect()
+                                const x = e.clientX - bbox.left
+                                const duration = editorWavesurfer.getDuration()
+                                const clickTime = (x / bbox.width) * duration
+                                
+                                // If click is within 20px of region edges, adjust the nearest edge
+                                const regionStartPx = (region.start / duration) * bbox.width
+                                const regionEndPx = (region.end / duration) * bbox.width
+                                
+                                if (Math.abs(x - regionStartPx) < 20) {
+                                    region.setStart(clickTime)
+                                } else if (Math.abs(x - regionEndPx) < 20) {
+                                    region.setEnd(clickTime)
+                                }
+                            }
                         })
                     })
                 } else {
@@ -696,19 +723,19 @@ const updateProgress = (time) => {
 }
 
 // Mic selection
-const micSelect = document.querySelector('#mic-select')
-console.log('Getting available audio devices...')
-WaveSurfer.Record.getAvailableAudioDevices().then((devices) => {
-    console.log('Available audio devices:', devices)
-    devices.forEach((device) => {
-      const option = document.createElement('option')
-      option.value = device.deviceId
-      option.text = device.label || device.deviceId
-      micSelect.appendChild(option)
-    })
-}).catch(error => {
-    console.error('Error getting audio devices:', error)
-})
+// const micSelect = document.querySelector('#mic-select')
+// console.log('Getting available audio devices...')
+// WaveSurfer.Record.getAvailableAudioDevices().then((devices) => {
+//     console.log('Available audio devices:', devices)
+//     devices.forEach((device) => {
+//       const option = document.createElement('option')
+//       option.value = device.deviceId
+//       option.text = device.label || device.deviceId
+//       micSelect.appendChild(option)
+//     })
+// }).catch(error => {
+//     console.error('Error getting audio devices:', error)
+// })
 
 // Wait for everything to be loaded
 function initialize() {

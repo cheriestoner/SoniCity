@@ -78,7 +78,7 @@ body {
 #save-all img {
     width: 24px;
     height: 24px;
-} 
+}
 
 .option{
     font-size: 0.9rem;
@@ -563,15 +563,43 @@ select {
 .wavesurfer-region {
     background-color: rgba(0, 109, 217, 0.2) !important;
     border-radius: 2px;
+    cursor: move !important;
 }
 
 .wavesurfer-region:hover {
     background-color: rgba(0, 109, 217, 0.3) !important;
 }
 
+/* Make handles larger and more visible */
 .wavesurfer-handle {
     background-color: rgba(0, 109, 217, 0.9) !important;
-    width: 4px !important;
+    width: 8px !important;  /* Increased from 4px */
+    height: 100% !important;
+    cursor: col-resize !important;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+/* Add visual indicator for handles */
+.wavesurfer-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;  /* Larger touch target */
+    height: 16px;  /* Larger touch target */
+    background-color: rgba(0, 109, 217, 0.9);
+    border-radius: 50%;
+}
+
+/* Make the handle touch area larger than its visual size */
+.wavesurfer-handle-start,
+.wavesurfer-handle-end {
+    padding: 12px !important;  /* Increase touch target area */
+    margin-left: -12px !important;
+    box-sizing: content-box !important;
 }
 
 .gain-control {
