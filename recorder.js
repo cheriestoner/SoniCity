@@ -187,7 +187,6 @@ const createWaveSurfer = () => {
         const globalPlay = document.querySelector('#global-play img')
         const globalDownload = document.querySelector('#global-download')
         const waveformContainer = selectedSlot?.querySelector('.waveform')
-        const editorContainer = document.querySelector('#editor-container')
         
         if (selectedSlot && !selectedSlot.classList.contains('empty')) {
             globalControls.classList.remove('disabled')
@@ -205,176 +204,156 @@ const createWaveSurfer = () => {
 
             // Update edit button
             document.querySelector('#global-edit').onclick = () => {
-                // Toggle editor visibility
-                if (editorContainer.style.display === 'none') {
-                    editorContainer.style.display = 'block'
-                    
-                    // Destroy previous editor instance if it exists
-                    if (editorWavesurfer) {
-                        editorWavesurfer.destroy()
-                    }
-                    
-                    // Create new editor wavesurfer instance
-                    editorWavesurfer = WaveSurfer.create({
-                        container: '#editor-waveform',
-                        height: 128,
-                        normalize: false,
-                        url: recordedUrl,
-                        plugins: [
-                            WaveSurfer.Spectrogram.create({
-                                labels: true,
-                                // height: 200,
-                                // splitChannels: true,
-                                // scale: 'mel', // or 'linear', 'logarithmic', 'bark', 'erb'
-                                // frequencyMax: 8000,
-                                // frequencyMin: 0,
-                                // fftSamples: 1024,
-                                // labelsBackground: 'rgba(0, 0, 0, 0.1)',
-                                // labels: false,
-                                height: 128,
-                                colorMap: "gray",
-                                splitChannels: false,
-                                scale: 'logarithmic',
-                                frequencyMin: 0,
-                                frequencyMax: 8000,        // Adjust based on your needs
-                            })
-                        ]
-                    })
-
-                    // Initialize regions plugin
-                    editorRegions = editorWavesurfer.registerPlugin(WaveSurfer.Regions.create())
-
-                    // Add play/pause functionality
-                    const editorPlay = document.querySelector('#editor-play')
-                    const editorPlayIcon = editorPlay.querySelector('img')
-                    
-                    editorPlay.onclick = () => {
-                        const region = editorRegions.getRegions()[0]
-                        if (!region) return
-
-                        if (editorWavesurfer.isPlaying()) {
-                            editorWavesurfer.pause()
-                        } else {
-                            // Start playback from region start
-                            editorWavesurfer.play(region.start, region.end)
-                        }
-                    }
-
-                    editorWavesurfer.on('pause', () => {
-                        editorPlayIcon.src = 'icons/play-circle.svg'
-                    })
-                    editorWavesurfer.on('play', () => {
-                        editorPlayIcon.src = 'icons/pause-circle.svg'
-                    })
-
-                    // Stop playback when reaching region end
-                    editorWavesurfer.on('timeupdate', (currentTime) => {
-                        const region = editorRegions.getRegions()[0]
-                        if (region && currentTime >= region.end) {
-                            editorWavesurfer.pause()
-                        }
-                    })
-
-                    // Add trim functionality
-                    const editorTrim = document.querySelector('#editor-trim')
-                    editorTrim.onclick = () => {
-                        const region = editorRegions.getRegions()[0]
-                        if (!region) {
-                            alert('Please select a region to trim')
-                            return
-                        }
-
-                        // Get the audio element
-                        const audio = editorWavesurfer.getMediaElement()
-                        
-                        // Create an AudioContext
-                        const audioContext = new AudioContext()
-                        
-                        // Fetch the audio file
-                        fetch(recordedUrl)
-                            .then(response => response.arrayBuffer())
-                            .then(buffer => audioContext.decodeAudioData(buffer))
-                            .then(audioBuffer => {
-                                // Calculate start and end samples
-                                const startSample = Math.floor(region.start * audioBuffer.sampleRate)
-                                const endSample = Math.floor(region.end * audioBuffer.sampleRate)
-                                const duration = endSample - startSample
-                                
-                                // Create new buffer for the trimmed audio
-                                const trimmedBuffer = new AudioContext().createBuffer(
-                                    audioBuffer.numberOfChannels,
-                                    duration,
-                                    audioBuffer.sampleRate
-                                )
-                                
-                                // Copy the selected region to the new buffer
-                                for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-                                    const channelData = audioBuffer.getChannelData(channel)
-                                    const trimmedData = trimmedBuffer.getChannelData(channel)
-                                    for (let i = 0; i < duration; i++) {
-                                        trimmedData[i] = channelData[startSample + i]
-                                    }
-                                }
-                                
-                                // Convert trimmed buffer to blob
-                                const trimmedBlob = audioBufferToBlob(trimmedBuffer)
-                                
-                                // Update the slot with trimmed audio
-                                const trimmedUrl = URL.createObjectURL(trimmedBlob)
-                                URL.revokeObjectURL(recordedUrl)
-                                
-                                selectedSlot.dataset.recordedUrl = trimmedUrl
-                                const slotWavesurfer = selectedSlot.querySelector('.waveform').wavesurfer
-                                slotWavesurfer.load(trimmedUrl)
-                                
-                                // Update editor with trimmed audio
-                                editorWavesurfer.load(trimmedUrl)
-                                editorRegions.clearRegions()
-                            })
-                    }
-
-                    // Add region when audio is loaded
-                    editorWavesurfer.on('ready', () => {
-                        editorRegions.addRegion({
-                            start: 0,
-                            end: editorWavesurfer.getDuration(),
-                            color: 'rgba(0, 109, 217, 0.2)',
-                            drag: true,
-                            resize: true,
-                            minLength: 0.1,  // Minimum region length of 0.1 seconds
-                            maxLength: editorWavesurfer.getDuration(),  // Maximum length is full duration
+                const editorModal = document.querySelector('#editor-modal')
+                const closeBtn = document.querySelector('#close-editor')
+                
+                // Show modal
+                editorModal.style.display = 'block'
+                
+                // Create new editor wavesurfer instance
+                if (editorWavesurfer) {
+                    editorWavesurfer.destroy()
+                }
+                
+                // Create new editor wavesurfer instance
+                editorWavesurfer = WaveSurfer.create({
+                    container: '#editor-waveform',
+                    height: 128,
+                    normalize: false,
+                    url: recordedUrl,
+                    plugins: [
+                        WaveSurfer.Spectrogram.create({
+                            labels: true,
+                            height: 128,
+                            colorMap: "gray",
+                            splitChannels: false,
+                            scale: 'logarithmic',
+                            frequencyMin: 0,
+                            frequencyMax: 8000,
                         })
+                    ]
+                })
 
-                        // Make the entire waveform clickable for region selection
-                        const waveformContainer = document.querySelector('#editor-waveform')
-                        waveformContainer.style.cursor = 'pointer'
-                        
-                        waveformContainer.addEventListener('click', (e) => {
-                            const region = editorRegions.getRegions()[0]
-                            if (region) {
-                                region.setOptions({ drag: true })
-                                const bbox = waveformContainer.getBoundingClientRect()
-                                const x = e.clientX - bbox.left
-                                const duration = editorWavesurfer.getDuration()
-                                const clickTime = (x / bbox.width) * duration
-                                
-                                // If click is within 20px of region edges, adjust the nearest edge
-                                const regionStartPx = (region.start / duration) * bbox.width
-                                const regionEndPx = (region.end / duration) * bbox.width
-                                
-                                if (Math.abs(x - regionStartPx) < 20) {
-                                    region.setStart(clickTime)
-                                } else if (Math.abs(x - regionEndPx) < 20) {
-                                    region.setEnd(clickTime)
+                // Initialize regions plugin
+                editorRegions = editorWavesurfer.registerPlugin(WaveSurfer.Regions.create())
+
+                // Add play/pause functionality
+                const editorPlay = document.querySelector('#editor-play')
+                const editorPlayIcon = editorPlay.querySelector('img')
+                
+                editorPlay.onclick = () => {
+                    const region = editorRegions.getRegions()[0]
+                    if (!region) return
+
+                    if (editorWavesurfer.isPlaying()) {
+                        editorWavesurfer.pause()
+                    } else {
+                        // Start playback from region start
+                        editorWavesurfer.play(region.start, region.end)
+                    }
+                }
+
+                editorWavesurfer.on('pause', () => {
+                    editorPlayIcon.src = 'icons/play-circle.svg'
+                })
+                editorWavesurfer.on('play', () => {
+                    editorPlayIcon.src = 'icons/pause-circle.svg'
+                })
+
+                // Stop playback when reaching region end
+                editorWavesurfer.on('timeupdate', (currentTime) => {
+                    const region = editorRegions.getRegions()[0]
+                    if (region && currentTime >= region.end) {
+                        editorWavesurfer.pause()
+                    }
+                })
+
+                // Add trim functionality
+                const editorTrim = document.querySelector('#editor-trim')
+                editorTrim.onclick = () => {
+                    const region = editorRegions.getRegions()[0]
+                    if (!region) {
+                        alert('Please select a region to trim')
+                        return
+                    }
+
+                    // Get the audio element
+                    const audio = editorWavesurfer.getMediaElement()
+                    
+                    // Create an AudioContext
+                    const audioContext = new AudioContext()
+                    
+                    // Fetch the audio file
+                    fetch(recordedUrl)
+                        .then(response => response.arrayBuffer())
+                        .then(buffer => audioContext.decodeAudioData(buffer))
+                        .then(audioBuffer => {
+                            // Calculate start and end samples
+                            const startSample = Math.floor(region.start * audioBuffer.sampleRate)
+                            const endSample = Math.floor(region.end * audioBuffer.sampleRate)
+                            const duration = endSample - startSample
+                            
+                            // Create new buffer for the trimmed audio
+                            const trimmedBuffer = new AudioContext().createBuffer(
+                                audioBuffer.numberOfChannels,
+                                duration,
+                                audioBuffer.sampleRate
+                            )
+                            
+                            // Copy the selected region to the new buffer
+                            for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+                                const channelData = audioBuffer.getChannelData(channel)
+                                const trimmedData = trimmedBuffer.getChannelData(channel)
+                                for (let i = 0; i < duration; i++) {
+                                    trimmedData[i] = channelData[startSample + i]
                                 }
                             }
+                            
+                            // Convert trimmed buffer to blob
+                            const trimmedBlob = audioBufferToBlob(trimmedBuffer)
+                            
+                            // Update the slot with trimmed audio
+                            const trimmedUrl = URL.createObjectURL(trimmedBlob)
+                            URL.revokeObjectURL(recordedUrl)
+                            
+                            selectedSlot.dataset.recordedUrl = trimmedUrl
+                            const slotWavesurfer = selectedSlot.querySelector('.waveform').wavesurfer
+                            slotWavesurfer.load(trimmedUrl)
+                            
+                            // Update editor with trimmed audio
+                            editorWavesurfer.load(trimmedUrl)
+                            editorRegions.clearRegions()
                         })
+                }
+
+                // Add region when audio is loaded
+                editorWavesurfer.on('ready', () => {
+                    editorRegions.addRegion({
+                        start: 0,
+                        end: editorWavesurfer.getDuration(),
+                        color: 'rgba(0, 109, 217, 0.2)',
+                        drag: true,
+                        resize: true,
+                        minLength: 0.1,
+                        maxLength: editorWavesurfer.getDuration(),
                     })
-                } else {
-                    editorContainer.style.display = 'none'
+                })
+
+                // Close modal handler
+                const closeModal = () => {
+                    editorModal.style.display = 'none'
                     if (editorWavesurfer) {
                         editorWavesurfer.destroy()
                         editorWavesurfer = null
+                    }
+                }
+
+                closeBtn.onclick = closeModal
+
+                // Close on outside click
+                editorModal.onclick = (e) => {
+                    if (e.target === editorModal) {
+                        closeModal()
                     }
                 }
             }
@@ -600,12 +579,6 @@ const createWaveSurfer = () => {
             globalPlay.src = 'icons/play-circle.svg'
             globalDownload.removeAttribute('href')
             globalDownload.removeAttribute('download')
-            // Hide editor when no slot is selected
-            editorContainer.style.display = 'none'
-            if (editorWavesurfer) {
-                editorWavesurfer.destroy()
-                editorWavesurfer = null
-            }
         }
     }
 
@@ -614,19 +587,26 @@ const createWaveSurfer = () => {
         slot.onclick = () => {
             if (record.isRecording()) return
 
-            if (selectedSlot) {
-                selectedSlot.classList.remove('selected')
-            }
-            
+            // If clicking the same slot, deselect it
             if (selectedSlot === slot) {
+                slot.classList.remove('selected')
                 selectedSlot = null
             } else {
+                // Deselect previous slot if any
+                if (selectedSlot) {
+                    selectedSlot.classList.remove('selected')
+                }
+                
+                // Select new slot
                 slot.classList.add('selected')
                 selectedSlot = slot
             }
             
+            // Update record button state based on if slot is empty
+            recButton.disabled = selectedSlot ? !selectedSlot.classList.contains('empty') : true
+            
+            // Update global controls
             updateGlobalControls()
-            recButton.disabled = !slot.classList.contains('empty')
         }
     })
 

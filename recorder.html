@@ -96,18 +96,6 @@
                     </button>
                 </div>
 
-                <div id="editor-container" style="display: none;">
-                    <div id="editor-waveform"></div>
-                    <div class="editor-controls">
-                        <button id="editor-play">
-                            <img src="icons/play-circle.svg" alt="Play">
-                        </button>
-                        <button id="editor-trim">
-                            <img src="icons/scissors.svg" alt="Trim">
-                        </button>
-                    </div>
-                </div>
-
                 <div id="recordings"></div>
             </div>
 
@@ -204,6 +192,25 @@
                 </div>
                 <div class="modal-buttons">
                     <button id="close-tags" class="modal-close-btn">
+                        <img src="icons/x.svg" alt="Close">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor Modal -->
+        <div id="editor-modal" class="modal" style="display: none;">
+            <div class="modal-content editor-modal-content">
+                <h3>Edit Recording</h3>
+                <div id="editor-waveform"></div>
+                <div class="editor-controls">
+                    <button id="editor-play">
+                        <img src="icons/play-circle.svg" alt="Play">
+                    </button>
+                    <button id="editor-trim">
+                        <img src="icons/scissors.svg" alt="Trim">
+                    </button>
+                    <button id="close-editor" class="modal-close-btn">
                         <img src="icons/x.svg" alt="Close">
                     </button>
                 </div>
