@@ -502,6 +502,99 @@ const createWaveSurfer = () => {
                     }
                 }
             }
+
+            // Update tag button
+            document.querySelector('#global-tag').onclick = () => {
+                const tagModal = document.querySelector('#tag-modal')
+                const tagInput = document.querySelector('#tag-input')
+                const addTagBtn = document.querySelector('#add-tag')
+                const currentTags = document.querySelector('#current-tags')
+                const closeBtn = document.querySelector('#close-tags')
+
+                // Show modal
+                tagModal.style.display = 'block'
+
+                // Load existing tags
+                currentTags.innerHTML = ''
+                const existingTags = selectedSlot.dataset.tags ? JSON.parse(selectedSlot.dataset.tags) : []
+                existingTags.forEach(tag => addTagElement(tag))
+
+                // Function to add a tag
+                function addTag(tagText) {
+                    tagText = tagText.trim().toLowerCase()
+                    if (tagText && !existingTags.includes(tagText)) {
+                        existingTags.push(tagText)
+                        addTagElement(tagText)
+                        selectedSlot.dataset.tags = JSON.stringify(existingTags)
+                        updateTagCount()
+                    }
+                    tagInput.value = ''
+                }
+
+                // Function to create tag element
+                function addTagElement(tagText) {
+                    const tag = document.createElement('div')
+                    tag.className = 'tag'
+                    tag.innerHTML = `
+                        ${tagText}
+                        <button class="remove-tag">×</button>
+                    `
+                    tag.querySelector('.remove-tag').onclick = () => {
+                        const index = existingTags.indexOf(tagText)
+                        if (index > -1) {
+                            existingTags.splice(index, 1)
+                            selectedSlot.dataset.tags = JSON.stringify(existingTags)
+                            tag.remove()
+                            updateTagCount()
+                        }
+                    }
+                    currentTags.appendChild(tag)
+                }
+
+                // Function to update tag count badge
+                function updateTagCount() {
+                    let badge = selectedSlot.querySelector('.tag-count')
+                    if (existingTags.length > 0) {
+                        if (!badge) {
+                            badge = document.createElement('div')
+                            badge.className = 'tag-count'
+                            selectedSlot.appendChild(badge)
+                        }
+                        badge.textContent = existingTags.length
+                    } else if (badge) {
+                        badge.remove()
+                    }
+                }
+
+                // Handle input submission
+                tagInput.onkeypress = (e) => {
+                    if (e.key === 'Enter') {
+                        addTag(tagInput.value)
+                    }
+                }
+
+                addTagBtn.onclick = () => addTag(tagInput.value)
+
+                // Handle quick tags
+                document.querySelectorAll('.quick-tag').forEach(btn => {
+                    btn.onclick = () => addTag(btn.dataset.tag)
+                })
+
+                // Close modal
+                const closeModal = () => {
+                    tagModal.style.display = 'none'
+                    tagInput.value = ''
+                }
+
+                closeBtn.onclick = closeModal
+
+                // Close on outside click
+                tagModal.onclick = (e) => {
+                    if (e.target === tagModal) {
+                        closeModal()
+                    }
+                }
+            }
         } else {
             globalControls.classList.add('disabled')
             globalPlay.src = 'icons/play-circle.svg'
@@ -747,7 +840,7 @@ function initialize() {
     if (typeof WaveSurfer.Record === 'undefined') {
         console.error('Record plugin not loaded')
     return
-    }
+  }
     console.log('WaveSurfer and Record plugin are available, initializing...')
     createWaveSurfer()
 }

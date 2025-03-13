@@ -178,7 +178,32 @@
                     <button id="save-photo" style="display: none;">
                         <img src="icons/check.svg" alt="Save">
                     </button>
-                    <button id="close-camera">
+                    <button id="close-camera" class="modal-close-btn">
+                        <img src="icons/x.svg" alt="Close">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tag Modal -->
+        <div id="tag-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Add Tags</h3>
+                <div class="tag-input-container">
+                    <input type="text" id="tag-input" placeholder="Enter a tag">
+                    <button id="add-tag" class="add-tag-btn">Add</button>
+                </div>
+                <div class="quick-tags">
+                    <button class="quick-tag" data-tag="nature">Nature</button>
+                    <button class="quick-tag" data-tag="music">Music</button>
+                    <button class="quick-tag" data-tag="voice">Voice</button>
+                    <button class="quick-tag" data-tag="ambient">Ambient</button>
+                </div>
+                <div id="current-tags" class="current-tags">
+                    <!-- Tags will be added here dynamically -->
+                </div>
+                <div class="modal-buttons">
+                    <button id="close-tags" class="modal-close-btn">
                         <img src="icons/x.svg" alt="Close">
                     </button>
                 </div>
