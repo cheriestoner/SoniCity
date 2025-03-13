@@ -368,7 +368,10 @@ select {
     display: flex;
     gap: 1.4rem;
     justify-content: center;
-    margin: 1rem 0;
+    /* margin: 1rem 0; */ /* Removed as it's now in the navigation bar */
+    background-color: #f5f5f5;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
 }
 
 #global-controls.disabled button,
