@@ -15,7 +15,6 @@
             <div id="recorder-view" class="view active">
                 <div class="controls">
                     <div class="left-controls">
-
                         <div class="record-button-group">
                             <button id="record">
                                 <img src="icons/mic-off.svg" alt="Record">
@@ -31,13 +30,19 @@
                         </div>
                     </div>
                     <div class="right-controls">
+                        <div class="settings-button-group">
+                            <button id="save-all" disabled>
+                                <img src="icons/save.svg" alt="Save All">
+                            </button>
+                            <button id="settings-button">
+                                <img src="icons/settings.svg" alt="Settings">
+                            </button>
+                        </div>
+                            
                         <label class="option">
                             <input type="checkbox" id="feedbackLoop" />
                             Feedback loop
                         </label>
-                        <button id="settings-button">
-                            <img src="icons/settings.svg" alt="Settings">
-                        </button>
                         <div id="settings-popup" class="settings-popup" style="display: none;">
                             <label class="option">
                                 <input type="checkbox" id="scrollingWaveform" />
@@ -79,6 +84,9 @@
                     </button>
                     <button id="global-camera">
                         <img src="icons/camera.svg" alt="Take Photo">
+                    </button>
+                    <button id="global-tag">
+                        <img src="icons/tag.svg" alt="Tag">
                     </button>
                     <a id="global-download" class="downlink">
                         <img src="icons/arrowdown.svg" alt="Download">
@@ -160,7 +168,7 @@
                 <canvas id="photo-canvas" style="display: none;"></canvas>
                 <div class="camera-controls">
                     <button id="take-photo">
-                        <img src="icons/camera.svg" alt="Take Photo">
+                        <img src="icons/camera-w.svg" alt="Take Photo">
                     </button>
                     <button id="retake-photo" style="display: none;">
                         <img src="icons/refresh-cw.svg" alt="Retake">

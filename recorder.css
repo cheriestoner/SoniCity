@@ -52,9 +52,36 @@ body {
 
 .right-controls {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 1rem;
     position: relative;  /* For popup positioning */
+}
+
+.settings-button-group {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+#save-all {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#save-all:not(:disabled) {
+    opacity: 1;
+    cursor: pointer;
+}
+
+#save-all img {
+    width: 24px;
+    height: 24px;
+} 
+
+.option{
+    font-size: 0.9rem;
 }
 
 .controls button {
@@ -339,7 +366,7 @@ select {
 
 #global-controls {
     display: flex;
-    gap: 2rem;
+    gap: 1.4rem;
     justify-content: center;
     margin: 1rem 0;
 }

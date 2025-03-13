@@ -388,15 +388,30 @@ const createWaveSurfer = () => {
 
                 // Show modal and start camera
                 cameraModal.style.display = 'block'
-                navigator.mediaDevices.getUserMedia({ video: true })
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: { exact: "environment" }  // Use rear camera
+                    } 
+                })
                     .then(mediaStream => {
                         stream = mediaStream
                         video.srcObject = stream
                     })
                     .catch(error => {
-                        console.error('Error accessing camera:', error)
-                        alert('Could not access camera. Please check your camera permissions.')
-                        cameraModal.style.display = 'none'
+                        // If rear camera fails, try front camera as fallback
+                        console.log('Falling back to front camera:', error)
+                        navigator.mediaDevices.getUserMedia({ 
+                            video: true 
+                        })
+                            .then(mediaStream => {
+                                stream = mediaStream
+                                video.srcObject = stream
+                            })
+                            .catch(error => {
+                                console.error('Error accessing camera:', error)
+                                alert('Could not access camera. Please check your camera permissions.')
+                                cameraModal.style.display = 'none'
+                            })
                     })
 
                 // Take photo
