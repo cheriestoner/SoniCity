@@ -361,6 +361,52 @@ const createWaveSurfer = () => {
             // Update download link
             globalDownload.href = recordedUrl
             globalDownload.download = selectedSlot.dataset.filename
+            
+            // Add click handler for download to include metadata
+            globalDownload.onclick = (e) => {
+                // If metadata exists, create a combined file
+                if (selectedSlot.dataset.metadata) {
+                    e.preventDefault()
+                    
+                    // Create a ZIP file containing audio and metadata
+                    const zip = new JSZip()
+                    
+                    // Add the audio file
+                    fetch(recordedUrl)
+                        .then(response => response.blob())
+                        .then(async audioBlob => {
+                            // Add audio file to zip
+                            zip.file(selectedSlot.dataset.filename, audioBlob)
+                            
+                            // Add metadata file
+                            const metadata = JSON.parse(selectedSlot.dataset.metadata)
+                            // Add tags if they exist
+                            if (selectedSlot.dataset.tags) {
+                                metadata.tags = JSON.parse(selectedSlot.dataset.tags)
+                            }
+                            zip.file('metadata.json', JSON.stringify(metadata, null, 2))
+
+                            // Add photo if it exists
+                            if (selectedSlot.dataset.photoUrl) {
+                                const photoResponse = await fetch(selectedSlot.dataset.photoUrl)
+                                const photoBlob = await photoResponse.blob()
+                                zip.file('photo.jpg', photoBlob)
+                            }
+                            
+                            // Generate zip file
+                            return zip.generateAsync({type: 'blob'})
+                        })
+                        .then(zipBlob => {
+                            // Create download link for zip
+                            const zipUrl = URL.createObjectURL(zipBlob)
+                            const tempLink = document.createElement('a')
+                            tempLink.href = zipUrl
+                            tempLink.download = selectedSlot.dataset.filename.replace(/\.[^/.]+$/, '') + '.zip'
+                            tempLink.click()
+                            URL.revokeObjectURL(zipUrl)
+                        })
+                }
+            }
 
             // Update delete button
             document.querySelector('#global-delete').onclick = () => {
@@ -688,6 +734,58 @@ const createWaveSurfer = () => {
     const settingsButton = document.querySelector('#settings-button')
     const settingsPopup = document.querySelector('#settings-popup')
     
+    // Add save all functionality
+    const saveAllButton = document.querySelector('#save-all')
+    saveAllButton.onclick = async () => {
+        const zip = new JSZip()
+        const slots = document.querySelectorAll('.recording-slot')
+        let hasContent = false
+
+        for (let i = 0; i < slots.length; i++) {
+            const slot = slots[i]
+            if (!slot.classList.contains('empty')) {
+                hasContent = true
+                const slotFolder = zip.folder(`slot-${i + 1}`)
+                
+                // Add audio file
+                const audioResponse = await fetch(slot.dataset.recordedUrl)
+                const audioBlob = await audioResponse.blob()
+                slotFolder.file(slot.dataset.filename, audioBlob)
+                
+                // Add metadata if exists
+                if (slot.dataset.metadata) {
+                    const metadata = JSON.parse(slot.dataset.metadata)
+                    if (slot.dataset.tags) {
+                        metadata.tags = JSON.parse(slot.dataset.tags)
+                    }
+                    slotFolder.file('metadata.json', JSON.stringify(metadata, null, 2))
+                }
+                
+                // Add photo if exists
+                if (slot.dataset.photoUrl) {
+                    const photoResponse = await fetch(slot.dataset.photoUrl)
+                    const photoBlob = await photoResponse.blob()
+                    slotFolder.file('photo.jpg', photoBlob)
+                }
+            }
+        }
+
+        if (!hasContent) {
+            alert('No recordings to save')
+            return
+        }
+
+        // Generate and download zip file
+        const zipBlob = await zip.generateAsync({type: 'blob'})
+        const zipUrl = URL.createObjectURL(zipBlob)
+        const tempLink = document.createElement('a')
+        tempLink.href = zipUrl
+        tempLink.download = `recordings-${new Date().toISOString().split('T')[0]}.zip`
+        tempLink.click()
+        URL.revokeObjectURL(zipUrl)
+    }
+    saveAllButton.disabled = false
+
     // Toggle settings popup
     settingsButton.onclick = (e) => {
         e.stopPropagation()
@@ -723,8 +821,33 @@ const createWaveSurfer = () => {
     }
 
   // Render recorded audio
-  record.on('record-end', (blob) => {
+  record.on('record-end', async (blob) => {
         if (!selectedSlot) return
+
+        // Collect metadata
+        const metadata = {
+            timestamp: new Date().toISOString(),
+            location: null
+        }
+        
+        // Get geolocation if available
+        if (navigator.geolocation) {
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject)
+                })
+                metadata.location = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                }
+            } catch (error) {
+                console.log('Geolocation error:', error)
+            }
+        }
+        
+        // Store metadata
+        selectedSlot.dataset.metadata = JSON.stringify(metadata)
 
     const recordedUrl = URL.createObjectURL(blob)
         selectedSlot.classList.remove('selected', 'empty')
