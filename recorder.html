@@ -178,16 +178,59 @@
         <!-- Tag Modal -->
         <div id="tag-modal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h3>Add Tags</h3>
+                <!-- <h3>Add Tags</h3> -->
                 <div class="tag-input-container">
-                    <input type="text" id="tag-input" placeholder="Enter a tag">
+                    <input type="text" id="tag-input" placeholder="Enter a new tag">
                     <button id="add-tag" class="add-tag-btn">Add</button>
                 </div>
                 <div class="quick-tags">
-                    <button class="quick-tag" data-tag="nature">Nature</button>
-                    <button class="quick-tag" data-tag="music">Music</button>
-                    <button class="quick-tag" data-tag="voice">Voice</button>
-                    <button class="quick-tag" data-tag="ambient">Ambient</button>
+                    <div class="tag-category">
+                        <h4>Source Type</h4>
+                        <button class="quick-tag" data-tag="music">Music</button>
+                        <button class="quick-tag" data-tag="voice">Voice</button>
+                        <button class="quick-tag" data-tag="traffic">Traffic</button>
+                        <button class="quick-tag" data-tag="birds">Birds</button>
+                    </div>
+                    <div class="tag-category">
+                        <h4>Temporal</h4>
+                        <button class="quick-tag" data-tag="loud">Loud</button>
+                        <button class="quick-tag" data-tag="medium-loud">Medium loud</button>
+                        <button class="quick-tag" data-tag="soft">Soft</button>
+                        <button class="quick-tag" data-tag="continuous">Continuous</button>
+                        <button class="quick-tag" data-tag="getting-louder">Getting louder</button>
+                        <button class="quick-tag" data-tag="getting-softer">Getting softer</button>
+                        <button class="quick-tag" data-tag="varying">Varying over time</button>
+                    </div>
+                    <div class="tag-category">
+                        <h4>Quality</h4>
+                        <button class="quick-tag" data-tag="clear">Clear</button>
+                        <button class="quick-tag" data-tag="noisy">Noisy</button>
+                        <button class="quick-tag" data-tag="chaotic">Chaotic</button>
+                        <button class="quick-tag" data-tag="harmonious">Harmonious</button>
+                        <button class="quick-tag" data-tag="controlled">Controlled</button>
+                        <button class="quick-tag" data-tag="dynamic">Dynamic</button>
+                        <button class="quick-tag" data-tag="static">Static</button>
+                        <button class="quick-tag" data-tag="moving">Moving</button>
+                        <button class="quick-tag" data-tag="melodic">Melodic</button>
+                        <button class="quick-tag" data-tag="rhythmic">Rhythmic</button>
+                    </div>
+                    <div class="tag-category">
+                        <h4>Context</h4>
+                        <button class="quick-tag" data-tag="isolated">Isolated</button>
+                        <button class="quick-tag" data-tag="standing-out">Standing out</button>
+                        <button class="quick-tag" data-tag="blended">Blended</button>
+                        <button class="quick-tag" data-tag="disappearing">Disappearing</button>
+                        <button class="quick-tag" data-tag="masked">Masked</button>
+                    </div>
+                    <div class="tag-category">
+                        <h4>Pleasantness</h4>
+                        <button class="quick-tag" data-tag="beautiful">Beautiful</button>
+                        <button class="quick-tag" data-tag="nice">Nice</button>
+                        <button class="quick-tag" data-tag="uninteresting">Uninteresting</button>
+                        <button class="quick-tag" data-tag="boring">Boring</button>
+                        <button class="quick-tag" data-tag="annoying">Annoying</button>
+                        <button class="quick-tag" data-tag="no-emotion">No emotion</button>
+                    </div>
                 </div>
                 <div id="current-tags" class="current-tags">
                     <!-- Tags will be added here dynamically -->
