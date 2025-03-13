@@ -164,8 +164,10 @@
         <!-- Hidden elements for photo capture -->
         <div id="camera-modal" class="modal" style="display: none;">
             <div class="modal-content">
-                <video id="camera-preview" autoplay playsinline></video>
-                <canvas id="photo-canvas" style="display: none;"></canvas>
+                <div class="camera-container">
+                    <video id="camera-preview" autoplay playsinline></video>
+                    <canvas id="photo-canvas" style="display: none;"></canvas>
+                </div>
                 <div class="camera-controls">
                     <button id="take-photo">
                         <img src="icons/camera-w.svg" alt="Take Photo">
