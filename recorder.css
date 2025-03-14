@@ -756,13 +756,13 @@ select {
     border-radius: 4px;
 }
 
-.tag-category h4 {
+/* .tag-category h4 {
     width: 100%;
     margin: 0 0 0rem 0;
     font-size: 0.6rem;
     color: #666;
     font-weight: bold;
-}
+} */
 
 .quick-tag {
     background-color: #f0f0f0df;
