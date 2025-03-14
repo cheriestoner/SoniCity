@@ -775,12 +775,15 @@ const createWaveSurfer = () => {
             return
         }
 
-        // Generate and download zip file
+        // Get selected location
+        const selectedLocation = document.querySelector('.location-btn.active').dataset.location;
+
+        // Generate and download zip file with location in filename
         const zipBlob = await zip.generateAsync({type: 'blob'})
         const zipUrl = URL.createObjectURL(zipBlob)
         const tempLink = document.createElement('a')
         tempLink.href = zipUrl
-        tempLink.download = `recordings-${new Date().toISOString().split('T')[0]}.zip`
+        tempLink.download = `recordings-${selectedLocation}-${new Date().toISOString().split('T')[0]}.zip`
         tempLink.click()
         URL.revokeObjectURL(zipUrl)
     }
@@ -1018,3 +1021,11 @@ function writeString(view, offset, string) {
         view.setUint8(offset + i, string.charCodeAt(i))
     }
 }
+
+// Add location button handlers
+document.querySelectorAll('.location-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+});
