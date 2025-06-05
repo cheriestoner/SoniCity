@@ -1,0 +1,57 @@
+user,Name,location,Survey Question 1: What influenced your choice of the four recorded sounds in each location?,"Survey Question 2: Did you have a specific idea of what to record before you started, or did you decide spontaneously?",sound_id,tag
+user1,FAN Yuxiang,greenpark,"['The sound was loud/prominent.', 'The sound was pleasant/enjoyable.','The sound was typical of this place.']",'I had a general expectation but made final decisions on-site.',1,"['music', 'continuous', 'old-fashioned', 'walker', 'rhythmic', 'blended']"
+user1,,greenpark,,,2,"['music', 'medium-loud', 'getting-louder', 'clear', 'passion', 'chaotic', 'nice']"
+user1,,greenpark,,,3,"['voice', 'dynamic', 'boring', 'moving', 'disappearing']"
+user1,,greenpark,,,4,"['birds', 'clear', 'standing-out', 'beautiful', 'varying', 'joyful']"
+user1,,sciencepark,"['The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,-
+user1,,sciencepark,,,2,-
+user1,,sciencepark,,,3,-
+user1,,sciencepark,,,4,-
+user2,MA Junze,greenpark,"['The sound was quiet/subtle but meaningful.', 'The sound was pleasant/enjoyable.', 'The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,"['voice', 'medium-loud', 'dynamic', 'isolated', 'beautiful']"
+user2,,greenpark,,,2,"['voice', 'continuous', 'clear', 'isolated', 'no-emotion']"
+user2,,greenpark,,,3,"['voice', 'varying', 'moving', 'standing-out', 'uninteresting']"
+user2,,greenpark,,,4,"['continuous', 'voice', 'noisy', 'standing-out', 'annoying']"
+user2,,sciencepark,"['The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,"['voice', 'continuous', 'controlled', 'isolated', 'uninteresting']"
+user2,,sciencepark,,,2,"['blended', 'annoying', 'chaotic', 'continuous', 'voice']"
+user2,,sciencepark,,,3,"['nice', 'blended', 'noisy', 'medium-loud', 'voice']"
+user2,,sciencepark,,,4,"['blended', 'nice', 'rhythmic', 'voice', 'varying']"
+user3,Rebekka Friedli,greenpark,"['The sound was quiet/subtle but meaningful.','The sound was unique/uncommon.','Other (please specify): Sounds that can be found there over a longer period of time']",I selected sounds completely spontaneously.,1,-
+user3,,greenpark,,,2,-
+user3,,greenpark,,,3,-
+user3,,greenpark,,,4,-
+user3,,sciencepark,"['The sound was loud/prominent.','The sound was annoying/disturbing.','Other (please specify): Sounds that can be found there over a longer period of time']",I selected sounds completely spontaneously.,1,-
+user3,,sciencepark,,,2,-
+user3,,sciencepark,,,3,-
+user3,,sciencepark,,,4,-
+user4,LUO Rui,greenpark,"['The sound was quiet/subtle but meaningful.','The sound was pleasant/enjoyable.','The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I had a general expectation but made final decisions on-site.,1,"['voice', 'noisy', 'moving', 'medium-loud']"
+user4,,greenpark,,,2,"['rhythmic', 'soft', 'varying', 'nice']"
+user4,,greenpark,,,3,"['clear', 'moving', 'nice', 'soft']"
+user4,,greenpark,,,4,"['noisy', 'moving', 'traffic', 'vehicle and airplane noise']"
+user4,,sciencepark,"['The sound was loud/prominent.','The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,"['medium-loud', 'continuous', 'noisy', 'blended', 'boring']"
+user4,,sciencepark,,,2,"['traffic', 'varying', 'controlled', 'moving', 'no-emotion']"
+user4,,sciencepark,,,3,"['medium-loud', 'continuous', 'chaotic', 'blended', 'interesting']"
+user4,,sciencepark,,,4,"['medium-loud', 'varying', 'controlled', 'dynamic', 'standing-out', 'interesting']"
+user5,Khulan,greenpark,"['The sound was quiet/subtle but meaningful.','The sound was pleasant/enjoyable.','The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,"['leaf', 'nature', 'calm']"
+user5,,greenpark,,,2,-
+user5,,greenpark,,,3,"['autumn', 'moving', 'beautiful']"
+user5,,greenpark,,,4,-
+user5,,sciencepark,"['The sound was loud/prominent.','The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I had a general expectation but made final decisions on-site.,1,"['traffic', 'chaotic', 'busy', 'stress']"
+user5,,sciencepark,,,2,"['lunch', 'food', 'harmonious', 'noisy']"
+user5,,sciencepark,,,3,"['continuous', 'blended', 'no-emotion', 'air condition', 'background']"
+user5,,sciencepark,,,4,"['chattering', 'people', 'active']"
+user6,LIN Lushan,greenpark,"['The sound was loud/prominent.','The sound was quiet/subtle but meaningful.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,-
+user6,,greenpark,,,2,-
+user6,,greenpark,,,3,-
+user6,,greenpark,,,4,-
+user6,,sciencepark,"['The sound was loud/prominent.','The sound was annoying/disturbing.','The sound was unique/uncommon.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,['dynamic']
+user6,,sciencepark,,,2,-
+user6,,sciencepark,,,3,['noisy']
+user6,,sciencepark,,,4,['clear']
+user7,Khaliun,greenpark,"['The sound was quiet/subtle but meaningful.','The sound was pleasant/enjoyable.','The sound was typical of this place.']",I had a general expectation but made final decisions on-site.,1,"['soft', 'peacefully', 'leaves']"
+user7,,greenpark,,,2,"['warming', 'soft']"
+user7,,greenpark,,,3,"['joyful', 'cheerful']"
+user7,,greenpark,,,4,"['birds', 'calming', 'beautiful', 'melodic']"
+user7,,sciencepark,"['The sound was loud/prominent.','The sound was annoying/disturbing.','The sound was typical of this place.']",I selected sounds completely spontaneously.,1,"['annoying', 'noisy', 'medium-loud']"
+user7,,sciencepark,,,2,"['traffic', 'varying', 'uninteresting', 'boring']"
+user7,,sciencepark,,,3,"['annoying', 'boring', 'loud', 'noisy', 'chaotic']"
+user7,,sciencepark,,,4,"['loud', 'voice', 'stressing', 'noisy', 'chaotic']"
