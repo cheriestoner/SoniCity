@@ -1,13 +1,13 @@
 @font-face {
     font-family: 'ark-pixel';
-    src: url('archive/font/ark-pixel-12px-monospaced-latin.otf') format('truetype');
+    src: url('../archive/font/ark-pixel-12px-monospaced-latin.otf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'ark-pixel-cn';
-    src: url('archive/font/ark-pixel-12px-monospaced-zh_cn.otf') format('truetype');
+    src: url('../archive/font/ark-pixel-12px-monospaced-zh_cn.otf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
