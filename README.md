@@ -1,3 +1,3 @@
 # SoniCity
 
-mobile app for soundscape capture
+capture soundscape 
