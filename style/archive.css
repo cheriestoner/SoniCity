@@ -51,15 +51,21 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
 }
 
+:root {
+    --sidebar-width: clamp(240px, 18vw, 360px);
+    --location-icon-size: clamp(100px, 10vw, 200px);
+}
+
 #sidebar1 {
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 300px;
+    width: var(--sidebar-width);
     height: 97%;
     background-color: #f0f0f0;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    box-sizing: border-box;
     overflow-y: auto;
     text-align: center;
     transition: transform 0.5s ease-in-out;
@@ -71,12 +77,12 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #sidebar1.hidden {
-    transform: translateX(-320px);
+    transform: translateX(calc(-1 * var(--sidebar-width) - 20px));
 }
 
 #sidebar1 h2 {
-    margin: 50px 0 20px;
-    font-size: 2.5rem;
+    margin: 32px 0 16px;
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
     font-weight: 900;
     font-family: 'ark-pixel';
 }
@@ -90,16 +96,40 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #sidebar1 p {
-    width: 300px;
-    font-size: 1.25rem;
+    width: 100%;
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
     line-height: 1.5rem;
     font-family: 'ark-pixel';
+}
+
+#sidebar1 .selected-image {
+    width: min(70%, 220px);
+    height: auto;
+}
+
+#sidebar1 label[data-pan-src],
+#sidebar1 label[data-low-src],
+#sidebar1 label[data-high-src] {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    margin: 12px 0 6px;
+}
+
+#sidebar1 label[data-left-src],
+#sidebar1 label[data-right-src] {
+    font-size: clamp(0.9rem, 1.4vw, 1rem);
+}
+
+#sidebar1 .control-slider {
+    width: 100%;
+    max-width: calc(var(--sidebar-width) - 40px);
+    height: 7px;
+    margin: 10px 0 14px;
 }
 
 #toggle-sidebar1 {
     position: absolute;
     top: calc(50% - 13px);
-    left: 339px;
+    left: calc(var(--sidebar-width) + 39px);
     padding: 5px 5px;
     cursor: pointer;
     background-color: #000;
@@ -119,12 +149,14 @@ input[type="range"]::-moz-range-thumb {
     position: absolute;
     top: 0px;
     right: 0px;
-    width: 300px;
-    height: 97%;
+    width: var(--sidebar-width);
+    height: 100%;
     background-color: #f0f0f0;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    overflow-y: auto;
+    padding: 20px; /* match sidebar1 */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     text-align: center;
     transition: transform 0.5s ease-in-out;
     z-index: 999;
@@ -135,18 +167,18 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #sidebar2.hidden {
-    transform: translateX(320px);
+    transform: translateX(calc(var(--sidebar-width) + 20px));
 }
 
 #sidebar2 h2 {
-    margin: 50px 0 20px;
-    font-size: 2.5rem;
+    margin: 0 0 12px;
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
     font-weight: 900;
     font-family: 'ark-pixel';
 }
 
 #sidebar2 h3 {
-    font-size: 1.15rem;
+    font-size: clamp(0.9rem, 1.2vw, 1.1rem);
     font-weight: 400;
     line-height: 1.5rem;
     text-align: left;
@@ -154,15 +186,43 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #sidebar2 p {
-    font-size: 1.25rem;
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
     line-height: 1.5rem;
     font-family: 'ark-pixel';
+    margin: 0 0 16px;
+}
+
+.sidebar2-body {
+    overflow-y: auto;
+    padding: 0; /* parent provides padding */
+    flex: 1 1 auto;
+}
+
+.sidebar2-footer {
+    border-top: 1px solid #ddd;
+    padding: 12px 20px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.sidebar2-logo {
+    height: auto;
+    max-width: 45%;
+}
+
+.sidebar2-logo.primary {
+    max-height: 80px;
+}
+
+.sidebar2-logo.secondary {
+    max-height: 60px;
 }
 
 #toggle-sidebar2 {
     position: absolute;
     top: calc(50% - 13px);
-    right: 339px;
+    right: calc(var(--sidebar-width) + 39px);
     padding: 5px 5px;
     cursor: pointer;
     background-color: #000;
@@ -223,8 +283,10 @@ svg image {
     text-align: center;
     line-height: 40px;
     bottom: 20px;
-    right: calc(50% - 25px);
+    left: calc(50% - 25px);
+    right: auto;
     cursor: pointer;
+    z-index: 1001; /* ensure on top of SVG and other elements */
 }
 
 #canvas-border {
@@ -243,17 +305,15 @@ line {
 #park-icon {
     position: absolute;
     top: 0;
-    left: calc(50% - 202px);
-    width: 200px;
-    height: 200px;
+    width: var(--location-icon-size);
+    height: var(--location-icon-size);
 }
 
 #science-icon {
     position: absolute;
     top: 0;
-    right: calc(50% - 202px);
-    width: 205px;
-    height: 165px;
+    width: var(--location-icon-size);
+    height: var(--location-icon-size);
 }
 
 #park-zone {
