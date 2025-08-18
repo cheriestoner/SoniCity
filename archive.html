@@ -20,19 +20,22 @@
             </div>
             <div id="image-describ" style="margin-bottom: 50px;"></div>
         </div>
-        <button id="toggle-sidebar1">'<'</button>
-        
+        <button id="toggle-sidebar1">&lt;</button>
+
         <div id="sidebar2">
-            <h2>The Big Voice</h2>
-            <p style="margin-bottom: 50px;">User Study -- Exploring the Urban Soundscapes of Shenzhen</p>
-            <h3 style="margin-bottom: 20px;">The purpose of this study is to enhance the participation and user experience of urban sound research, and promote the development of mobile based urban sound collection and interaction technology. Through users' sound recordings and subjective descriptions in different urban environments, such as urban parks and technology parks, this study can provide profound insights into how urban soundscapes affect people's perception and experience.</h3>
-            <h3 style="margin-bottom: 50px;">In addition, the research results will provide new data and practical experience for fields such as human-computer interaction (HCI), urban sound research, environmental design, etc., which will help develop more humanized sound interaction systems in the future and provide scientific basis for urban planning and sound landscape optimization.</h3>
-            
-            <img src="./asset/logos/Logo-1.png" alt="" style="height: 100px; width: 225px; position: absolute; bottom: 80px; left: 50px;">
-            <img src="./asset/logos/SSG-Logo-v1-black.svg" alt="" style="height: 60px; width: 200px; position: absolute; bottom: 20px; left: 50px;">
+            <div class="sidebar2-body">
+                <h2>The Big Voice</h2>
+                <p>User Study -- Exploring the Urban Soundscapes of Shenzhen</p>
+                <h3>The purpose of this study is to enhance the participation and user experience of urban sound research, and promote the development of mobile based urban sound collection and interaction technology. Through users' sound recordings and subjective descriptions in different urban environments, such as urban parks and technology parks, this study can provide profound insights into how urban soundscapes affect people's perception and experience.</h3>
+                <h3>In addition, the research results will provide new data and practical experience for fields such as human-computer interaction (HCI), urban sound research, environmental design, etc., which will help develop more humanized sound interaction systems in the future and provide scientific basis for urban planning and sound landscape optimization.</h3>
+            </div>
+            <div class="sidebar2-footer">
+                <img src="./asset/logos/Logo-1.png" alt="Logo" class="sidebar2-logo primary">
+                <img src="./asset/logos/SSG-Logo-v1-black.svg" alt="SSG Logo" class="sidebar2-logo secondary">
+            </div>
         </div>
-        <button id="toggle-sidebar2">'>'</button>
-        
+        <button id="toggle-sidebar2">&gt;</button>
+ 
         <button id="reset-canvas">O</button>
         <img src="./asset/font/park.png" id="park-icon">
         <img src="./asset/font/science.png" id="science-icon">
@@ -51,23 +54,27 @@
             sidebar1Visible = !sidebar1Visible;
             sidebar1.classed("hidden", !sidebar1Visible);
             toggleButton1.classed("hidden", !sidebar1Visible);
-            toggleButton1.text(sidebar1Visible ? "'<'" : "'>'");
+            toggleButton1.text(sidebar1Visible ? "<" : ">");
+            positionDividerAndReset();
         });
         toggleButton2.on("click", () => {
             sidebar2Visible = !sidebar2Visible;
             sidebar2.classed("hidden", !sidebar2Visible);
             toggleButton2.classed("hidden", !sidebar2Visible);
-            toggleButton2.text(sidebar2Visible ? "'>'" : "'<'");
+            toggleButton2.text(sidebar2Visible ? ">" : "<");
+            positionDividerAndReset();
         });
 
+        // canvas container size
         const width = window.innerWidth * 0.96;
         const height = window.innerHeight * 0.94;
+        const buttonSize = Math.max(60, Math.min(120, Math.floor(Math.min(width, height) * 0.07)));
 
         const svg = d3.select("#canvas-container")
             .append("svg")
             .attr("width", width)
             .attr("height", height);
-        
+
         svg.append("rect")
             .attr("id", "canvas-border")
             .attr("x", 0)
@@ -75,8 +82,9 @@
             .attr("width", width)
             .attr("height", height);
 
-        // canvas divider
-        svg.append("line")
+        // canvas divider (will be positioned after computing visible bounds)
+        const divider = svg.append("line")
+            .attr("id", "canvas-divider")
             .attr("x1", width / 2)
             .attr("y1", 0)
             .attr("x2", width / 2)
@@ -87,14 +95,117 @@
 
         const g = svg.append("g");
 
+        // Deterministic PRNG utilities (seeded)
+        function cyrb128(str) {
+            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+            for (let i = 0, k; i < str.length; i++) {
+                k = str.charCodeAt(i);
+                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+                h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+                h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+            }
+            h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+            h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+            h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+            h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+            return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+        }
+
+        function sfc32(a, b, c, d) {
+            return function() {
+                a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+                let t = (a + b) | 0;
+                a = b ^ (b >>> 9);
+                b = (c + (c << 3)) | 0;
+                c = (c << 21) | (c >>> 11);
+                d = (d + 1) | 0;
+                t = (t + d) | 0;
+                c = (c + t) | 0;
+                return (t >>> 0) / 4294967296;
+            };
+        }
+
+        function seededRngFromString(seedString) {
+            const h = cyrb128(seedString);
+            return sfc32(h[0], h[1], h[2], h[3]);
+        }
+
+        const defaultSeed = 'sonicity-seed-1'; // change seed here
+        const urlSeed = new URLSearchParams(window.location.search).get('seed');
+        const savedSeed = window.localStorage.getItem('positionSeed');
+        const randomSeed = urlSeed || savedSeed || defaultSeed;
+        if (urlSeed) {
+            window.localStorage.setItem('positionSeed', urlSeed);
+        }
+
+        // Compute visible bounds accounting for sidebars
+        function computeVisibleBounds() {
+            const leftSidebarSpace = sidebar1Visible ? (sidebar1.node()?.offsetWidth || 0) : 0;
+            const rightSidebarSpace = sidebar2Visible ? (sidebar2.node()?.offsetWidth || 0) : 0;
+            const leftBound = leftSidebarSpace;
+            const rightBound = width - rightSidebarSpace;
+            const visibleWidth = Math.max(0, rightBound - leftBound);
+            const midX = leftBound + visibleWidth / 2;
+            return { leftBound, rightBound, visibleWidth, midX };
+        }
+
+        function positionDividerAndReset() {
+            const { midX } = computeVisibleBounds();
+            divider.attr("x1", midX).attr("x2", midX);
+            const resetBtn = document.getElementById("reset-canvas");
+            if (resetBtn) {
+                resetBtn.style.left = `${Math.round(midX - resetBtn.offsetWidth / 2)}px`;
+            }
+            // Symmetric icons around divider
+            const parkIcon = document.getElementById("park-icon");
+            const scienceIcon = document.getElementById("science-icon");
+            const gap = 10; // small gap from the divider
+            if (parkIcon) {
+                const w = parkIcon.offsetWidth || 200;
+                parkIcon.style.left = `${Math.round(midX - gap - w)}px`;
+                parkIcon.style.right = "auto";
+            }
+            if (scienceIcon) {
+                const w2 = scienceIcon.offsetWidth || 205;
+                scienceIcon.style.left = `${Math.round(midX + gap)}px`;
+                scienceIcon.style.right = "auto";
+            }
+        }
+        positionDividerAndReset();
+
         d3.csv("imagedata-shz.csv").then(images => {
+            const { leftBound, rightBound, midX } = computeVisibleBounds();
             images.forEach((img, index) => {
                 const button = document.createElement("button");
                 button.style.position = "absolute";
-                button.style.left = `${img.x}px`;
-                button.style.top = `${img.y}px`;
-                button.style.width = "100px";
-                button.style.height = "100px";
+                // Compute deterministic, responsive position within canvas
+                const padding = 10;
+                let minLeft = leftBound + padding;
+                let maxLeft = rightBound - buttonSize - padding;
+                const siteLower = (img.site || '').toLowerCase();
+                if (siteLower.includes('green')) {
+                    maxLeft = Math.min(maxLeft, midX - buttonSize - padding);
+                } else if (siteLower.includes('science')) {
+                    minLeft = Math.max(minLeft, midX + padding);
+                }
+                const minTop = padding;
+                const maxTop = height - buttonSize - padding;
+
+                const idKey = (img.audio || img.src || String(index));
+                const rng = seededRngFromString(`${randomSeed}|${idKey}`);
+                const xRand = rng();
+                const yRand = rng();
+                const computedLeft = Math.floor(minLeft + (maxLeft - minLeft) * xRand);
+                const computedTop = Math.floor(minTop + (maxTop - minTop) * yRand);
+
+                button.classList.add("image-button");
+                button.dataset.initLeft = String(computedLeft);
+                button.dataset.initTop = String(computedTop);
+                button.style.left = `${computedLeft}px`;
+                button.style.top = `${computedTop}px`;
+                button.style.width = `${buttonSize}px`;
+                button.style.height = `${buttonSize}px`;
                 button.style.backgroundImage = `url(${img.src})`;
                 button.style.opacity = 0.5;
 
@@ -108,11 +219,11 @@
                 button.addEventListener("drag", (event) => {
                     event.preventDefault();
                     if (event.pageX !== 0 && event.pageY !== 0) {
-                        button.style.left = `${event.pageX - 100}px`;
-                        button.style.top = `${event.pageY - 100}px`;
+                        button.style.left = `${event.pageX - buttonSize}px`;
+                        button.style.top = `${event.pageY - buttonSize}px`;
                         let slider = document.querySelector(`input[data-src='${img.audio}']`);
                         if (slider) {
-                            slider.style.left = `${event.pageX - 100}px`;
+                            slider.style.left = `${event.pageX - buttonSize}px`;
                             slider.style.top = `${event.pageY + 10}px`;
                         }
                     }
@@ -123,18 +234,18 @@
                         sidebar1Visible = false;
                         sidebar1.classed("hidden", true);
                         toggleButton1.classed("hidden", true);
-                        toggleButton1.text("'<'");
+                        toggleButton1.text("<");
                     }
                     if (!sidebar2Visible) {
                         sidebar2Visible = false;
                         sidebar2.classed("hidden", true);
                         toggleButton2.classed("hidden", true);
-                        toggleButton2.text("'>'");
+                        toggleButton2.text(">");
                     }
                     d3.select("#image-title").html(`<p>${img.title}</p>`);
                     d3.select("#image-site").html(`<p>${img.site}</p>`);
-                    d3.select("#image-bgc").html(`<img src="${img.bgc}" style="width: 300px;">`);
-                    d3.select("#image-describ").html(`<p>${img.describ}<p>`);
+                    d3.select("#image-bgc").html(`<img src="${img.bgc}" class="selected-image">`);
+                    d3.select("#image-describ").html(`<p>${img.describ}</p>`);
                     let existingAudio = document.querySelector(`audio[data-src='${img.audio}']`);
                     let volumeSlider = document.querySelector(`input[data-src='${img.audio}']`);
                     let panLabel = document.querySelector(`label[data-pan-src='${img.audio}']`);
@@ -190,8 +301,8 @@
                         slider.setAttribute("data-src", img.audio);
                         slider.style.position = "absolute";
                         slider.style.left = `${parseInt(button.style.left)}px`;
-                        slider.style.top = `${parseInt(button.style.top) + 110}px`;
-                        slider.style.width = "100px";
+                        slider.style.top = `${parseInt(button.style.top) + buttonSize + 10}px`;
+                        slider.style.width = `${buttonSize}px`;
                         document.getElementById("canvas-container").appendChild(slider);
 
                         slider.addEventListener("input", (event) => {
@@ -201,16 +312,13 @@
                         let panLabel = document.createElement("label");
                         panLabel.innerText = "PAN";
                         panLabel.style.fontFamily = "ark-pixel";
-                        panLabel.style.fontSize = "1.5rem";
                         panLabel.style.display = "block";
-                        panLabel.style.marginBottom = "10px";
                         panLabel.setAttribute("data-pan-src", img.audio);
                         document.getElementById("sidebar1").appendChild(panLabel);
 
                         let leftLabel = document.createElement("label");
                         leftLabel.innerText = "left";
                         leftLabel.style.fontFamily = "ark-pixel";
-                        leftLabel.style.fontSize = "1rem";
                         leftLabel.setAttribute("data-left-src", img.audio);
                         document.getElementById("sidebar1").appendChild(leftLabel);
 
@@ -221,24 +329,19 @@
                         panSlider.step = "0.01";
                         panSlider.value = "0";
                         panSlider.setAttribute("data-pan-src", img.audio);
-                        panSlider.style.width = "200px";
-                        panSlider.style.height = "7px";
-                        panSlider.style.margin = "10px";
+                        panSlider.classList.add("control-slider");
                         document.getElementById("sidebar1").appendChild(panSlider);
 
                         let rightLabel = document.createElement("label");
                         rightLabel.innerText = "right";
                         rightLabel.style.fontFamily = "ark-pixel";
-                        rightLabel.style.fontSize = "1rem";
                         rightLabel.setAttribute("data-right-src", img.audio);
                         document.getElementById("sidebar1").appendChild(rightLabel);
 
                         let lowpassLabel = document.createElement("label");
                         lowpassLabel.innerText = "LOWPASS FILTER";
                         lowpassLabel.style.fontFamily = "ark-pixel";
-                        lowpassLabel.style.fontSize = "1.5rem";
                         lowpassLabel.style.display = "block";
-                        lowpassLabel.style.margin = "10px 0";
                         lowpassLabel.setAttribute("data-low-src", img.audio);
                         document.getElementById("sidebar1").appendChild(lowpassLabel);
 
@@ -249,17 +352,13 @@
                         lowpassSlider.step = "1";
                         lowpassSlider.value = "8000";
                         lowpassSlider.setAttribute("data-lowpass-src", img.audio);
-                        lowpassSlider.style.width = "200px";
-                        lowpassSlider.style.height = "7px";
-                        lowpassSlider.style.margin = "10px 0";
+                        lowpassSlider.classList.add("control-slider");
                         document.getElementById("sidebar1").appendChild(lowpassSlider);
 
                         let highpassLabel = document.createElement("label");
                         highpassLabel.innerText = "HIGHPASS FILTER";
                         highpassLabel.style.fontFamily = "ark-pixel";
-                        highpassLabel.style.fontSize = "1.5rem";
                         highpassLabel.style.display = "block";
-                        highpassLabel.style.margin = "10px 0";
                         highpassLabel.setAttribute("data-high-src", img.audio);
                         document.getElementById("sidebar1").appendChild(highpassLabel);
 
@@ -270,9 +369,7 @@
                         highpassSlider.step = "1";
                         highpassSlider.value = "1000";
                         highpassSlider.setAttribute("data-highpass-src", img.audio);
-                        highpassSlider.style.width = "200px";
-                        highpassSlider.style.height = "7px";
-                        highpassSlider.style.margin = "10px 0";
+                        highpassSlider.classList.add("control-slider");
                         document.getElementById("sidebar1").appendChild(highpassSlider);
 
                         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -317,8 +414,8 @@
                                 slider.setAttribute("data-src", img.audio);
                                 slider.style.position = "absolute";
                                 slider.style.left = `${parseInt(button.style.left)}px`;
-                                slider.style.top = `${parseInt(button.style.top) + 110}px`;
-                                slider.style.width = "100px";
+                                slider.style.top = `${parseInt(button.style.top) + buttonSize + 10}px`;
+                                slider.style.width = `${buttonSize}px`;
                                 document.getElementById("canvas-container").appendChild(slider);
 
                                 slider.addEventListener("input", (event) => {
@@ -336,16 +433,13 @@
                                 let panLabel = document.createElement("label");
                                 panLabel.innerText = "PAN";
                                 panLabel.style.fontFamily = "ark-pixel";
-                                panLabel.style.fontSize = "1.5rem";
                                 panLabel.style.display = "block";
-                                panLabel.style.marginBottom = "10px";
                                 panLabel.setAttribute("data-pan-src", img.audio);
                                 document.getElementById("sidebar1").appendChild(panLabel);
 
                                 let leftLabel = document.createElement("label");
                                 leftLabel.innerText = "left";
                                 leftLabel.style.fontFamily = "ark-pixel";
-                                leftLabel.style.fontSize = "1rem";
                                 leftLabel.setAttribute("data-left-src", img.audio);
                                 document.getElementById("sidebar1").appendChild(leftLabel);
 
@@ -354,17 +448,14 @@
                                 panSlider.min = "-1";
                                 panSlider.max = "1";
                                 panSlider.step = "0.01";
-                                panSlider.value = existingAudio.panner.pan.value; // 保持第一次调整的位置
+                                panSlider.value = existingAudio.panner.pan.value;
                                 panSlider.setAttribute("data-pan-src", img.audio);
-                                panSlider.style.width = "200px";
-                                panSlider.style.height = "7px";
-                                panSlider.style.margin = "10px";
+                                panSlider.classList.add("control-slider");
                                 document.getElementById("sidebar1").appendChild(panSlider);
 
                                 let rightLabel = document.createElement("label");
                                 rightLabel.innerText = "right";
                                 rightLabel.style.fontFamily = "ark-pixel";
-                                rightLabel.style.fontSize = "1rem";
                                 rightLabel.setAttribute("data-right-src", img.audio);
                                 document.getElementById("sidebar1").appendChild(rightLabel);
 
@@ -380,9 +471,7 @@
                                 let lowpassLabel = document.createElement("label");
                                 lowpassLabel.innerText = "LOWPASS FILTER";
                                 lowpassLabel.style.fontFamily = "ark-pixel";
-                                lowpassLabel.style.fontSize = "1.5rem";
                                 lowpassLabel.style.display = "block";
-                                lowpassLabel.style.margin = "10px 0";
                                 lowpassLabel.setAttribute("data-low-src", img.audio);
                                 document.getElementById("sidebar1").appendChild(lowpassLabel);
 
@@ -393,9 +482,7 @@
                                 lowpassSlider.step = "1";
                                 lowpassSlider.value = existingAudio.lowpassFilter.frequency.value;
                                 lowpassSlider.setAttribute("data-lowpass-src", img.audio);
-                                lowpassSlider.style.width = "200px";
-                                lowpassSlider.style.height = "7px";
-                                lowpassSlider.style.margin = "10px 0";
+                                lowpassSlider.classList.add("control-slider");
                                 document.getElementById("sidebar1").appendChild(lowpassSlider);
 
                                 lowpassSlider.addEventListener("input", (event) => {
@@ -409,9 +496,7 @@
                                 let highpassLabel = document.createElement("label");
                                 highpassLabel.innerText = "HIGHPASS FILTER";
                                 highpassLabel.style.fontFamily = "ark-pixel";
-                                highpassLabel.style.fontSize = "1.5rem";
                                 highpassLabel.style.display = "block";
-                                highpassLabel.style.margin = "10px 0";
                                 highpassLabel.setAttribute("data-high-src", img.audio);
                                 document.getElementById("sidebar1").appendChild(highpassLabel);
 
@@ -422,9 +507,7 @@
                                 highpassSlider.step = "1";
                                 highpassSlider.value = existingAudio.highpassFilter.frequency.value;
                                 highpassSlider.setAttribute("data-highpass-src", img.audio);
-                                highpassSlider.style.width = "200px";
-                                highpassSlider.style.height = "7px";
-                                highpassSlider.style.margin = "10px 0";
+                                highpassSlider.classList.add("control-slider");
                                 document.getElementById("sidebar1").appendChild(highpassSlider);
 
                                 highpassSlider.addEventListener("input", (event) => {
@@ -458,26 +541,35 @@
             });
         });
 
+        window.addEventListener('resize', () => {
+            positionDividerAndReset();
+        });
+
         d3.select("#reset-canvas").on("click", () => {
+            // stop and remove all audio
             document.querySelectorAll("audio").forEach(audio => {
-                audio.pause();
-                document.body.removeChild(audio);
-            });
-            document.querySelectorAll("button").forEach(button => {
-                button.style.animation = "";
-            });
-            document.querySelectorAll("input[type='range']").forEach(slider => {
-                if (slider.parentElement.id === "canvas-container") {
-                    document.getElementById("canvas-container").removeChild(slider);
-                } else if (slider.parentElement.id === "sidebar1") {
-                    document.getElementById("sidebar1").removeChild(slider);
+                try { audio.pause(); } catch(_) {}
+                if (audio.parentElement) {
+                    audio.parentElement.removeChild(audio);
                 }
             });
-            document.querySelectorAll("label").forEach(label => {
-                if (label.parentElement.id === "sidebar1") {
-                    document.getElementById("sidebar1").removeChild(label);
-                }
+            // clear button styles and restore initial positions
+            document.querySelectorAll(".image-button").forEach(btn => {
+                btn.style.animation = "";
+                btn.style.opacity = 0.5;
+                if (btn.dataset.initLeft) btn.style.left = `${btn.dataset.initLeft}px`;
+                if (btn.dataset.initTop) btn.style.top = `${btn.dataset.initTop}px`;
             });
+            // remove any volume sliders on canvas
+            document.querySelectorAll("#canvas-container input[type='range']").forEach(slider => slider.remove());
+            // remove sliders and labels in sidebar1
+            document.querySelectorAll("#sidebar1 input[type='range']").forEach(slider => slider.remove());
+            document.querySelectorAll("#sidebar1 label").forEach(label => label.remove());
+            // clear sidebar1 info
+            d3.select("#image-title").html("");
+            d3.select("#image-site").html("");
+            d3.select("#image-bgc").html("");
+            d3.select("#image-describ").html("");
         });
     </script>
 </body>
