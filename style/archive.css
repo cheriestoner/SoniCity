@@ -198,6 +198,58 @@ input[type="range"]::-moz-range-thumb {
     flex: 1 1 auto;
 }
 
+.ai-section {
+    text-align: left;
+    margin-top: 12px;
+}
+
+.ai-label {
+    display: block;
+    font-family: 'ark-pixel';
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    margin-bottom: 8px;
+}
+
+.ai-textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    font-family: 'ark-pixel-cn';
+    font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.ai-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+.ai-button {
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'ark-pixel';
+    cursor: pointer;
+}
+
+.ai-button:hover {
+    opacity: 0.9;
+}
+
+.ai-hint {
+    display: block;
+    margin-top: 8px;
+    color: #666;
+    font-family: 'ark-pixel-cn';
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
+}
+
 .sidebar2-footer {
     border-top: 1px solid #ddd;
     padding: 12px 20px 16px;
