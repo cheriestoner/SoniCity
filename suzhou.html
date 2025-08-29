@@ -624,7 +624,7 @@
 
             try {
                 // Call ElevenLabs API through our backend proxy
-                const response = await fetch('http://localhost:3001/api/generate-sound', {
+                const response = await fetch('/api/generate-sound', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
