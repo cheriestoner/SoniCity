@@ -1,0 +1,24 @@
+{
+  "name": "vue-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:full": "./dev.sh",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server.js",
+    "deploy": "./deploy.sh",
+    "start:prod": "NODE_ENV=production node server.js"
+  },
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3"
+  }
+}

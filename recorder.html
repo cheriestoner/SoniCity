@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Capture Sound</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/style/camera.css">
+        <link rel="stylesheet" href="/style/recorder.css">
+    </head>
+    <body>
+        <div class="title-bar">
+            <div class="title">Capture Sound</div>
+            <a href="/" class="home-link">← Home</a>
+        </div>
+        
+        <div class="container">
+            <!-- Recorder View -->
+            <div id="recorder-view" class="view active">
+                <div class="controls">
+                    <div class="left-controls">
+                        <div class="record-button-group">
+                            <button id="record">
+                                <img src="/icons/mic-off.svg" alt="Record">
+                            </button>
+                            <button id="pause" style="display: none;">
+                                <img src="/icons/pause-square.svg" alt="Pause">
+                            </button>
+                        </div>
+                        
+                        <div class="gain-control">
+                            <input type="range" id="gainSlider" min="0" max="200" value="100">
+                            <label for="gainSlider">Gain</label>
+                        </div>
+                    </div>
+                    <div class="right-controls">
+                        <div class="settings-button-group">
+                            <button id="save-all" disabled>
+                                <img src="/icons/save.svg" alt="Save All">
+                            </button>
+                            <button id="settings-button">
+                                <img src="/icons/settings.svg" alt="Settings">
+                            </button>
+                        </div>
+                            
+                        <label class="option">
+                            <input type="checkbox" id="feedbackLoop" />
+                            Feedback loop
+                        </label>
+                        <div id="settings-popup" class="settings-popup" style="display: none;">
+                            <label class="option">
+                                <input type="checkbox" id="scrollingWaveform" />
+                                Scrolling waveform
+                            </label>
+                            <label class="option">
+                                <input type="checkbox" id="continuousWaveform" checked="checked" />
+                                Continuous waveform
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mic">
+                    <div id="progress">00:00</div>
+                </div>
+
+                <div id="recording-slots">
+                    <div class="recording-slot empty">
+                        <div class="slot-number">1</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">2</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">3</div>
+                    </div>
+                    <div class="recording-slot empty">
+                        <div class="slot-number">4</div>
+                    </div>
+                </div>
+
+                <div class="location-selector">
+                    <div class="location-buttons">
+                        <button class="location-btn active" data-location="green-park">Green Park</button>
+                        <button class="location-btn" data-location="science-park">Science Park</button>
+                    </div>
+                </div>
+
+                <div id="recordings"></div>
+            </div>
+
+            <!-- Survey View -->
+            <div id="survey-view" class="view">
+                <h2>Sound Survey</h2>
+                <form id="survey-form">
+                    <div class="survey-item">
+                        <label>How would you rate the sound quality?</label>
+                        <div class="rating">
+                            <input type="radio" name="quality" value="1"> 1
+                            <input type="radio" name="quality" value="2"> 2
+                            <input type="radio" name="quality" value="3"> 3
+                            <input type="radio" name="quality" value="4"> 4
+                            <input type="radio" name="quality" value="5"> 5
+                        </div>
+                    </div>
+                    
+                    <div class="survey-item">
+                        <label>How would you describe the soundscape?</label>
+                        <textarea name="description" rows="3" placeholder="Describe what you heard..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-button">Submit Survey</button>
+                </form>
+            </div>
+        </div>
+
+        <script src="recorder.js"></script>
+    </body>
+</html>

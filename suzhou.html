@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Canvas</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="/style/archive.css">
+    <link rel="preload" href="/asset/font/ark-pixel-12px-monospaced-zh_cn.otf" as="font" type="font/otf" crossorigin>
+    <title>Suzhou Soundwalk</title>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="sidebar1">
+            <div class="sidebar-header">
+                <h2>Suzhou Soundwalk</h2>
+                <a href="/" class="home-link">← Home</a>
+            </div>
+            <div id="image-title"></div>
+            <div id="image-bgc"></div>
+            <div id="player" class="player elements">
+                <span id="image-audio"></span>
+            </div>
+            <div id="image-describ" style="margin-bottom: 50px;"></div>
+        </div>
+        <button id="toggle-sidebar1">&lt;</button>
+
+        <div id="sidebar2">
+            <div class="sidebar2-body">
+                <h2>Suzhou Soundwalk</h2>
+                <!-- <p>Suzhou Soundwalk</p> -->
+                <!-- <h3>The purpose of this study is to enhance the participation and user experience of urban sound research, and promote the development of mobile based urban sound collection and interaction technology. Through users' sound recordings and subjective descriptions in different urban environments, such as urban parks and technology parks, this study can provide profound insights into how urban soundscapes affect people's perception and experience.</h3> -->
+                <!-- <h3>In addition, the research results will provide new data and practical experience for fields such as human-computer interaction (HCI), urban sound research, environmental design, etc., which will help develop more humanized sound interaction systems in the future and provide scientific basis for urban planning and sound landscape optimization.</h3> -->
+
+                <div class="ai-section">
+                    <label for="ai-prompt" class="ai-label">Sound effect prompt</label>
+                    <textarea id="ai-prompt" class="ai-textarea" placeholder="Describe the sound you want (e.g., 'soft water ripple with distant birds')."></textarea>
+                    
+                    <div class="ai-duration-control">
+                        <label for="ai-duration" class="ai-label">Duration (seconds)</label>
+                        <div class="duration-slider-container">
+                            <input type="range" id="ai-duration" min="0.5" max="30" step="0.5" value="5" class="duration-slider">
+                            <span class="duration-value">5.0s</span>
+                        </div>
+                        <small class="ai-hint">0.5s - 30s (leave empty for auto-duration)</small>
+                    </div>
+                    
+                    <div class="ai-actions">
+                        <button id="ai-generate" class="ai-button">Generate</button>
+                    </div>
+                    <small class="ai-hint">Powered by ElevenLabs API. Prompts are processed when you click Generate.</small>
+                </div>
+            </div>
+            <div class="sidebar2-footer">
+                <img src="/asset/logos/Logo-1.png" alt="Logo" class="sidebar2-logo primary">
+                <img src="/asset/logos/SSG-Logo-v1-black.svg" alt="SSG Logo" class="sidebar2-logo secondary">
+            </div>
+        </div>
+        <button id="toggle-sidebar2">&gt;</button>
+ 
+        <button id="reset-canvas">O</button>
+    </div>
+    <script>
+        const sidebar1 = d3.select("#sidebar1");
+        const sidebar2 = d3.select("#sidebar2");
+        const toggleButton1 = d3.select("#toggle-sidebar1");
+        const toggleButton2 = d3.select("#toggle-sidebar2");
+        let sidebar1Visible = true;
+        let sidebar2Visible = true;
+
+        toggleButton1.on("click", () => {
+            sidebar1Visible = !sidebar1Visible;
+            sidebar1.classed("hidden", !sidebar1Visible);
+            toggleButton1.classed("hidden", !sidebar1Visible);
+            toggleButton1.text(sidebar1Visible ? "<" : ">");
+            positionDividerAndReset();
+        });
+        toggleButton2.on("click", () => {
+            sidebar2Visible = !sidebar2Visible;
+            sidebar2.classed("hidden", !sidebar2Visible);
+            toggleButton2.classed("hidden", !sidebar2Visible);
+            toggleButton2.text(sidebar2Visible ? ">" : "<");
+            positionDividerAndReset();
+        });
+
+        // canvas container size
+        const width = window.innerWidth * 0.96;
+        const height = window.innerHeight * 0.94;
+        const buttonSize = Math.max(60, Math.min(120, Math.floor(Math.min(width, height) * 0.07)));
+
+        const svg = d3.select("#canvas-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        svg.append("rect")
+            .attr("id", "canvas-border")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width)
+            .attr("height", height);
+
+        // single-location mode: no divider in suzhou view
+
+        const g = svg.append("g");
+
+        // Deterministic PRNG utilities (seeded)
+        function cyrb128(str) {
+            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+            for (let i = 0, k; i < str.length; i++) {
+                k = str.charCodeAt(i);
+                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+                h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+                h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+            }
+            h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+            h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+            h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+            h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+            return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+        }
+
+        function sfc32(a, b, c, d) {
+            return function() {
+                a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+                let t = (a + b) | 0;
+                a = b ^ (b >>> 9);
+                b = (c + (c << 3)) | 0;
+                c = (c << 21) | (c >>> 11);
+                d = (d + 1) | 0;
+                t = (t + d) | 0;
+                c = (c + t) | 0;
+                return (t >>> 0) / 4294967296;
+            };
+        }
+
+        function seededRngFromString(seedString) {
+            const h = cyrb128(seedString);
+            return sfc32(h[0], h[1], h[2], h[3]);
+        }
+
+        const defaultSeed = 'sonicity-seed-1'; // change seed here
+        const urlSeed = new URLSearchParams(window.location.search).get('seed');
+        const savedSeed = window.localStorage.getItem('positionSeed');
+        const randomSeed = urlSeed || savedSeed || defaultSeed;
+        if (urlSeed) {
+            window.localStorage.setItem('positionSeed', urlSeed);
+        }
+
+        // Compute visible bounds accounting for sidebars
+        function computeVisibleBounds() {
+            const leftSidebarSpace = sidebar1Visible ? (sidebar1.node()?.offsetWidth || 0) : 0;
+            const rightSidebarSpace = sidebar2Visible ? (sidebar2.node()?.offsetWidth || 0) : 0;
+            const leftBound = leftSidebarSpace;
+            const rightBound = width - rightSidebarSpace;
+            const visibleWidth = Math.max(0, rightBound - leftBound);
+            const midX = leftBound + visibleWidth / 2;
+            return { leftBound, rightBound, visibleWidth, midX };
+        }
+
+        function centerResetButton() {
+            const { leftBound, rightBound } = computeVisibleBounds();
+            const midX = leftBound + (rightBound - leftBound) / 2;
+            const resetBtn = document.getElementById("reset-canvas");
+            if (resetBtn) {
+                resetBtn.style.left = `${Math.round(midX - resetBtn.offsetWidth / 2)}px`;
+            }
+        }
+        centerResetButton();
+
+        d3.csv("imagedata-suzhou.csv").then(images => {
+            const { leftBound, rightBound } = computeVisibleBounds();
+            images.forEach((img, index) => {
+                const button = document.createElement("button");
+                button.style.position = "absolute";
+                // Compute deterministic, responsive position within canvas
+                const padding = 10;
+                let minLeft = leftBound + padding;
+                let maxLeft = rightBound - buttonSize - padding;
+                // single-location: use full visible width
+                const minTop = padding;
+                const maxTop = height - buttonSize - padding;
+
+                const idKey = (img.audio || img.src || String(index));
+                const rng = seededRngFromString(`${randomSeed}|${idKey}`);
+                const xRand = rng();
+                const yRand = rng();
+                const computedLeft = Math.floor(minLeft + (maxLeft - minLeft) * xRand);
+                const computedTop = Math.floor(minTop + (maxTop - minTop) * yRand);
+
+                button.classList.add("image-button");
+                button.dataset.initLeft = String(computedLeft);
+                button.dataset.initTop = String(computedTop);
+                button.style.left = `${computedLeft}px`;
+                button.style.top = `${computedTop}px`;
+                button.style.width = `${buttonSize}px`;
+                button.style.height = `${buttonSize}px`;
+                button.style.backgroundImage = `url(${img.src})`;
+                button.style.opacity = 0.5;
+
+                button.draggable = true;
+                button.addEventListener("dragstart", (event) => {
+                    event.dataTransfer.setData("text/plain", "");
+                    event.dataTransfer.setDragImage(new Image(), 0, 0);
+                    button.style.opacity = 0.5;
+                });
+
+                button.addEventListener("drag", (event) => {
+                    event.preventDefault();
+                    if (event.pageX !== 0 && event.pageY !== 0) {
+                        button.style.left = `${event.pageX - buttonSize}px`;
+                        button.style.top = `${event.pageY - buttonSize}px`;
+                        let slider = document.querySelector(`input[data-src='${img.audio}']`);
+                        if (slider) {
+                            slider.style.left = `${event.pageX - buttonSize}px`;
+                            slider.style.top = `${event.pageY + 10}px`;
+                        }
+                    }
+                });
+
+                button.addEventListener("click", () => {
+                    if (!sidebar1Visible) {
+                        sidebar1Visible = false;
+                        sidebar1.classed("hidden", true);
+                        toggleButton1.classed("hidden", true);
+                        toggleButton1.text("<");
+                    }
+                    if (!sidebar2Visible) {
+                        sidebar2Visible = false;
+                        sidebar2.classed("hidden", true);
+                        toggleButton2.classed("hidden", true);
+                        toggleButton2.text(">");
+                    }
+                    d3.select("#image-title").html(`<p>${img.title}</p>`);
+                    
+                    d3.select("#image-bgc").html(`<img src="${img.bgc}" class="selected-image">`);
+                    d3.select("#image-describ").html(`<p>${img.describ}</p>`);
+                    let existingAudio = document.querySelector(`audio[data-src='${img.audio}']`);
+                    let volumeSlider = document.querySelector(`input[data-src='${img.audio}']`);
+                    let panLabel = document.querySelector(`label[data-pan-src='${img.audio}']`);
+                    let leftLabel = document.querySelector(`label[data-left-src='${img.audio}']`);
+                    let panSlider = document.querySelector(`input[data-pan-src='${img.audio}']`);
+                    let rightLabel = document.querySelector(`label[data-right-src='${img.audio}']`);
+                    let lowpassLabel = document.querySelector(`label[data-low-src='${img.audio}']`);
+                    let lowpassSlider = document.querySelector(`input[data-lowpass-src='${img.audio}']`);
+                    let highpassLabel = document.querySelector(`label[data-high-src='${img.audio}']`);
+                    let highpassSlider = document.querySelector(`input[data-highpass-src='${img.audio}']`);
+                    
+                    document.querySelectorAll("label[data-pan-src]").forEach(label => {
+                        document.getElementById("sidebar1").removeChild(label);
+                    });
+                    document.querySelectorAll("label[data-left-src]").forEach(label => {
+                        document.getElementById("sidebar1").removeChild(label);
+                    });
+                    document.querySelectorAll("input[data-pan-src]").forEach(slider => {
+                        document.getElementById("sidebar1").removeChild(slider);
+                    });
+                    document.querySelectorAll("label[data-right-src]").forEach(label => {
+                        document.getElementById("sidebar1").removeChild(label);
+                    });
+                    document.querySelectorAll("label[data-low-src]").forEach(label => {
+                        document.getElementById("sidebar1").removeChild(label);
+                    });
+                    document.querySelectorAll("input[data-lowpass-src]").forEach(slider => {
+                        document.getElementById("sidebar1").removeChild(slider);
+                    });
+                    document.querySelectorAll("label[data-high-src]").forEach(label => {
+                        document.getElementById("sidebar1").removeChild(label);
+                    });
+                    document.querySelectorAll("input[data-highpass-src]").forEach(slider => {
+                        document.getElementById("sidebar1").removeChild(slider);
+                    });
+
+                    if (!existingAudio) {
+                        let audioElement = document.createElement("audio");
+                        audioElement.src = img.audio;
+                        audioElement.setAttribute("data-src", img.audio);
+                        audioElement.loop = true;
+                        audioElement.volume = 1;
+                        document.body.appendChild(audioElement);
+                        audioElement.play();
+                        button.style.animation = "pulse 2s infinite";
+
+                        let slider = document.createElement("input");
+                        slider.type = "range";
+                        slider.min = "0";
+                        slider.max = "1";
+                        slider.step = "0.01";
+                        slider.value = "1";
+                        slider.setAttribute("data-src", img.audio);
+                        slider.style.position = "absolute";
+                        slider.style.left = `${parseInt(button.style.left)}px`;
+                        slider.style.top = `${parseInt(button.style.top) + buttonSize + 10}px`;
+                        slider.style.width = `${buttonSize}px`;
+                        document.getElementById("canvas-container").appendChild(slider);
+
+                        slider.addEventListener("input", (event) => {
+                            audioElement.volume = event.target.value;
+                        });
+
+                        let panLabel = document.createElement("label");
+                        panLabel.innerText = "PAN";
+                        panLabel.style.fontFamily = "ark-pixel";
+                        panLabel.style.display = "block";
+                        panLabel.setAttribute("data-pan-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(panLabel);
+
+                        let leftLabel = document.createElement("label");
+                        leftLabel.innerText = "left";
+                        leftLabel.style.fontFamily = "ark-pixel";
+                        leftLabel.setAttribute("data-left-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(leftLabel);
+
+                        let panSlider = document.createElement("input");
+                        panSlider.type = "range";
+                        panSlider.min = "-1";
+                        panSlider.max = "1";
+                        panSlider.step = "0.01";
+                        panSlider.value = "0";
+                        panSlider.setAttribute("data-pan-src", img.audio);
+                        panSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(panSlider);
+
+                        let rightLabel = document.createElement("label");
+                        rightLabel.innerText = "right";
+                        rightLabel.style.fontFamily = "ark-pixel";
+                        rightLabel.setAttribute("data-right-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(rightLabel);
+
+                        let lowpassLabel = document.createElement("label");
+                        lowpassLabel.innerText = "LOWPASS FILTER";
+                        lowpassLabel.style.fontFamily = "ark-pixel";
+                        lowpassLabel.style.display = "block";
+                        lowpassLabel.setAttribute("data-low-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(lowpassLabel);
+
+                        let lowpassSlider = document.createElement("input");
+                        lowpassSlider.type = "range";
+                        lowpassSlider.min = "1";
+                        lowpassSlider.max = "10000";
+                        lowpassSlider.step = "1";
+                        lowpassSlider.value = "8000";
+                        lowpassSlider.setAttribute("data-lowpass-src", img.audio);
+                        lowpassSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(lowpassSlider);
+
+                        let highpassLabel = document.createElement("label");
+                        highpassLabel.innerText = "HIGHPASS FILTER";
+                        highpassLabel.style.fontFamily = "ark-pixel";
+                        highpassLabel.style.display = "block";
+                        highpassLabel.setAttribute("data-high-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(highpassLabel);
+
+                        let highpassSlider = document.createElement("input");
+                        highpassSlider.type = "range";
+                        highpassSlider.min = "1";
+                        highpassSlider.max = "5000";
+                        highpassSlider.step = "1";
+                        highpassSlider.value = "1000";
+                        highpassSlider.setAttribute("data-highpass-src", img.audio);
+                        highpassSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(highpassSlider);
+
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const track = audioContext.createMediaElementSource(audioElement);
+                        const panner = new StereoPannerNode(audioContext, { pan: 0 });
+                        const lowpassFilter = new BiquadFilterNode(audioContext, { type: 'lowpass', frequency: 5000 });
+                        const highpassFilter = new BiquadFilterNode(audioContext, { type: 'highpass', frequency: 500 });
+                        track.connect(panner).connect(lowpassFilter).connect(highpassFilter).connect(audioContext.destination);
+
+                        panSlider.addEventListener("input", (event) => {
+                            panner.pan.value = event.target.value;
+                        });
+
+                        lowpassSlider.addEventListener("input", (event) => {
+                            lowpassFilter.frequency.value = event.target.value;
+                        });
+
+                        highpassSlider.addEventListener("input", (event) => {
+                            highpassFilter.frequency.value = event.target.value;
+                        });
+
+                        // 保存panner和filter节点到audioElement
+                        audioElement.panner = panner;
+                        audioElement.lowpassFilter = lowpassFilter;
+                        audioElement.highpassFilter = highpassFilter;
+                    } else {
+                        if (existingAudio.paused) {
+                            existingAudio.currentTime = 0;
+                            existingAudio.play();
+                            button.style.animation = "pulse 2s infinite";
+
+                            // 显示音量控制slider
+                            if (volumeSlider) {
+                                volumeSlider.style.display = "block";
+                            } else {
+                                let slider = document.createElement("input");
+                                slider.type = "range";
+                                slider.min = "0";
+                                slider.max = "1";
+                                slider.step = "0.01";
+                                slider.value = "1";
+                                slider.setAttribute("data-src", img.audio);
+                                slider.style.position = "absolute";
+                                slider.style.left = `${parseInt(button.style.left)}px`;
+                                slider.style.top = `${parseInt(button.style.top) + buttonSize + 10}px`;
+                                slider.style.width = `${buttonSize}px`;
+                                document.getElementById("canvas-container").appendChild(slider);
+
+                                slider.addEventListener("input", (event) => {
+                                    existingAudio.volume = event.target.value;
+                                });
+                            }
+
+                            // 显示左右声像控制slider
+                            if (panSlider) {
+                                panSlider.style.display = "block";
+                                panLabel.style.display = "block";
+                                leftLabel.style.display = "block";
+                                rightLabel.style.display = "block";
+                            } else {
+                                let panLabel = document.createElement("label");
+                                panLabel.innerText = "PAN";
+                                panLabel.style.fontFamily = "ark-pixel";
+                                panLabel.style.display = "block";
+                                panLabel.setAttribute("data-pan-src", img.audio);
+                                document.getElementById("sidebar1").appendChild(panLabel);
+
+                                let leftLabel = document.createElement("label");
+                                leftLabel.innerText = "left";
+                                leftLabel.style.fontFamily = "ark-pixel";
+                                leftLabel.setAttribute("data-left-src", img.audio);
+                                document.getElementById("sidebar1").appendChild(leftLabel);
+
+                                let panSlider = document.createElement("input");
+                                panSlider.type = "range";
+                                panSlider.min = "-1";
+                                panSlider.max = "1";
+                                panSlider.step = "0.01";
+                                panSlider.value = existingAudio.panner.pan.value;
+                                panSlider.setAttribute("data-pan-src", img.audio);
+                                panSlider.classList.add("control-slider");
+                                document.getElementById("sidebar1").appendChild(panSlider);
+
+                                let rightLabel = document.createElement("label");
+                                rightLabel.innerText = "right";
+                                rightLabel.style.fontFamily = "ark-pixel";
+                                rightLabel.setAttribute("data-right-src", img.audio);
+                                document.getElementById("sidebar1").appendChild(rightLabel);
+
+                                panSlider.addEventListener("input", (event) => {
+                                    existingAudio.panner.pan.value = event.target.value;
+                                });
+                            }
+
+                            // 显示lowpass和highpass filter slider
+                            if (lowpassSlider) {
+                                lowpassSlider.style.display = "block";
+                            } else {
+                                let lowpassLabel = document.createElement("label");
+                                lowpassLabel.innerText = "LOWPASS FILTER";
+                                lowpassLabel.style.fontFamily = "ark-pixel";
+                                lowpassLabel.style.display = "block";
+                                lowpassLabel.setAttribute("data-low-src", img.audio);
+                                document.getElementById("sidebar1").appendChild(lowpassLabel);
+
+                                let lowpassSlider = document.createElement("input");
+                                lowpassSlider.type = "range";
+                                lowpassSlider.min = "1";
+                                lowpassSlider.max = "10000";
+                                lowpassSlider.step = "1";
+                                lowpassSlider.value = existingAudio.lowpassFilter.frequency.value;
+                                lowpassSlider.setAttribute("data-lowpass-src", img.audio);
+                                lowpassSlider.classList.add("control-slider");
+                                document.getElementById("sidebar1").appendChild(lowpassSlider);
+
+                                lowpassSlider.addEventListener("input", (event) => {
+                                    existingAudio.lowpassFilter.frequency.value = event.target.value;
+                                });
+                            }
+
+                            if (highpassSlider) {
+                                highpassSlider.style.display = "block";
+                            } else {
+                                let highpassLabel = document.createElement("label");
+                                highpassLabel.innerText = "HIGHPASS FILTER";
+                                highpassLabel.style.fontFamily = "ark-pixel";
+                                highpassLabel.style.display = "block";
+                                highpassLabel.setAttribute("data-high-src", img.audio);
+                                document.getElementById("sidebar1").appendChild(highpassLabel);
+
+                                let highpassSlider = document.createElement("input");
+                                highpassSlider.type = "range";
+                                highpassSlider.min = "1";
+                                highpassSlider.max = "5000";
+                                highpassSlider.step = "1";
+                                highpassSlider.value = existingAudio.highpassFilter.frequency.value;
+                                highpassSlider.setAttribute("data-highpass-src", img.audio);
+                                highpassSlider.classList.add("control-slider");
+                                document.getElementById("sidebar1").appendChild(highpassSlider);
+
+                                highpassSlider.addEventListener("input", (event) => {
+                                    existingAudio.highpassFilter.frequency.value = event.target.value;
+                                });
+                            }
+                        } else {
+                            existingAudio.pause();
+                            button.style.animation = "";
+                            button.style.opacity = 0.5;
+                            if (volumeSlider) {
+                                volumeSlider.style.display = "none";
+                            }
+                            if (panSlider) {
+                                panLabel.style.display = "none";
+                                leftLabel.style.display = "none";
+                                panSlider.style.display = "none";
+                                rightLabel.style.display = "none";
+                            }
+                            if (lowpassSlider) {
+                                lowpassSlider.style.display = "none";
+                            }
+                            if (highpassSlider) {
+                                highpassSlider.style.display = "none";
+                            }
+                        }
+                    }
+                });
+
+                document.getElementById("canvas-container").appendChild(button);
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            centerResetButton();
+        });
+
+        d3.select("#reset-canvas").on("click", () => {
+            // stop and remove all audio
+            document.querySelectorAll("audio").forEach(audio => {
+                try { audio.pause(); } catch(_) {}
+                if (audio.parentElement) {
+                    audio.parentElement.removeChild(audio);
+                }
+            });
+            // clear button styles and restore initial positions
+            document.querySelectorAll(".image-button").forEach(btn => {
+                btn.style.animation = "";
+                btn.style.opacity = 0.5;
+                if (btn.dataset.initLeft) btn.style.left = `${btn.dataset.initLeft}px`;
+                if (btn.dataset.initTop) btn.style.top = `${btn.dataset.initTop}px`;
+            });
+            // remove any volume sliders on canvas
+            document.querySelectorAll("#canvas-container input[type='range']").forEach(slider => slider.remove());
+            // remove sliders and labels in sidebar1
+            document.querySelectorAll("#sidebar1 input[type='range']").forEach(slider => slider.remove());
+            document.querySelectorAll("#sidebar1 label").forEach(label => label.remove());
+            // clear sidebar1 info
+            d3.select("#image-title").html("");
+            d3.select("#image-bgc").html("");
+            d3.select("#image-describ").html("");
+            d3.select("#image-audio").html("");
+            
+            // Remove AI-generated buttons and stop their audio (they don't persist across resets)
+            document.querySelectorAll(".image-button.ai-generated").forEach(btn => {
+                // Stop AI audio if playing
+                const audioElement = btn.dataset.audioElement;
+                if (audioElement && audioElement.parentElement) {
+                    audioElement.pause();
+                    audioElement.parentElement.removeChild(audioElement);
+                }
+                
+                // Remove volume slider
+                const volumeSlider = btn.dataset.volumeSlider;
+                if (volumeSlider && volumeSlider.parentElement) {
+                    volumeSlider.parentElement.removeChild(volumeSlider);
+                }
+                
+                // Remove all control labels and sliders
+                const controls = [
+                    btn.dataset.panLabel,
+                    btn.dataset.leftLabel,
+                    btn.dataset.panSlider,
+                    btn.dataset.rightLabel,
+                    btn.dataset.lowpassLabel,
+                    btn.dataset.lowpassSlider,
+                    btn.dataset.highpassLabel,
+                    btn.dataset.highpassSlider
+                ];
+                
+                controls.forEach(control => {
+                    if (control && control.parentElement) {
+                        control.parentElement.removeChild(control);
+                    }
+                });
+                
+                btn.remove();
+            });
+        });
+
+        // Duration slider functionality
+        const durationSlider = document.getElementById("ai-duration");
+        const durationValue = document.querySelector(".duration-value");
+        
+        durationSlider.addEventListener("input", (event) => {
+            durationValue.textContent = `${event.target.value}s`;
+        });
+
+        // AI Generate Button Functionality
+        document.getElementById("ai-generate").addEventListener("click", async () => {
+            const prompt = document.getElementById("ai-prompt").value.trim();
+            const duration = parseFloat(document.getElementById("ai-duration").value);
+            
+            if (!prompt) {
+                alert("Please enter a sound effect prompt");
+                return;
+            }
+
+            const generateBtn = document.getElementById("ai-generate");
+            const originalText = generateBtn.textContent;
+            generateBtn.textContent = "Generating...";
+            generateBtn.disabled = true;
+
+            try {
+                // Call ElevenLabs API through our backend proxy
+                const response = await fetch('http://localhost:3001/api/generate-sound', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, duration })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'API request failed');
+                }
+
+                const data = await response.json();
+                console.log('AI generation successful:', data);
+                
+                // Create a new AI-generated button in top-right corner
+                const aiButton = document.createElement("button");
+                aiButton.style.position = "absolute";
+                aiButton.classList.add("image-button", "ai-generated");
+                
+                // Position in top-right corner (accounting for sidebar2)
+                const { rightBound } = computeVisibleBounds();
+                const topRightX = rightBound - buttonSize - 20; // 20px from right edge
+                const topRightY = 20; // 20px from top
+                
+                aiButton.style.left = `${topRightX}px`;
+                aiButton.style.top = `${topRightY}px`;
+                aiButton.style.width = `${buttonSize}px`;
+                aiButton.style.height = `${buttonSize}px`;
+                aiButton.style.opacity = 0.5;
+                
+                // Use a placeholder image for now (you can replace with AI-generated image later)
+                aiButton.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjMwIiB5PSIzNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QUk8L3RleHQ+Cjwvc3ZnPgo=')";
+                aiButton.style.backgroundSize = "cover";
+                aiButton.style.backgroundPosition = "center";
+                
+                // Store prompt, audio, and metadata
+                aiButton.dataset.aiPrompt = prompt;
+                aiButton.dataset.aiGenerated = "true";
+                aiButton.dataset.aiAudio = data.audio;
+                aiButton.dataset.initLeft = String(topRightX);
+                aiButton.dataset.initTop = String(topRightY);
+                
+                // Make it draggable like other buttons
+                aiButton.draggable = true;
+                aiButton.addEventListener("dragstart", (event) => {
+                    event.dataTransfer.setData("text/plain", "");
+                    event.dataTransfer.setDragImage(new Image(), 0, 0);
+                    aiButton.style.opacity = 0.5;
+                });
+
+                aiButton.addEventListener("drag", (event) => {
+                    event.preventDefault();
+                    if (event.pageX !== 0 && event.pageY !== 0) {
+                        const newLeft = event.pageX - buttonSize;
+                        const newTop = event.pageY - buttonSize;
+                        
+                        aiButton.style.left = `${newLeft}px`;
+                        aiButton.style.top = `${newTop}px`;
+                        
+                        // Update volume slider position to follow the button (using querySelector like CSV buttons)
+                        let slider = document.querySelector(`input[data-src='${aiButton.dataset.aiAudio}']`);
+                        if (slider) {
+                            slider.style.left = `${newLeft}px`;
+                            slider.style.top = `${newTop + buttonSize + 10}px`;
+                        }
+                    }
+                });
+
+                // Add click behavior similar to CSV buttons
+                aiButton.addEventListener("click", () => {
+                    // Show sidebars if hidden
+                    if (!sidebar1Visible) {
+                        sidebar1Visible = true;
+                        sidebar1.classed("hidden", false);
+                        toggleButton1.classed("hidden", false);
+                        toggleButton1.text("<");
+                    }
+                    if (!sidebar2Visible) {
+                        sidebar2Visible = true;
+                        sidebar2.classed("hidden", false);
+                        toggleButton2.classed("hidden", false);
+                        toggleButton2.text(">");
+                    }
+                    
+                    // Update sidebar1 with AI-generated content
+                    d3.select("#image-title").html(`<p>AI Generated: ${prompt}</p>`);
+                    d3.select("#image-bgc").html(`<div style="width: 200px; height: 200px; background: #000; color: white; display: flex; align-items: center; justify-content: center; font-family: ark-pixel; font-size: 16px; text-align: center; padding: 20px;">AI Sound Effect<br>${prompt}</div>`);
+                    d3.select("#image-describ").html(`<p>AI-generated sound effect based on prompt: "${prompt}"</p>`);
+                    
+                    // Check if audio is already playing
+                    let existingAudio = document.querySelector(`audio[data-src='${aiButton.dataset.aiAudio}']`);
+                    
+                    if (!existingAudio) {
+                        // First click: create and play audio with full controls
+                        const audioElement = document.createElement("audio");
+                        audioElement.src = aiButton.dataset.aiAudio;
+                        audioElement.loop = true;
+                        audioElement.volume = 1;
+                        audioElement.setAttribute("data-src", aiButton.dataset.aiAudio);
+                        document.body.appendChild(audioElement);
+                        audioElement.play();
+                        
+                        // Create volume slider
+                        let volumeSlider = document.createElement("input");
+                        volumeSlider.type = "range";
+                        volumeSlider.min = "0";
+                        volumeSlider.max = "1";
+                        volumeSlider.step = "0.01";
+                        volumeSlider.value = "1";
+                        volumeSlider.setAttribute("data-src", aiButton.dataset.aiAudio);
+                        volumeSlider.style.position = "absolute";
+                        volumeSlider.style.left = `${parseInt(aiButton.style.left)}px`;
+                        volumeSlider.style.top = `${parseInt(aiButton.style.top) + buttonSize + 10}px`;
+                        volumeSlider.style.width = `${buttonSize}px`;
+                        
+                        console.log('Creating volume slider at position:', parseInt(aiButton.style.left), parseInt(aiButton.style.top) + buttonSize + 10);
+                        console.log('Button position:', aiButton.style.left, aiButton.style.top);
+                        console.log('Button size:', buttonSize);
+                        
+                        document.getElementById("canvas-container").appendChild(volumeSlider);
+                        console.log('Volume slider added to canvas');
+
+                        volumeSlider.addEventListener("input", (event) => {
+                            audioElement.volume = event.target.value;
+                        });
+                        
+                        // Don't store reference - use querySelector like CSV buttons do
+                        console.log('Volume slider created with data-src:', aiButton.dataset.aiAudio);
+
+                        // Create PAN controls
+                        let panLabel = document.createElement("label");
+                        panLabel.innerText = "PAN";
+                        panLabel.style.fontFamily = "ark-pixel";
+                        panLabel.style.display = "block";
+                        panLabel.setAttribute("data-pan-src", aiButton.dataset.aiAudio);
+                        document.getElementById("sidebar1").appendChild(panLabel);
+
+                        let leftLabel = document.createElement("label");
+                        leftLabel.innerText = "left";
+                        leftLabel.style.fontFamily = "ark-pixel";
+                        leftLabel.setAttribute("data-left-src", aiButton.dataset.aiAudio);
+                        document.getElementById("sidebar1").appendChild(leftLabel);
+
+                        let panSlider = document.createElement("input");
+                        panSlider.type = "range";
+                        panSlider.min = "-1";
+                        panSlider.max = "1";
+                        panSlider.step = "0.01";
+                        panSlider.value = "0";
+                        panSlider.setAttribute("data-pan-src", aiButton.dataset.aiAudio);
+                        panSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(panSlider);
+
+                        let rightLabel = document.createElement("label");
+                        rightLabel.innerText = "right";
+                        rightLabel.style.fontFamily = "ark-pixel";
+                        rightLabel.setAttribute("data-right-src", aiButton.dataset.aiAudio);
+                        document.getElementById("sidebar1").appendChild(rightLabel);
+
+                        // Create LOWPASS FILTER controls
+                        let lowpassLabel = document.createElement("label");
+                        lowpassLabel.innerText = "LOWPASS FILTER";
+                        lowpassLabel.style.fontFamily = "ark-pixel";
+                        lowpassLabel.style.display = "block";
+                        lowpassLabel.setAttribute("data-low-src", aiButton.dataset.aiAudio);
+                        document.getElementById("sidebar1").appendChild(lowpassLabel);
+
+                        let lowpassSlider = document.createElement("input");
+                        lowpassSlider.type = "range";
+                        lowpassSlider.min = "1";
+                        lowpassSlider.max = "10000";
+                        lowpassSlider.step = "1";
+                        lowpassSlider.value = "8000";
+                        lowpassSlider.setAttribute("data-lowpass-src", aiButton.dataset.aiAudio);
+                        lowpassSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(lowpassSlider);
+
+                        // Create HIGHPASS FILTER controls
+                        let highpassLabel = document.createElement("label");
+                        highpassLabel.innerText = "HIGHPASS FILTER";
+                        highpassLabel.style.fontFamily = "ark-pixel";
+                        highpassLabel.style.display = "block";
+                        highpassLabel.setAttribute("data-high-src", aiButton.dataset.aiAudio);
+                        document.getElementById("sidebar1").appendChild(highpassLabel);
+
+                        let highpassSlider = document.createElement("input");
+                        highpassSlider.type = "range";
+                        highpassSlider.min = "1";
+                        highpassSlider.max = "5000";
+                        highpassSlider.step = "1";
+                        highpassSlider.value = "1000";
+                        highpassSlider.setAttribute("data-highpass-src", aiButton.dataset.aiAudio);
+                        highpassSlider.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(highpassSlider);
+
+                        // Set up Web Audio API for effects
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const track = audioContext.createMediaElementSource(audioElement);
+                        const panner = new StereoPannerNode(audioContext, { pan: 0 });
+                        const lowpassFilter = new BiquadFilterNode(audioContext, { type: 'lowpass', frequency: 8000 });
+                        const highpassFilter = new BiquadFilterNode(audioContext, { type: 'highpass', frequency: 1000 });
+                        track.connect(panner).connect(lowpassFilter).connect(highpassFilter).connect(audioContext.destination);
+
+                        // Connect sliders to audio effects
+                        panSlider.addEventListener("input", (event) => {
+                            panner.pan.value = event.target.value;
+                        });
+
+                        lowpassSlider.addEventListener("input", (event) => {
+                            lowpassFilter.frequency.value = event.target.value;
+                        });
+
+                        highpassSlider.addEventListener("input", (event) => {
+                            highpassFilter.frequency.value = event.target.value;
+                        });
+
+                        // Store references for cleanup
+                        audioElement.panner = panner;
+                        audioElement.lowpassFilter = lowpassFilter;
+                        audioElement.highpassFilter = highpassFilter;
+                        // Note: volumeSlider is already stored above
+                        aiButton.dataset.panLabel = panLabel;
+                        aiButton.dataset.leftLabel = leftLabel;
+                        aiButton.dataset.panSlider = panSlider;
+                        aiButton.dataset.rightLabel = rightLabel;
+                        aiButton.dataset.lowpassLabel = lowpassLabel;
+                        aiButton.dataset.lowpassSlider = lowpassSlider;
+                        aiButton.dataset.highpassLabel = highpassLabel;
+                        aiButton.dataset.highpassSlider = highpassSlider;
+                        
+                        // Add pulse animation
+                        aiButton.style.animation = "pulse 2s infinite";
+                        
+                        // Store audio element reference for cleanup
+                        aiButton.dataset.audioElement = audioElement;
+                        
+                    } else {
+                        // Second click: toggle play/pause
+                        if (existingAudio.paused) {
+                            existingAudio.play();
+                            aiButton.style.animation = "pulse 2s infinite";
+                            
+                            // Show volume slider if it exists, create if it doesn't
+                            let slider = document.querySelector(`input[data-src='${aiButton.dataset.aiAudio}']`);
+                            if (slider) {
+                                slider.style.display = "block";
+                                console.log('Volume slider shown');
+                            } else {
+                                // Create volume slider
+                                let volumeSlider = document.createElement("input");
+                                volumeSlider.type = "range";
+                                volumeSlider.min = "0";
+                                volumeSlider.max = "1";
+                                volumeSlider.step = "0.01";
+                                volumeSlider.value = "1";
+                                volumeSlider.setAttribute("data-src", aiButton.dataset.aiAudio);
+                                volumeSlider.style.position = "absolute";
+                                volumeSlider.style.left = `${parseInt(aiButton.style.left)}px`;
+                                volumeSlider.style.top = `${parseInt(aiButton.style.top) + buttonSize + 10}px`;
+                                volumeSlider.style.width = `${buttonSize}px`;
+                                
+                                document.getElementById("canvas-container").appendChild(volumeSlider);
+                                console.log('Volume slider recreated');
+
+                                volumeSlider.addEventListener("input", (event) => {
+                                    existingAudio.volume = event.target.value;
+                                });
+                            }
+                        } else {
+                            existingAudio.pause();
+                            aiButton.style.animation = "";
+                            aiButton.style.opacity = 0.5;
+                            
+                            // Hide volume slider instead of destroying it
+                            let slider = document.querySelector(`input[data-src='${aiButton.dataset.aiAudio}']`);
+                            if (slider) {
+                                slider.style.display = "none";
+                                console.log('Volume slider hidden');
+                            }
+                        }
+                    }
+                });
+                
+                // Add to canvas
+                document.getElementById("canvas-container").appendChild(aiButton);
+                
+                // Show success message
+                const aiSection = document.querySelector(".ai-section");
+                const successMsg = document.createElement("div");
+                successMsg.className = "ai-success";
+                successMsg.textContent = `Generated AI button for: "${prompt}"`;
+                
+                // Remove any existing success message
+                const existingMsg = aiSection.querySelector(".ai-success");
+                if (existingMsg) {
+                    existingMsg.remove();
+                }
+                
+                aiSection.appendChild(successMsg);
+                
+                // Clear the prompt
+                document.getElementById("ai-prompt").value = "";
+                
+                // Reposition reset button to account for new button
+                centerResetButton();
+                
+            } catch (error) {
+                console.error("AI generation error:", error);
+                alert("Failed to generate sound effect. Please try again.");
+            } finally {
+                generateBtn.textContent = originalText;
+                generateBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

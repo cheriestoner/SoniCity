@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoniCity</title>
+    <link rel="stylesheet" href="style/home.css">
+</head>
+<body>
+    <div class="main-container">
+        <div class="title-bar">
+            <div class="title">SoniCity</div>
+            <button class="login-button" onclick="showLoginModal()">Login</button>
+        </div>
+        
+        <div class="content-container">
+            <div class="welcome-container">
+                <h1>Welcome</h1>
+                <p>Listen, compose, and share your city.</p>
+                <div class="navigation-buttons">
+                    <a href="/record" class="start-button">Start Listening</a>
+                    <a href="/compose" class="start-button">Compose</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="hideLoginModal()">&times;</span>
+                <h2>Login</h2>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="submit-button">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Camera Modal -->
+        <div id="camera-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button id="take-photo">Take Photo</button>
+                    <button id="retake-photo" style="display: none;">Retake</button>
+                    <button id="save-photo" style="display: none;">Save</button>
+                    <button id="close-camera">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="app.js"></script> -->
+    <script>
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Here you would typically handle the login logic
+            console.log('Login attempt:', { username, password });
+            
+            // For now, just close the modal
+            hideLoginModal();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target == modal) {
+                hideLoginModal();
+            }
+        }
+    </script>
+</body>
+</html> 
