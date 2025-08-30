@@ -758,6 +758,10 @@ const createWaveSurfer = () => {
             const formData = new FormData()
             formData.append('timestamp', new Date().toISOString())
             
+            // Add username from localStorage
+            const username = localStorage.getItem('sonicity_username') || 'user001'
+            formData.append('username', username)
+            
             console.log('Creating FormData...')
             for (const recording of recordingsData) {
                 const slot = recording.slot
