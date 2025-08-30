@@ -8,15 +8,25 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="title-bar">
-            <div class="title">SoniCity</div>
-            <button class="login-button" onclick="showLoginModal()">Login</button>
-        </div>
         
         <div class="content-container">
             <div class="welcome-container">
-                <h1>Welcome</h1>
+                <h1>SoniCity</h1>
                 <p>Listen, compose, and share your city.</p>
+                
+                <!-- Username Input Section -->
+                <div class="username-section">
+                    <label for="username-input">Username:</label>
+                    <div class="username-input-group">
+                        <input type="text" id="username-input" placeholder="Enter your username" maxlength="20">
+                        <button id="set-username-btn" onclick="setUsername()">Set</button>
+                    </div>
+                    <div id="current-username-display" style="display: none;">
+                        <span>Current: <strong id="username-display-text"></strong></span>
+                        <button onclick="changeUsername()" class="change-btn">Change</button>
+                    </div>
+                </div>
+                
                 <div class="navigation-buttons">
                     <a href="/record" class="start-button">Start Listening</a>
                     <a href="/compose" class="start-button">Compose</a>
@@ -24,24 +34,7 @@
             </div>
         </div>
 
-        <!-- Login Modal -->
-        <div id="loginModal" class="modal">
-            <div class="modal-content">
-                <span class="close-button" onclick="hideLoginModal()">&times;</span>
-                <h2>Login</h2>
-                <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="submit-button">Login</button>
-                </form>
-            </div>
-        </div>
+
 
         <!-- Camera Modal -->
         <div id="camera-modal" class="modal" style="display: none;">
@@ -60,33 +53,55 @@
 
     <!-- <script src="app.js"></script> -->
     <script>
-        function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'block';
-        }
+        // Check for existing username on page load
+        window.onload = function() {
+            const savedUsername = localStorage.getItem('sonicity_username');
+            if (savedUsername) {
+                showCurrentUsername(savedUsername);
+            }
+        };
 
-        function hideLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        function setUsername() {
+            const usernameInput = document.getElementById('username-input');
+            const username = usernameInput.value.trim();
             
-            // Here you would typically handle the login logic
-            console.log('Login attempt:', { username, password });
-            
-            // For now, just close the modal
-            hideLoginModal();
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('loginModal');
-            if (event.target == modal) {
-                hideLoginModal();
+            if (username) {
+                // Save username to localStorage
+                localStorage.setItem('sonicity_username', username);
+                
+                // Update UI
+                showCurrentUsername(username);
+                
+                // Clear input
+                usernameInput.value = '';
+                
+                console.log('Username set:', username);
+            } else {
+                alert('Please enter a username');
             }
         }
+
+        function showCurrentUsername(username) {
+            document.getElementById('username-input').style.display = 'none';
+            document.getElementById('set-username-btn').style.display = 'none';
+            document.getElementById('current-username-display').style.display = 'block';
+            document.getElementById('username-display-text').textContent = username;
+        }
+
+        function changeUsername() {
+            localStorage.removeItem('sonicity_username');
+            document.getElementById('username-input').style.display = 'inline-block';
+            document.getElementById('set-username-btn').style.display = 'inline-block';
+            document.getElementById('current-username-display').style.display = 'none';
+            document.getElementById('username-input').focus();
+        }
+
+        // Handle Enter key in username input
+        document.getElementById('username-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                setUsername();
+            }
+        });
     </script>
 </body>
 </html> 
