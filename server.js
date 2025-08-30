@@ -438,6 +438,124 @@ app.post('/api/save-recordings', upload.any(), async (req, res) => {
     }
 });
 
+// Clear all user data endpoint (for production deployment)
+app.post('/api/clear-all-data', async (req, res) => {
+    try {
+        const { confirm, environment } = req.body;
+        
+        // Safety check: require confirmation
+        if (!confirm || confirm !== 'CLEAR_ALL_DATA_CONFIRM') {
+            return res.status(400).json({
+                error: 'Confirmation required',
+                message: 'Please provide confirm: "CLEAR_ALL_DATA_CONFIRM" to proceed'
+            });
+        }
+        
+        // Optional environment check for extra safety
+        if (environment && environment !== 'production' && environment !== 'staging') {
+            return res.status(400).json({
+                error: 'Environment check failed',
+                message: 'This operation is only allowed in production or staging environments'
+            });
+        }
+        
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        console.log('🚨 ATTENTION: Starting to clear all user data...');
+        console.log(`Environment: ${environment || 'development'}`);
+        console.log(`Timestamp: ${new Date().toISOString()}`);
+        
+        // Clear users directory
+        const usersDir = path.join(__dirname, 'public', 'users');
+        let totalFilesDeleted = 0;
+        let totalDirectoriesDeleted = 0;
+        
+        try {
+            // Check if users directory exists
+            await fs.access(usersDir);
+            
+            // Read all user directories
+            const userDirs = await fs.readdir(usersDir);
+            console.log(`Found ${userDirs.length} user directories to clear`);
+            
+            // Remove each user directory and its contents
+            for (const userDir of userDirs) {
+                // Skip hidden files and system files
+                if (userDir.startsWith('.') || userDir === '..' || userDir === '.') {
+                    continue;
+                }
+                
+                const userPath = path.join(usersDir, userDir);
+                const userStat = await fs.stat(userPath);
+                
+                if (userStat.isDirectory()) {
+                    // Read all files in user directory
+                    const files = await fs.readdir(userPath);
+                    console.log(`Clearing ${files.length} files from user directory: ${userDir}`);
+                    
+                    // Remove all files
+                    for (const file of files) {
+                        const filePath = path.join(userPath, file);
+                        await fs.unlink(filePath);
+                        totalFilesDeleted++;
+                        console.log(`Deleted file: ${filePath}`);
+                    }
+                    
+                    // Remove the user directory
+                    await fs.rmdir(userPath);
+                    totalDirectoriesDeleted++;
+                    console.log(`Removed user directory: ${userPath}`);
+                }
+            }
+            
+            console.log(`All user directories cleared successfully. Total: ${totalFilesDeleted} files, ${totalDirectoriesDeleted} directories`);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.log('Users directory does not exist, nothing to clear');
+            } else {
+                throw error;
+            }
+        }
+        
+        // Reset CSV file to initial state
+        const csvPath = path.join(__dirname, 'public', 'imagedata-suzhou.csv');
+        try {
+            const initialCSVContent = 'src,bgc,audio,describ,title\n';
+            await fs.writeFile(csvPath, initialCSVContent, 'utf8');
+            console.log('CSV file reset to initial state');
+        } catch (error) {
+            console.warn('Could not reset CSV file:', error);
+        }
+        
+        const summary = {
+            success: true,
+            message: 'All user data cleared successfully',
+            timestamp: new Date().toISOString(),
+            environment: environment || 'development',
+            details: {
+                filesDeleted: totalFilesDeleted,
+                directoriesDeleted: totalDirectoriesDeleted,
+                usersCleared: totalDirectoriesDeleted,
+                csvReset: true
+            }
+        };
+        
+        res.json(summary);
+        
+        console.log('✅ Data clearing operation completed successfully');
+        console.log('Summary:', JSON.stringify(summary, null, 2));
+        
+    } catch (error) {
+        console.error('❌ Error clearing user data:', error);
+        res.status(500).json({
+            error: 'Failed to clear user data',
+            details: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`ElevenLabs proxy server running on http://localhost:${PORT}`);
     console.log(`Serving static files from public/`);
