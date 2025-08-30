@@ -313,8 +313,8 @@ app.post('/api/save-recordings', upload.any(), async (req, res) => {
             await fs.mkdir(usersDir, { recursive: true });
         }
 
-        // Use dummy username for now
-        const username = 'user001';
+        // Get username from request body or use default
+        const username = req.body.username || 'user001';
         const userDir = path.join(usersDir, username);
         try {
             await fs.access(userDir);
@@ -416,6 +416,11 @@ app.post('/api/save-recordings', upload.any(), async (req, res) => {
                 });
             }
         }
+        
+        // Update CSV file with new recordings
+        if (savedRecordings.length > 0) {
+            await updateCSVFile(username, savedRecordings);
+        }
 
         res.json({
             success: true,
@@ -438,3 +443,80 @@ app.listen(PORT, () => {
     console.log(`Serving static files from public/`);
     console.log(`Make sure ELEVENLABS_API_KEY is set in .env file`);
 });
+
+// Function to update CSV file with new recordings
+async function updateCSVFile(username, recordings) {
+    try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        const csvPath = path.join(__dirname, 'public', 'imagedata-suzhou.csv');
+        
+        // Read existing CSV content
+        let csvContent = '';
+        try {
+            csvContent = await fs.readFile(csvPath, 'utf8');
+        } catch (error) {
+            console.warn('CSV file not found, creating new one');
+            csvContent = 'src,bgc,audio,describ,title\n';
+        }
+        
+        // Parse existing CSV to check for duplicates
+        const lines = csvContent.trim().split('\n');
+        const headers = lines[0].split(',');
+        const existingRows = lines.slice(1);
+        
+        // Create a set of existing entries to avoid duplicates
+        const existingEntries = new Set();
+        existingRows.forEach(row => {
+            const columns = row.split(',');
+            if (columns.length >= 4) {
+                const audioPath = columns[2]; // audio column
+                existingEntries.add(audioPath);
+            }
+        });
+        
+        // Add new recordings to CSV
+        let newRows = [];
+        for (const recording of recordings) {
+            const audioPath = `users/${username}/${recording.filename}`;
+            
+            // Skip if already exists
+            if (existingEntries.has(audioPath)) {
+                console.log(`Skipping duplicate entry: ${audioPath}`);
+                continue;
+            }
+            
+            // Determine photo path
+            let photoPath = '';
+            if (recording.hasPhoto) {
+                photoPath = `users/${username}/${username}-${recording.slot}.jpg`;
+            }
+            
+            // Create CSV row
+            const row = [
+                photoPath,                    // src (photo)
+                photoPath,                    // bgc (background, same as photo)
+                audioPath,                    // audio
+                recording.description || '',  // describ (description)
+                username                      // title (username)
+            ].join(',');
+            
+            newRows.push(row);
+            existingEntries.add(audioPath);
+        }
+        
+        // Append new rows to CSV
+        if (newRows.length > 0) {
+            const updatedContent = csvContent + '\n' + newRows.join('\n');
+            await fs.writeFile(csvPath, updatedContent, 'utf8');
+            console.log(`Updated CSV file with ${newRows.length} new recordings`);
+        } else {
+            console.log('No new recordings to add to CSV');
+        }
+        
+    } catch (error) {
+        console.error('Error updating CSV file:', error);
+        // Don't throw error, as CSV update is not critical for the main functionality
+    }
+}
