@@ -53,6 +53,8 @@ if (isProduction) {
 } else {
     // Development: serve from project root
     app.use(express.static('public'));
+    // Serve project root to allow access to src/, style/, etc. during dev
+    app.use(express.static('.'));
     
     // Route for root path - serve index.html directly
     app.get('/', (req, res) => {
