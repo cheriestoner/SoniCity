@@ -1,0 +1,52 @@
+export class Moment {
+  constructor() {
+    this.id = crypto.randomUUID();
+    this.timestamp = new Date().toISOString();
+    this.location = null;   // { lat, lng, accuracy }
+    this.audioBlob = null;  // Blob (webm)
+    this.audioUrl = null;   // Object URL — call cleanup() to revoke
+    this.photoBlob = null;  // Blob (jpeg)
+    this.photoUrl = null;   // dataURL
+    this.text = '';
+  }
+
+  get isComplete() {
+    return !!this.audioBlob;
+  }
+
+  async captureLocation() {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          this.location = {
+            lat: coords.latitude,
+            lng: coords.longitude,
+            accuracy: coords.accuracy,
+          };
+          resolve(this.location);
+        },
+        () => resolve(null),
+        { timeout: 5000 }
+      );
+    });
+  }
+
+  cleanup() {
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+      this.audioUrl = null;
+    }
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      timestamp: this.timestamp,
+      location: this.location,
+      hasAudio: !!this.audioBlob,
+      hasPhoto: !!this.photoUrl,
+      text: this.text,
+    };
+  }
+}

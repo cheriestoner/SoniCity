@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Urban Sound Diary</title>
+  <link rel="stylesheet" href="/src/style/diary.css">
+</head>
+<body>
+
+  <!-- ── Title Bar ──────────────────────────────────────── -->
+  <header class="diary-header">
+    <h1>Urban Sound Diary · Today</h1>
+    <span class="diary-date" id="diary-date"></span>
+  </header>
+
+  <!-- ── Moments Grid ───────────────────────────────────── -->
+  <main class="moments-grid" id="moments-grid">
+    <button class="add-moment-btn" id="add-moment-btn" aria-label="Add moment">
+      <img src="/icons/plus.svg" alt="Add">
+    </button>
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────── -->
+  <footer class="diary-footer">
+    <button class="compose-btn" id="compose-btn">Compose Today</button>
+  </footer>
+
+  <!-- ── Focus Mode Overlay ─────────────────────────────── -->
+  <div id="focus-mode" class="focus-mode hidden" role="dialog" aria-modal="true" aria-label="Capture moment">
+
+    <div class="focus-header">
+      <button class="focus-back-btn" id="focus-back-btn" aria-label="Back">
+        <img src="/icons/arrowdown.svg" alt="Back">
+      </button>
+      <h2>New Moment</h2>
+    </div>
+
+    <div class="focus-body">
+
+      <!-- Record -->
+      <section class="record-section">
+        <div class="record-btn-wrap" id="record-btn-wrap">
+          <button class="record-btn" id="record-btn" aria-label="Record">
+            <img src="/icons/mic-on.svg" alt="Record">
+          </button>
+        </div>
+        <div class="record-timer" id="record-timer">00:00</div>
+        <div class="record-waveform" id="record-waveform" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+        <span class="record-label" id="record-label">TAP TO RECORD</span>
+      </section>
+
+      <!-- Photo -->
+      <section class="photo-section">
+        <video id="camera-video" autoplay playsinline></video>
+        <canvas id="camera-canvas"></canvas>
+        <img id="photo-preview" class="photo-preview" alt="Captured photo">
+
+        <button class="camera-capture-btn" id="capture-photo-btn">Take Photo</button>
+
+        <div class="photo-controls">
+          <button class="photo-btn" id="open-camera-btn">
+            <img src="/icons/camera.svg" alt="">
+            Add Photo
+          </button>
+          <button class="photo-btn" id="retake-photo-btn" style="display:none">
+            <img src="/icons/refresh-cw.svg" alt="">
+            Retake
+          </button>
+        </div>
+      </section>
+
+      <!-- Text -->
+      <section class="text-section">
+        <label for="moment-text">What do you hear?</label>
+        <textarea
+          id="moment-text"
+          placeholder="Describe this moment..."
+          rows="3"
+        ></textarea>
+      </section>
+
+      <!-- Save -->
+      <section class="save-section">
+        <button class="save-btn" id="save-btn" disabled>Save Moment</button>
+        <p class="save-hint" id="save-hint">Record audio to save</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script type="module" src="/src/scripts/diary.js"></script>
+</body>
+</html>
