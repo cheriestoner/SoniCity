@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SQLite database
+data/*.db
+
+# User-submitted recordings (runtime data)
+# Exceptions: curated field study data committed deliberately
+public/users/
+!public/users/kenny/
+!public/users/kenny/**
+!public/users/SuChen/
+!public/users/SuChen/**
+!public/users/lola/
+!public/users/lola/**
+!public/users/tt/
+!public/users/tt/**

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoniCity</title>
+    <title>Urban Sound Diary</title>
     <link rel="stylesheet" href="/src/style/home.css">
 </head>
 <body>
@@ -11,24 +11,26 @@
         
         <div class="content-container">
             <div class="welcome-container">
-                <h1>SoniCity</h1>
+                <h1>Urban Sound Diary</h1>
                 <p>Listen, compose, and share your city.</p>
                 
                 <!-- Username Input Section -->
                 <div class="username-section">
-                    <label for="username-input">Username:</label>
-                    <div class="username-input-group">
-                        <input type="text" id="username-input" placeholder="Enter your username" maxlength="20">
-                        <button id="set-username-btn" onclick="setUsername()">Set</button>
+                    <div id="profile-inputs">
+                        <div class="username-input-group">
+                            <input type="text" id="username-input" placeholder="Username" maxlength="20">
+                            <input type="text" id="city-input" placeholder="City (e.g. Suzhou)" maxlength="40">
+                            <button id="set-username-btn" onclick="setUsername()">Set</button>
+                        </div>
                     </div>
                     <div id="current-username-display" style="display: none;">
-                        <span>Current: <strong id="username-display-text"></strong></span>
+                        <span><strong id="username-display-text"></strong> · <span id="city-display-text"></span></span>
                         <button onclick="changeUsername()" class="change-btn">Change</button>
                     </div>
                 </div>
                 
                 <div class="navigation-buttons">
-                    <a href="/record" class="start-button">Start Listening</a>
+                    <a href="/diary" class="start-button">Start Listening</a>
                     <a href="/compose" class="start-button">Compose</a>
                 </div>
             </div>
@@ -55,52 +57,51 @@
     <script>
         // Check for existing username on page load
         window.onload = function() {
-            const savedUsername = localStorage.getItem('sonicity_username');
+            const savedUsername = localStorage.getItem('usd_username');
+            const savedCity = localStorage.getItem('usd_city');
             if (savedUsername) {
-                showCurrentUsername(savedUsername);
+                showCurrentProfile(savedUsername, savedCity);
             }
         };
 
         function setUsername() {
-            const usernameInput = document.getElementById('username-input');
-            const username = usernameInput.value.trim();
-            
-            if (username) {
-                // Save username to localStorage
-                localStorage.setItem('sonicity_username', username);
-                
-                // Update UI
-                showCurrentUsername(username);
-                
-                // Clear input
-                usernameInput.value = '';
-                
-                console.log('Username set:', username);
-            } else {
+            const username = document.getElementById('username-input').value.trim();
+            const city = document.getElementById('city-input').value.trim();
+
+            if (!username) {
                 alert('Please enter a username');
+                return;
             }
+
+            localStorage.setItem('usd_username', username);
+            localStorage.setItem('usd_city', city);
+
+            document.getElementById('username-input').value = '';
+            document.getElementById('city-input').value = '';
+
+            showCurrentProfile(username, city);
         }
 
-        function showCurrentUsername(username) {
-            document.getElementById('username-input').style.display = 'none';
-            document.getElementById('set-username-btn').style.display = 'none';
+        function showCurrentProfile(username, city) {
+            document.getElementById('profile-inputs').style.display = 'none';
             document.getElementById('current-username-display').style.display = 'block';
             document.getElementById('username-display-text').textContent = username;
+            document.getElementById('city-display-text').textContent = city || 'no city set';
         }
 
         function changeUsername() {
-            localStorage.removeItem('sonicity_username');
-            document.getElementById('username-input').style.display = 'inline-block';
-            document.getElementById('set-username-btn').style.display = 'inline-block';
+            localStorage.removeItem('usd_username');
+            localStorage.removeItem('usd_city');
+            document.getElementById('profile-inputs').style.display = 'block';
             document.getElementById('current-username-display').style.display = 'none';
             document.getElementById('username-input').focus();
         }
 
-        // Handle Enter key in username input
         document.getElementById('username-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                setUsername();
-            }
+            if (e.key === 'Enter') document.getElementById('city-input').focus();
+        });
+        document.getElementById('city-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') setUsername();
         });
     </script>
 </body>

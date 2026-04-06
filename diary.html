@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/src/style/diary.css">
 </head>
 <body>
+<div class="app-shell">
 
   <!-- ── Title Bar ──────────────────────────────────────── -->
   <header class="diary-header">
@@ -21,47 +22,57 @@
     </button>
   </main>
 
-  <!-- ── Footer ─────────────────────────────────────────── -->
-  <footer class="diary-footer">
-    <button class="compose-btn" id="compose-btn">Compose Today</button>
-  </footer>
-
-  <!-- ── Focus Mode Overlay ─────────────────────────────── -->
-  <div id="focus-mode" class="focus-mode hidden" role="dialog" aria-modal="true" aria-label="Capture moment">
+  <!-- ── Focus Mode Overlay (capture + review) ──────────── -->
+  <div id="focus-mode" class="focus-mode hidden" data-mode="capture"
+       role="dialog" aria-modal="true" aria-label="Moment">
 
     <div class="focus-header">
       <button class="focus-back-btn" id="focus-back-btn" aria-label="Back">
         <img src="/icons/arrowdown.svg" alt="Back">
       </button>
-      <h2>New Moment</h2>
+      <div class="focus-header-text">
+        <h2 id="focus-title">New Moment</h2>
+        <div id="review-meta" class="review-only review-meta"></div>
+      </div>
     </div>
 
     <div class="focus-body">
 
-      <!-- Record -->
+      <!-- ── Record (capture) / Play (review) ── -->
       <section class="record-section">
-        <div class="record-btn-wrap" id="record-btn-wrap">
+
+        <!-- capture-only: record button -->
+        <div class="record-btn-wrap capture-only" id="record-btn-wrap">
           <button class="record-btn" id="record-btn" aria-label="Record">
             <img src="/icons/mic-on.svg" alt="Record">
           </button>
         </div>
-        <div class="record-timer" id="record-timer">00:00</div>
-        <div class="record-waveform" id="record-waveform" aria-hidden="true">
+        <div class="record-timer capture-only" id="record-timer">00:00</div>
+        <div class="record-waveform capture-only" id="record-waveform" aria-hidden="true">
           <span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span>
         </div>
-        <span class="record-label" id="record-label">TAP TO RECORD</span>
+        <span class="record-label capture-only" id="record-label">TAP TO RECORD</span>
+
+        <!-- review-only: audio player -->
+        <div class="review-only audio-player-row">
+          <button class="play-btn" id="play-btn" aria-label="Play">
+            <img src="/icons/play-circle.svg" alt="Play">
+          </button>
+          <span class="play-timer" id="play-timer">0:00</span>
+        </div>
+
       </section>
 
-      <!-- Photo -->
+      <!-- ── Photo ── -->
       <section class="photo-section">
         <video id="camera-video" autoplay playsinline></video>
         <canvas id="camera-canvas"></canvas>
         <img id="photo-preview" class="photo-preview" alt="Captured photo">
 
-        <button class="camera-capture-btn" id="capture-photo-btn">Take Photo</button>
+        <button class="camera-capture-btn capture-only" id="capture-photo-btn">Take Photo</button>
 
-        <div class="photo-controls">
+        <div class="photo-controls capture-only">
           <button class="photo-btn" id="open-camera-btn">
             <img src="/icons/camera.svg" alt="">
             Add Photo
@@ -73,9 +84,9 @@
         </div>
       </section>
 
-      <!-- Text -->
+      <!-- ── Text ── -->
       <section class="text-section">
-        <label for="moment-text">What do you hear?</label>
+        <label for="moment-text" id="moment-text-label">What do you hear?</label>
         <textarea
           id="moment-text"
           placeholder="Describe this moment..."
@@ -83,8 +94,30 @@
         ></textarea>
       </section>
 
-      <!-- Save -->
-      <section class="save-section">
+      <!-- ── Metadata ── -->
+      <section class="meta-section">
+
+        <div class="meta-row">
+          <span class="meta-label">Time</span>
+          <span id="meta-time" class="meta-value">—</span>
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-label">Place</span>
+          <div class="meta-location-col">
+            <input type="text" id="location-name-input"
+                   class="location-name-input capture-only"
+                   placeholder="Name this place…"
+                   maxlength="60" autocomplete="off">
+            <span id="location-name-display" class="location-name-display review-only"></span>
+            <span id="meta-coords" class="meta-coords">—</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── Save (capture only) ── -->
+      <section class="save-section capture-only">
         <button class="save-btn" id="save-btn" disabled>Save Moment</button>
         <p class="save-hint" id="save-hint">Record audio to save</p>
       </section>
@@ -93,5 +126,6 @@
   </div>
 
   <script type="module" src="/src/scripts/diary.js"></script>
+</div><!-- /.app-shell -->
 </body>
 </html>

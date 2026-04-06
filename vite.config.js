@@ -10,24 +10,22 @@ export default defineConfig(({ command, mode }) => {
         input: {
           main: 'index.html',
           suzhou: 'suzhou.html',
-          recorder: 'recorder.html'
+          diary: 'diary.html'
         }
       }
     },
     server: {
       port: 5173,
       proxy: {
-        // 代理 API 请求到后端服务器
         '/api': {
           target: API_BASE_URL,
           changeOrigin: true
         },
-        // 代理路由请求到后端服务器
         '/compose': {
           target: API_BASE_URL,
           changeOrigin: true
         },
-        '/record': {
+        '/diary': {
           target: API_BASE_URL,
           changeOrigin: true
         }

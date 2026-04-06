@@ -8,6 +8,7 @@ export class Moment {
     this.photoBlob = null;  // Blob (jpeg)
     this.photoUrl = null;   // dataURL
     this.text = '';
+    this.locationName = '';
   }
 
   get isComplete() {
