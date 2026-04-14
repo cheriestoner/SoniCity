@@ -44,26 +44,107 @@ body {
 .diary-header {
   background: #1a1a1a;
   color: white;
-  padding: 1.1rem 1.25rem 0.9rem;
+  padding: 0.9rem 1.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-.diary-header h1 {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #ccc;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.diary-header .diary-date {
+.header-profile span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-sep {
+  color: #555;
+  flex-shrink: 0;
+}
+
+#header-username:empty { display: none; }
+#header-city:empty { display: none; }
+#header-username:empty + .header-sep { display: none; }
+.header-sep:has(+ #header-city:empty) { display: none; }
+
+.diary-date-wrap {
+  position: relative;
+}
+
+.diary-date-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.diary-date-btn span {
   font-size: 0.78rem;
   color: #999;
   font-weight: 400;
+}
+
+.diary-date-chevron {
+  color: #666;
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+}
+
+.diary-date-btn[aria-expanded="true"] .diary-date-chevron {
+  transform: rotate(180deg);
+}
+
+.date-dropdown {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 160px;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 20;
+}
+
+.date-dropdown.hidden { display: none; }
+
+.date-option {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.date-option:hover, .date-option:active { background: #2a2a2a; }
+
+.date-option[aria-selected="true"] {
+  color: white;
+  font-weight: 600;
 }
 
 /* ── Moments Grid ─────────────────────────────────────────── */
@@ -73,8 +154,30 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.6rem;
   padding: 0.9rem;
+  padding-bottom: 3.5rem;
   align-content: start;
   overflow-y: auto;
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.diary-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgba(240, 237, 232, 0.88) 40%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.diary-footer span {
+  font-size: 0.68rem;
+  color: #aaa;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* ── Add Moment Button ────────────────────────────────────── */
@@ -193,6 +296,17 @@ body {
 /* ── Capture / Review mode visibility ────────────────────────── */
 #focus-mode[data-mode="capture"] .review-only  { display: none; }
 #focus-mode[data-mode="review"]  .capture-only { display: none !important; }
+
+/* ── Post-record preview state ──────────────────────────────── */
+/* Before recording: hide audio player and re-record button */
+#focus-mode[data-mode="capture"]:not(.has-recording) .audio-player-row { display: none; }
+#focus-mode[data-mode="capture"]:not(.has-recording) .rerecord-btn     { display: none; }
+
+/* After recording: hide record controls */
+#focus-mode[data-mode="capture"].has-recording .record-btn-wrap { display: none; }
+#focus-mode[data-mode="capture"].has-recording .record-waveform { display: none; }
+#focus-mode[data-mode="capture"].has-recording .record-label    { display: none; }
+#focus-mode[data-mode="capture"].has-recording .record-timer    { display: none; }
 
 /* Focus header */
 .focus-header {
@@ -375,7 +489,37 @@ body {
   50%       { height: var(--h, 60%); max-height: 28px; }
 }
 
-/* ── Audio Player (review) ────────────────────────────────── */
+/* ── Re-record Button ─────────────────────────────────────── */
+.rerecord-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border: 1.5px solid #444;
+  border-radius: 8px;
+  background: none;
+  color: #aaa;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rerecord-btn:hover, .rerecord-btn:active {
+  border-color: #fff;
+  color: white;
+}
+
+.rerecord-btn img {
+  width: 16px;
+  height: 16px;
+  filter: invert(0.65);
+}
+
+.rerecord-btn:hover img, .rerecord-btn:active img { filter: invert(1); }
+
+/* ── Audio Player (capture preview + review) ──────────────── */
 .audio-player-row {
   display: flex;
   align-items: center;

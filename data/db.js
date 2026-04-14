@@ -45,6 +45,24 @@ export function getMomentsByUsername(username) {
   return db.prepare('SELECT * FROM moments WHERE username = ? ORDER BY timestamp DESC').all(username);
 }
 
+export function getMomentDates(username) {
+  return db.prepare(
+    'SELECT DISTINCT date(timestamp) AS date FROM moments WHERE username = ? ORDER BY date DESC'
+  ).all(username).map(r => r.date);
+}
+
+export function getMomentsRecent(username, days) {
+  return db.prepare(
+    `SELECT * FROM moments WHERE username = ? AND date(timestamp) >= date('now', ?) ORDER BY timestamp DESC`
+  ).all(username, `-${days - 1} days`);
+}
+
+export function getMomentsByDate(username, date) {
+  return db.prepare(
+    'SELECT * FROM moments WHERE username = ? AND date(timestamp) = ? ORDER BY timestamp DESC'
+  ).all(username, date);
+}
+
 export function getAllMoments() {
   return db.prepare('SELECT * FROM moments ORDER BY timestamp DESC').all();
 }

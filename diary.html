@@ -11,8 +11,18 @@
 
   <!-- ── Title Bar ──────────────────────────────────────── -->
   <header class="diary-header">
-    <h1>Urban Sound Diary · Today</h1>
-    <span class="diary-date" id="diary-date"></span>
+    <span class="header-profile">
+      <span id="header-username"></span>
+      <span class="header-sep">·</span>
+      <span id="header-city"></span>
+    </span>
+    <div class="diary-date-wrap">
+      <button class="diary-date-btn" id="diary-date-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span id="diary-date"></span>
+        <span class="diary-date-chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="date-dropdown hidden" id="date-dropdown" role="listbox" aria-label="Select date"></div>
+    </div>
   </header>
 
   <!-- ── Moments Grid ───────────────────────────────────── -->
@@ -54,13 +64,19 @@
         </div>
         <span class="record-label capture-only" id="record-label">TAP TO RECORD</span>
 
-        <!-- review-only: audio player -->
-        <div class="review-only audio-player-row">
+        <!-- capture preview + review: audio player -->
+        <div class="audio-player-row">
           <button class="play-btn" id="play-btn" aria-label="Play">
             <img src="/icons/play-circle.svg" alt="Play">
           </button>
           <span class="play-timer" id="play-timer">0:00</span>
         </div>
+
+        <!-- capture preview: re-record -->
+        <button class="rerecord-btn capture-only" id="rerecord-btn">
+          <img src="/icons/refresh-cw.svg" alt="">
+          Re-record
+        </button>
 
       </section>
 
@@ -124,6 +140,10 @@
 
     </div>
   </div>
+
+  <footer class="diary-footer">
+    <span>Urban Sound Diary</span>
+  </footer>
 
   <script type="module" src="/src/scripts/diary.js"></script>
 </div><!-- /.app-shell -->

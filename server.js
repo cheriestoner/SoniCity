@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import multer from 'multer';
-import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments } from './data/db.js';
+import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
 dotenv.config();
 
@@ -305,11 +305,25 @@ app.post('/api/moments', upload.fields([
     }
 });
 
-// Get moments for a user (used by diary.js on page load)
-app.get('/api/moments', (req, res) => {
+// Get distinct dates that have moments for a user
+app.get('/api/moments/dates', (req, res) => {
     try {
         const { username } = req.query;
-        const rows = username ? getMomentsByUsername(username) : getAllMoments();
+        if (!username) return res.status(400).json({ error: 'username required' });
+        res.json({ dates: getMomentDates(username) });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to get dates', details: error.message });
+    }
+});
+
+// Get moments for a user — supports ?date=YYYY-MM-DD and ?days=N
+app.get('/api/moments', (req, res) => {
+    try {
+        const { username, date, days } = req.query;
+        let rows;
+        if (date)      rows = getMomentsByDate(username, date);
+        else if (days) rows = getMomentsRecent(username, parseInt(days, 10));
+        else           rows = username ? getMomentsByUsername(username) : getAllMoments();
         res.json({ moments: rows });
     } catch (error) {
         res.status(500).json({ error: 'Failed to get moments', details: error.message });

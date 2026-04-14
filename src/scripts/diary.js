@@ -11,6 +11,8 @@ let recordingInterval = null;
 let recordingSeconds = 0;
 let isRecording = false;
 let audioPlayer = null;
+let dateCache = {};   // { 'YYYY-MM-DD': Moment[] }
+let activeDate = null;
 
 // ── DOM refs ─────────────────────────────────────────────────
 const grid = document.getElementById('moments-grid');
@@ -34,10 +36,16 @@ const saveBtn = document.getElementById('save-btn');
 const saveHint = document.getElementById('save-hint');
 const playBtn = document.getElementById('play-btn');
 const playTimer = document.getElementById('play-timer');
+const rerecordBtn = document.getElementById('rerecord-btn');
 const metaTime = document.getElementById('meta-time');
 const metaCoords = document.getElementById('meta-coords');
 const locationNameInput = document.getElementById('location-name-input');
 const locationNameDisplay = document.getElementById('location-name-display');
+const diaryDateEl = document.getElementById('diary-date');
+const diaryDateBtn = document.getElementById('diary-date-btn');
+const dateDropdown = document.getElementById('date-dropdown');
+const headerUsername = document.getElementById('header-username');
+const headerCity = document.getElementById('header-city');
 
 // ── Username ──────────────────────────────────────────────────
 function getUsername() {
@@ -67,8 +75,99 @@ function formatReviewTitle(isoString) {
   });
 }
 
-// ── Init date ────────────────────────────────────────────────
-document.getElementById('diary-date').textContent = getTodayLabel();
+function momentDateKey(isoString) {
+  return isoString.slice(0, 10);
+}
+
+function formatDateLabel(dateKey) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  if (dateKey === todayKey) return getTodayLabel();
+  // Parse as local midnight to get correct weekday
+  return new Date(dateKey + 'T00:00:00').toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric',
+  });
+}
+
+function rowToMoment(row) {
+  const m = new Moment();
+  m.id = row.id;
+  m.timestamp = row.timestamp;
+  m.text = row.description || '';
+  m.locationName = row.location_name || '';
+  m.location = row.location_lat != null
+    ? { lat: row.location_lat, lng: row.location_lng, accuracy: row.location_accuracy }
+    : null;
+  if (row.audio_path) m.audioUrl = `/${row.audio_path}`;
+  if (row.photo_path) m.photoUrl = `/${row.photo_path}`;
+  return m;
+}
+
+// ── Grid ──────────────────────────────────────────────────────
+function clearGrid() {
+  grid.querySelectorAll('.moment-card').forEach(c => c.remove());
+}
+
+function renderGrid(dateKey) {
+  clearGrid();
+  for (const m of (dateCache[dateKey] || [])) renderMomentCard(m);
+}
+
+// ── Date dropdown ─────────────────────────────────────────────
+function populateDateDropdown(dates) {
+  dateDropdown.innerHTML = '';
+  for (const dateKey of dates) {
+    const btn = document.createElement('button');
+    btn.className = 'date-option';
+    btn.setAttribute('role', 'option');
+    btn.dataset.date = dateKey;
+    btn.textContent = formatDateLabel(dateKey);
+    btn.addEventListener('click', () => selectDate(dateKey));
+    dateDropdown.appendChild(btn);
+  }
+}
+
+function updateDropdownSelection() {
+  dateDropdown.querySelectorAll('.date-option').forEach(btn => {
+    btn.setAttribute('aria-selected', btn.dataset.date === activeDate ? 'true' : 'false');
+  });
+}
+
+function openDateDropdown() {
+  dateDropdown.classList.remove('hidden');
+  diaryDateBtn.setAttribute('aria-expanded', 'true');
+}
+
+function closeDateDropdown() {
+  dateDropdown.classList.add('hidden');
+  diaryDateBtn.setAttribute('aria-expanded', 'false');
+}
+
+async function selectDate(dateKey) {
+  activeDate = dateKey;
+  diaryDateEl.textContent = formatDateLabel(dateKey);
+  updateDropdownSelection();
+  closeDateDropdown();
+  if (dateCache[dateKey] !== undefined) {
+    renderGrid(dateKey);
+  } else {
+    await fetchMomentsForDate(dateKey);
+  }
+}
+
+async function fetchMomentsForDate(dateKey) {
+  const username = getUsername();
+  try {
+    const res = await fetch(`/api/moments?username=${encodeURIComponent(username)}&date=${dateKey}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const loaded = (data.moments || []).map(rowToMoment);
+    dateCache[dateKey] = loaded;
+    moments.push(...loaded);
+    renderGrid(dateKey);
+  } catch (err) {
+    console.warn('Failed to fetch moments for date:', dateKey, err);
+  }
+}
 
 // ── Focus mode — shared open/close ───────────────────────────
 function openOverlay() {
@@ -80,6 +179,8 @@ function closeFocusMode() {
   stopRecordingCleanup();
   stopCamera();
   stopAudioPlayer();
+  if (activeMoment) activeMoment.cleanup();
+  activeMoment = null;
   focusMode.classList.add('hidden');
   focusMode.dataset.mode = 'capture';
   momentText.readOnly = false;
@@ -101,6 +202,8 @@ function openFocusMode() {
 }
 
 function resetCaptureUI() {
+  stopAudioPlayer();
+  focusMode.classList.remove('has-recording');
   isRecording = false;
   recordBtn.querySelector('img').src = '/icons/mic-on.svg';
   recordBtn.classList.remove('recording');
@@ -130,7 +233,6 @@ function openReviewMode(moment) {
   focusMode.dataset.mode = 'review';
   focusTitle.textContent = formatReviewTitle(moment.timestamp);
 
-  // Photo
   if (moment.photoUrl) {
     photoPreview.src = moment.photoUrl;
     photoPreview.classList.add('visible');
@@ -138,14 +240,11 @@ function openReviewMode(moment) {
     photoPreview.classList.remove('visible');
   }
 
-  // Text (read-only)
   momentText.value = moment.text;
   momentText.readOnly = true;
 
-  // Audio player
   setupAudioPlayer(moment.audioUrl);
 
-  // Metadata section
   metaTime.textContent = new Date(moment.timestamp).toLocaleTimeString('en-US', {
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
@@ -157,7 +256,7 @@ function openReviewMode(moment) {
   openOverlay();
 }
 
-// ── Audio player (review) ─────────────────────────────────────
+// ── Audio player ──────────────────────────────────────────────
 function setupAudioPlayer(url) {
   stopAudioPlayer();
   audioPlayer = new Audio(url);
@@ -268,6 +367,16 @@ async function onRecordingComplete() {
     ? `${activeMoment.location.lat.toFixed(4)}, ${activeMoment.location.lng.toFixed(4)}`
     : 'No location';
   updateSaveBtn();
+  setupAudioPlayer(activeMoment.audioUrl);
+  focusMode.classList.add('has-recording');
+}
+
+function rerecord() {
+  if (activeMoment) {
+    activeMoment.cleanup();
+    activeMoment.audioBlob = null;
+  }
+  resetCaptureUI();
 }
 
 // ── Camera ───────────────────────────────────────────────────
@@ -370,21 +479,22 @@ async function saveMoment() {
   activeMoment.text = momentText.value.trim();
   activeMoment.locationName = locationNameInput.value.trim();
 
-  const index = moments.length;
-  moments.push(activeMoment);
-  renderMomentCard(activeMoment, index);
+  const saved = activeMoment;
+  const dateKey = momentDateKey(saved.timestamp);
+
+  if (!dateCache[dateKey]) dateCache[dateKey] = [];
+  dateCache[dateKey].push(saved);
+  moments.push(saved);
+
+  if (activeDate === dateKey) renderMomentCard(saved);
 
   closeFocusMode();
-  const saved = activeMoment;
-  activeMoment = null;
-
   await persistMoment(saved);
 }
 
-function renderMomentCard(moment, index) {
+function renderMomentCard(moment) {
   const card = document.createElement('div');
   card.className = 'moment-card' + (moment.photoUrl ? '' : ' no-photo');
-  card.dataset.momentIndex = index;
 
   if (moment.photoUrl) {
     const img = document.createElement('img');
@@ -411,9 +521,7 @@ function renderMomentCard(moment, index) {
   }
 
   card.appendChild(overlay);
-
-  card.addEventListener('click', () => openReviewMode(moments[index]));
-
+  card.addEventListener('click', () => openReviewMode(moment));
   grid.insertBefore(card, addBtn.nextSibling);
 }
 
@@ -426,33 +534,57 @@ capturePhotoBtn.addEventListener('click', capturePhoto);
 retakePhotoBtn.addEventListener('click', retakePhoto);
 saveBtn.addEventListener('click', saveMoment);
 playBtn.addEventListener('click', togglePlayback);
+rerecordBtn.addEventListener('click', rerecord);
+
+diaryDateBtn.addEventListener('click', () => {
+  if (dateDropdown.classList.contains('hidden')) openDateDropdown();
+  else closeDateDropdown();
+});
+
+document.addEventListener('click', (e) => {
+  if (!diaryDateBtn.contains(e.target) && !dateDropdown.contains(e.target)) {
+    closeDateDropdown();
+  }
+});
 
 // ── Load moments from server on page start ────────────────────
+function renderHeaderProfile() {
+  const username = getUsername();
+  headerUsername.textContent = username !== 'anonymous' ? username : '';
+  headerCity.textContent = getCity() || '';
+}
+
+activeDate = new Date().toISOString().slice(0, 10);
+diaryDateEl.textContent = getTodayLabel();
+renderHeaderProfile();
+
 async function initDiary() {
   const username = getUsername();
   if (!username || username === 'anonymous') return;
 
   try {
-    const res = await fetch(`/api/moments?username=${encodeURIComponent(username)}`);
-    if (!res.ok) return;
-    const data = await res.json();
+    const [datesRes, momentsRes] = await Promise.all([
+      fetch(`/api/moments/dates?username=${encodeURIComponent(username)}`),
+      fetch(`/api/moments?username=${encodeURIComponent(username)}&days=3`),
+    ]);
+    const [datesData, momentsData] = await Promise.all([datesRes.json(), momentsRes.json()]);
 
-    for (const row of (data.moments || [])) {
-      const m = new Moment();
-      m.id = row.id;
-      m.timestamp = row.timestamp;
-      m.text = row.description || '';
-      m.locationName = row.location_name || '';
-      m.location = row.location_lat != null
-        ? { lat: row.location_lat, lng: row.location_lng, accuracy: row.location_accuracy }
-        : null;
-      if (row.audio_path) m.audioUrl = `/${row.audio_path}`;
-      if (row.photo_path) m.photoUrl = `/${row.photo_path}`;
+    populateDateDropdown(datesData.dates || []);
 
-      const index = moments.length;
+    for (const row of (momentsData.moments || [])) {
+      const m = rowToMoment(row);
       moments.push(m);
-      renderMomentCard(m, index);
+      const key = momentDateKey(m.timestamp);
+      if (!dateCache[key]) dateCache[key] = [];
+      dateCache[key].push(m);
     }
+
+    const todayKey = new Date().toISOString().slice(0, 10);
+    activeDate = dateCache[todayKey] ? todayKey : Object.keys(dateCache).sort().at(-1) ?? todayKey;
+
+    diaryDateEl.textContent = formatDateLabel(activeDate);
+    updateDropdownSelection();
+    renderGrid(activeDate);
   } catch (err) {
     console.warn('Could not load moments from server:', err);
   }
