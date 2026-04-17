@@ -200,27 +200,42 @@
                 button.style.backgroundImage = `url(${img.src})`;
                 button.style.opacity = 0.5;
 
-                button.draggable = true;
-                button.addEventListener("dragstart", (event) => {
-                    event.dataTransfer.setData("text/plain", "");
-                    event.dataTransfer.setDragImage(new Image(), 0, 0);
-                    button.style.opacity = 0.5;
-                });
-
-                button.addEventListener("drag", (event) => {
+                let pointerDragging = false;
+                button.addEventListener("pointerdown", (event) => {
                     event.preventDefault();
-                    if (event.pageX !== 0 && event.pageY !== 0) {
-                        button.style.left = `${event.pageX - buttonSize}px`;
-                        button.style.top = `${event.pageY - buttonSize}px`;
-                        let slider = document.querySelector(`input[data-src='${img.audio}']`);
-                        if (slider) {
-                            slider.style.left = `${event.pageX - buttonSize}px`;
-                            slider.style.top = `${event.pageY + 10}px`;
+                    pointerDragging = false;
+                    const startX = event.clientX;
+                    const startY = event.clientY;
+                    const startLeft = parseInt(button.style.left);
+                    const startTop  = parseInt(button.style.top);
+                    button.setPointerCapture(event.pointerId);
+
+                    const onMove = (e) => {
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        if (!pointerDragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+                            pointerDragging = true;
                         }
-                    }
+                        if (pointerDragging) {
+                            button.style.left = `${startLeft + dx}px`;
+                            button.style.top  = `${startTop  + dy}px`;
+                            const slider = document.querySelector(`input[data-src='${img.audio}']`);
+                            if (slider) {
+                                slider.style.left = `${startLeft + dx}px`;
+                                slider.style.top  = `${startTop  + dy + buttonSize + 10}px`;
+                            }
+                        }
+                    };
+                    const onUp = () => {
+                        button.removeEventListener("pointermove", onMove);
+                        button.removeEventListener("pointerup",   onUp);
+                    };
+                    button.addEventListener("pointermove", onMove);
+                    button.addEventListener("pointerup",   onUp);
                 });
 
                 button.addEventListener("click", () => {
+                    if (pointerDragging) return;
                     if (!sidebar1Visible) {
                         sidebar1Visible = false;
                         sidebar1.classed("hidden", true);

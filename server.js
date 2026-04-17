@@ -33,8 +33,12 @@ if (isProduction) {
         res.sendFile('index.html', { root: './' });
     });
 
-    app.get('/compose', (_req, res) => {
+    app.get('/suzhou', (_req, res) => {
         res.sendFile('suzhou.html', { root: './' });
+    });
+
+    app.get('/expand', (_req, res) => {
+        res.sendFile('city.html', { root: './' });
     });
 
     app.get('/diary', (_req, res) => {
@@ -48,8 +52,12 @@ if (isProduction) {
         res.sendFile('index.html', { root: './' });
     });
 
-    app.get('/compose', (_req, res) => {
+    app.get('/suzhou', (_req, res) => {
         res.sendFile('suzhou.html', { root: './' });
+    });
+
+    app.get('/expand', (_req, res) => {
+        res.sendFile('city.html', { root: './' });
     });
 
     app.get('/diary', (_req, res) => {
