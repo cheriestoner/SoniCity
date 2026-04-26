@@ -54,6 +54,7 @@
                 <a href="/" class="home-link">← Home</a>
             </div>
             <div id="image-title"></div>
+            <div id="image-time"></div>
             <div id="image-bgc"></div>
             <div id="player" class="player elements">
                 <span id="image-audio"></span>
@@ -393,6 +394,7 @@
                         toggleButton2.text(">");
                     }
                     d3.select("#image-title").html(`<p>${img.title}</p>`);
+                    d3.select("#image-time").html(img.time ? `<p>${img.time}</p>` : '');
                     d3.select("#image-bgc").html(img.bgc ? `<img src="${img.bgc}" class="selected-image">` : '');
                     d3.select("#image-describ").html(`<p>${img.describ}</p>`);
 
@@ -679,6 +681,7 @@
             document.querySelectorAll("#sidebar1 label").forEach(label => label.remove());
             // clear sidebar1 info
             d3.select("#image-title").html("");
+            d3.select("#image-time").html("");
             d3.select("#image-bgc").html("");
             d3.select("#image-describ").html("");
             d3.select("#image-audio").html("");
