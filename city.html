@@ -73,6 +73,16 @@
                         <button id="view-clock" class="view-btn">Clock</button>
                     </div>
                 </div>
+
+                <div class="view-toggle">
+                    <label class="ai-label">User</label>
+                    <div class="toggle-buttons">
+                        <button id="filter-all"   class="view-btn active">All</button>
+                        <button id="filter-alice" class="view-btn">alice</button>
+                        <button id="filter-bob"   class="view-btn">bob</button>
+                        <button id="filter-carol" class="view-btn">carol</button>
+                    </div>
+                </div>
             </div>
             <div class="sidebar2-footer">
                 <img src="/asset/logos/Logo-1.png" alt="Logo" class="sidebar2-logo primary">
@@ -391,6 +401,29 @@
         document.getElementById('view-timeline').addEventListener('click', () => setView('timeline'));
         document.getElementById('view-clock').addEventListener('click', () => setView('clock'));
 
+        let currentFilter = 'all';
+
+        function setFilter(user) {
+            currentFilter = user;
+            document.querySelectorAll('.image-button').forEach(btn => {
+                const match = user === 'all' || btn.dataset.user === user;
+                btn.style.display = match ? '' : 'none';
+                const audioSrc = btn.dataset.audioSrc;
+                if (audioSrc) {
+                    const slider = document.querySelector(`input[data-src='${audioSrc}']`);
+                    if (slider) slider.style.display = match ? '' : 'none';
+                }
+            });
+            ['all','alice','bob','carol'].forEach(u => {
+                document.getElementById(`filter-${u}`).classList.toggle('active', u === user);
+            });
+        }
+
+        document.getElementById('filter-all').addEventListener('click',   () => setFilter('all'));
+        document.getElementById('filter-alice').addEventListener('click', () => setFilter('alice'));
+        document.getElementById('filter-bob').addEventListener('click',   () => setFilter('bob'));
+        document.getElementById('filter-carol').addEventListener('click', () => setFilter('carol'));
+
         d3.csv("imagedata-cityA.csv").then(images => {
             const { leftBound, rightBound } = computeVisibleBounds();
             images.forEach((img, index) => {
@@ -423,6 +456,7 @@
                 button.dataset.clockLeft    = String(clockLeft);
                 button.dataset.clockTop     = String(clockTop);
                 button.dataset.audioSrc     = img.audio;
+                button.dataset.user         = img.user;
                 button.style.left   = `${computedLeft}px`;
                 button.style.top    = `${computedTop}px`;
                 button.style.width  = `${buttonSize}px`;
@@ -770,6 +804,7 @@
             d3.select("#image-audio").html("");
             // return to scatter view
             setView('scatter');
+            setFilter('all');
         });
     </script>
 </body>
