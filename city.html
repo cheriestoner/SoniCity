@@ -41,9 +41,6 @@
         .image-button {
             transition: none;
         }
-        .image-button.animating {
-            transition: left 0.5s ease, top 0.5s ease;
-        }
     </style>
 </head>
 <body>
@@ -73,6 +70,7 @@
                     <div class="toggle-buttons">
                         <button id="view-scatter" class="view-btn active">Scatter</button>
                         <button id="view-timeline" class="view-btn">Timeline</button>
+                        <button id="view-clock" class="view-btn">Clock</button>
                     </div>
                 </div>
             </div>
@@ -128,6 +126,11 @@
         // Timeline grid group (hidden by default)
         const timelineGrid = svg.append("g")
             .attr("id", "timeline-grid")
+            .style("display", "none");
+
+        // Clock grid group (hidden by default)
+        const clockGrid = svg.append("g")
+            .attr("id", "clock-grid")
             .style("display", "none");
 
         const g = svg.append("g");
@@ -202,6 +205,7 @@
         const userLabels = ['alice', 'bob', 'carol'];
         const numDays = 7;
         const numUsers = 3;
+        const dayDates = new Array(numDays).fill('');
 
         // Build timeline grid SVG elements (lines + labels)
         // Called once after data loads so we know visibleBounds
@@ -209,64 +213,131 @@
             timelineGrid.selectAll("*").remove();
             const { leftBound, rightBound, visibleWidth } = computeVisibleBounds();
             const cellW = visibleWidth / numDays;
-            const cellH = height / numUsers;
             const labelPad = 4;
-
-            // Horizontal dividers between user rows
-            for (let u = 1; u < numUsers; u++) {
-                timelineGrid.append("line")
-                    .attr("class", "timeline-grid-line")
-                    .attr("x1", leftBound).attr("y1", u * cellH)
-                    .attr("x2", rightBound).attr("y2", u * cellH);
-            }
 
             // Vertical dividers between day columns
             for (let d = 1; d < numDays; d++) {
+                const x = leftBound + d * cellW;
                 timelineGrid.append("line")
                     .attr("class", "timeline-grid-line")
-                    .attr("x1", leftBound + d * cellW).attr("y1", 0)
-                    .attr("x2", leftBound + d * cellW).attr("y2", height);
+                    .attr("x1", x).attr("y1", 0)
+                    .attr("x2", x).attr("y2", height);
             }
 
-            // Day labels along top
+            // Horizontal dividers every 6 hours
+            [6, 12, 18].forEach(h => {
+                const y = (h / 24) * height;
+                timelineGrid.append("line")
+                    .attr("class", "timeline-grid-line")
+                    .attr("x1", leftBound).attr("y1", y)
+                    .attr("x2", rightBound).attr("y2", y);
+            });
+
+            // Day / date labels along top
             for (let d = 0; d < numDays; d++) {
                 timelineGrid.append("text")
                     .attr("class", "timeline-day-label")
                     .attr("x", leftBound + d * cellW + cellW / 2)
                     .attr("y", 16)
-                    .text(`Day ${d + 1}`);
+                    .text(dayDates[d] || `Day ${d + 1}`);
             }
 
-            // User labels along left of each row
-            for (let u = 0; u < numUsers; u++) {
+            // Time-of-day labels on left
+            ['00:00', '06:00', '12:00', '18:00', '24:00'].forEach((label, i) => {
                 timelineGrid.append("text")
                     .attr("class", "timeline-user-label")
                     .attr("x", leftBound - labelPad)
-                    .attr("y", u * cellH + cellH / 2 + 4)
-                    .text(userLabels[u]);
-            }
+                    .attr("y", (i / 4) * height + 4)
+                    .text(label);
+            });
         }
 
-        // Compute timeline position for a button
+        // Build clock quadrant labels
+        function buildClockGrid() {
+            clockGrid.selectAll("*").remove();
+            const { leftBound, visibleWidth } = computeVisibleBounds();
+            const cx = leftBound + visibleWidth / 2;
+            const cy = height / 2;
+            const r  = Math.min(visibleWidth, height) * 0.35;
+            const lo = r * 0.65; // label offset from center
+
+            const quadrants = [
+                { label: 'Morning',   angle: Math.PI * 0.5  },  // top-right (π/4 from top = 45°)
+                { label: 'Afternoon', angle: Math.PI * 1.0  },  // bottom-right
+                { label: 'Evening',   angle: Math.PI * 1.5  },  // bottom-left
+                { label: 'Night',     angle: Math.PI * 2.0  },  // top-left (= 0 wraps, use 7π/4)
+            ];
+            // Angles measured clockwise from top: morning=45°, afternoon=135°, evening=225°, night=315°
+            const angles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
+            const names  = ['Morning', 'Afternoon', 'Evening', 'Night'];
+
+            names.forEach((name, i) => {
+                const a = angles[i];
+                clockGrid.append("text")
+                    .attr("x", cx + lo * Math.sin(a))
+                    .attr("y", cy - lo * Math.cos(a) + 4)
+                    .attr("text-anchor", "middle")
+                    .attr("class", "timeline-day-label")
+                    .style("font-size", "clamp(11px, 1.2vw, 15px)")
+                    .style("fill", "#bbb")
+                    .text(name);
+            });
+        }
+
+        // Compute clock position for a button from its time field
+        function computeClockPos(img) {
+            const { leftBound, visibleWidth } = computeVisibleBounds();
+            const cx = leftBound + visibleWidth / 2;
+            const cy = height / 2;
+            const r  = Math.min(visibleWidth, height) * 0.35;
+
+            // Parse hh:mm
+            const parts = (img.time || '12:00').split(':');
+            const totalMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+            // 06:00 maps to angle 0 (top), clockwise
+            const adjusted = (totalMinutes - 360 + 1440) % 1440;
+            const angle = (adjusted / 1440) * 2 * Math.PI;
+
+            const baseX = cx + r * Math.sin(angle);
+            const baseY = cy - r * Math.cos(angle);
+
+            // Seeded jitter: consume 4 RNG calls (scatter x/y + timeline jx/jy) then use 2 more
+            const idKey = (img.audio || img.src || img.title);
+            const rng = seededRngFromString(`${randomSeed}|${idKey}`);
+            rng(); rng(); rng(); rng(); // consume prior calls
+            const jr = (rng() - 0.5) * 2 * r * 0.12;
+            const jt = (rng() - 0.5) * 0.15;
+
+            const clockLeft = Math.round(baseX + jr * Math.sin(angle) + jt * Math.cos(angle) * r - buttonSize / 2);
+            const clockTop  = Math.round(baseY - jr * Math.cos(angle) + jt * Math.sin(angle) * r - buttonSize / 2);
+
+            return { clockLeft, clockTop };
+        }
+
+        // Compute timeline position for a button (X = day column, Y = time of day)
         function computeTimelinePos(img) {
             const { leftBound, visibleWidth } = computeVisibleBounds();
             const cellW = visibleWidth / numDays;
-            const cellH = height / numUsers;
-            const uIdx = userIndex[img.user] ?? 0;
             const dIdx = Math.max(0, parseInt(img.day, 10) - 1);
 
+            // X: center button in its day column
+            const baseLeft = leftBound + dIdx * cellW + (cellW - buttonSize) / 2;
+
+            // Y: map hh:mm → 0–1440 minutes → pixel position
+            const parts = (img.time || '12:00').split(':');
+            const totalMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+            const baseTop = (totalMinutes / 1440) * height - buttonSize / 2;
+
+            // Seeded jitter: consume scatter x/y, use 3rd call for horizontal jitter only
             const idKey = (img.audio || img.src || img.title);
             const rng = seededRngFromString(`${randomSeed}|${idKey}`);
-            rng(); rng(); // consume scatter x/y calls first
+            rng(); rng();
             const jx = (rng() - 0.5) * 2 * cellW * 0.2;
-            const jy = (rng() - 0.5) * 2 * cellH * 0.2;
-
-            const baseLeft = leftBound + dIdx * cellW + (cellW - buttonSize) / 2;
-            const baseTop  = uIdx * cellH + (cellH - buttonSize) / 2;
+            rng(); // consume 4th call (clock view uses calls 5&6)
 
             return {
                 timelineLeft: Math.round(baseLeft + jx),
-                timelineTop:  Math.round(baseTop  + jy)
+                timelineTop:  Math.round(baseTop)
             };
         }
 
@@ -276,41 +347,49 @@
         function setView(view) {
             currentView = view;
             const isTimeline = view === 'timeline';
+            const isClock    = view === 'clock';
 
-            if (isTimeline) {
-                buildTimelineGrid();
-            }
+            if (isTimeline) buildTimelineGrid();
+            if (isClock)    buildClockGrid();
+
             timelineGrid.style("display", isTimeline ? null : "none");
+            clockGrid.style("display",    isClock    ? null : "none");
 
             document.querySelectorAll(".image-button").forEach(btn => {
-                btn.classList.add("animating");
+                let targetLeft, targetTop;
                 if (isTimeline) {
-                    btn.style.left = btn.dataset.timelineLeft + 'px';
-                    btn.style.top  = btn.dataset.timelineTop  + 'px';
+                    targetLeft = parseInt(btn.dataset.timelineLeft);
+                    targetTop  = parseInt(btn.dataset.timelineTop);
+                } else if (isClock) {
+                    targetLeft = parseInt(btn.dataset.clockLeft);
+                    targetTop  = parseInt(btn.dataset.clockTop);
                 } else {
-                    btn.style.left = btn.dataset.initLeft + 'px';
-                    btn.style.top  = btn.dataset.initTop  + 'px';
+                    targetLeft = parseInt(btn.dataset.initLeft);
+                    targetTop  = parseInt(btn.dataset.initTop);
                 }
-                // move associated volume slider
+                const dx = targetLeft - parseInt(btn.dataset.initLeft);
+                const dy = targetTop  - parseInt(btn.dataset.initTop);
+                btn.style.transition = 'transform 0.5s ease';
+                btn.style.transform  = `translate(${dx}px, ${dy}px)`;
+
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
                     const slider = document.querySelector(`input[data-src='${audioSrc}']`);
                     if (slider) {
-                        slider.style.transition = 'left 0.5s ease, top 0.5s ease';
-                        slider.style.left = btn.style.left;
-                        slider.style.top  = `${parseInt(btn.style.top) + buttonSize + 10}px`;
+                        slider.style.transition = 'transform 0.5s ease';
+                        slider.style.transform  = `translate(${dx}px, ${dy}px)`;
                     }
                 }
-                // remove animating class after transition
-                setTimeout(() => btn.classList.remove("animating"), 550);
             });
 
-            document.getElementById('view-scatter').classList.toggle('active', !isTimeline);
+            document.getElementById('view-scatter').classList.toggle('active', view === 'scatter');
             document.getElementById('view-timeline').classList.toggle('active', isTimeline);
+            document.getElementById('view-clock').classList.toggle('active', isClock);
         }
 
         document.getElementById('view-scatter').addEventListener('click', () => setView('scatter'));
         document.getElementById('view-timeline').addEventListener('click', () => setView('timeline'));
+        document.getElementById('view-clock').addEventListener('click', () => setView('clock'));
 
         d3.csv("imagedata-cityA.csv").then(images => {
             const { leftBound, rightBound } = computeVisibleBounds();
@@ -330,13 +409,19 @@
                 const computedLeft = Math.floor(minLeft + (maxLeft - minLeft) * xRand);
                 const computedTop  = Math.floor(minTop  + (maxTop  - minTop)  * yRand);
 
+                const dIdx = Math.max(0, parseInt(img.day, 10) - 1);
+                if (img.date) dayDates[dIdx] = img.date;
+
                 const { timelineLeft, timelineTop } = computeTimelinePos(img);
+                const { clockLeft, clockTop }       = computeClockPos(img);
 
                 button.classList.add("image-button");
                 button.dataset.initLeft     = String(computedLeft);
                 button.dataset.initTop      = String(computedTop);
                 button.dataset.timelineLeft = String(timelineLeft);
                 button.dataset.timelineTop  = String(timelineTop);
+                button.dataset.clockLeft    = String(clockLeft);
+                button.dataset.clockTop     = String(clockTop);
                 button.dataset.audioSrc     = img.audio;
                 button.style.left   = `${computedLeft}px`;
                 button.style.top    = `${computedTop}px`;
@@ -351,8 +436,9 @@
                     pointerDragging = false;
                     const startX = event.clientX;
                     const startY = event.clientY;
-                    const startLeft = parseInt(button.style.left);
-                    const startTop  = parseInt(button.style.top);
+                    const m = new DOMMatrix(getComputedStyle(button).transform);
+                    const baseDx = m.m41;
+                    const baseDy = m.m42;
                     button.setPointerCapture(event.pointerId);
 
                     const onMove = (e) => {
@@ -362,12 +448,12 @@
                             pointerDragging = true;
                         }
                         if (pointerDragging) {
-                            button.style.left = `${startLeft + dx}px`;
-                            button.style.top  = `${startTop  + dy}px`;
+                            button.style.transition = 'none';
+                            button.style.transform  = `translate(${baseDx + dx}px, ${baseDy + dy}px)`;
                             const slider = document.querySelector(`input[data-src='${img.audio}']`);
                             if (slider) {
-                                slider.style.left = `${startLeft + dx}px`;
-                                slider.style.top  = `${startTop  + dy + buttonSize + 10}px`;
+                                slider.style.transition = 'none';
+                                slider.style.transform  = `translate(${baseDx + dx}px, ${baseDy + dy}px)`;
                             }
                         }
                     };
@@ -442,6 +528,7 @@
                         audioElement.volume = 1;
                         document.body.appendChild(audioElement);
                         audioElement.play();
+                        button.dataset.playing = 'true';
                         button.style.animation = "pulse 2s infinite";
 
                         let slider = document.createElement("input");
@@ -452,8 +539,9 @@
                         slider.value = "1";
                         slider.setAttribute("data-src", img.audio);
                         slider.style.position = "absolute";
-                        slider.style.left = `${parseInt(button.style.left)}px`;
-                        slider.style.top  = `${parseInt(button.style.top) + buttonSize + 10}px`;
+                        slider.style.left = button.style.left;
+                        slider.style.top  = `${parseInt(button.dataset.initTop) + buttonSize + 10}px`;
+                        slider.style.transform = button.style.transform;
                         slider.style.width = `${buttonSize}px`;
                         document.getElementById("canvas-container").appendChild(slider);
 
@@ -545,9 +633,10 @@
                         audioElement.lowpassFilter  = lowpassFilter;
                         audioElement.highpassFilter = highpassFilter;
                     } else {
-                        if (existingAudio.paused) {
+                        if (button.dataset.playing !== 'true') {
                             existingAudio.currentTime = 0;
                             existingAudio.play();
+                            button.dataset.playing = 'true';
                             button.style.animation = "pulse 2s infinite";
 
                             if (volumeSlider) {
@@ -638,17 +727,10 @@
                             }
                         } else {
                             existingAudio.pause();
+                            button.dataset.playing = 'false';
                             button.style.animation = "";
                             button.style.opacity = 0.5;
-                            if (volumeSlider)   { volumeSlider.style.display = "none"; }
-                            if (panSlider) {
-                                panLabel.style.display   = "none";
-                                leftLabel.style.display  = "none";
-                                panSlider.style.display  = "none";
-                                rightLabel.style.display = "none";
-                            }
-                            if (lowpassSlider)  { lowpassSlider.style.display  = "none"; }
-                            if (highpassSlider) { highpassSlider.style.display = "none"; }
+                            if (volumeSlider) { volumeSlider.style.display = "none"; }
                         }
                     }
                 });
@@ -667,12 +749,13 @@
                 try { audio.pause(); } catch(_) {}
                 if (audio.parentElement) { audio.parentElement.removeChild(audio); }
             });
-            // clear button styles and restore initial positions
+            // clear button styles and restore scatter positions
             document.querySelectorAll(".image-button").forEach(btn => {
-                btn.style.animation = "";
-                btn.style.opacity = 0.5;
-                if (btn.dataset.initLeft) btn.style.left = `${btn.dataset.initLeft}px`;
-                if (btn.dataset.initTop)  btn.style.top  = `${btn.dataset.initTop}px`;
+                btn.style.transition = 'none';
+                btn.style.transform  = 'translate(0,0)';
+                btn.style.animation  = "";
+                btn.style.opacity    = 0.5;
+                btn.dataset.playing  = 'false';
             });
             // remove volume sliders on canvas
             document.querySelectorAll("#canvas-container input[type='range']").forEach(slider => slider.remove());
