@@ -76,11 +76,8 @@
 
                 <div class="view-toggle">
                     <label class="ai-label">User</label>
-                    <div class="toggle-buttons">
-                        <button id="filter-all"   class="view-btn active">All</button>
-                        <button id="filter-alice" class="view-btn">alice</button>
-                        <button id="filter-bob"   class="view-btn">bob</button>
-                        <button id="filter-carol" class="view-btn">carol</button>
+                    <div class="toggle-buttons" id="user-filter-buttons">
+                        <button id="filter-all" class="view-btn active">All</button>
                     </div>
                 </div>
             </div>
@@ -414,17 +411,43 @@
                     if (slider) slider.style.display = match ? '' : 'none';
                 }
             });
-            ['all','alice','bob','carol'].forEach(u => {
-                document.getElementById(`filter-${u}`).classList.toggle('active', u === user);
+            document.querySelectorAll('#user-filter-buttons .view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.id === 'filter-all' ? user === 'all' : btn.textContent === user);
             });
         }
 
-        document.getElementById('filter-all').addEventListener('click',   () => setFilter('all'));
-        document.getElementById('filter-alice').addEventListener('click', () => setFilter('alice'));
-        document.getElementById('filter-bob').addEventListener('click',   () => setFilter('bob'));
-        document.getElementById('filter-carol').addEventListener('click', () => setFilter('carol'));
+        document.getElementById('filter-all').addEventListener('click', () => setFilter('all'));
 
-        d3.csv("imagedata-cityA.csv").then(images => {
+        Promise.all([
+            d3.csv("/api/moments/csv").catch(() => []),
+            d3.csv("imagedata-cityA.csv").catch(() => [])
+        ]).then(([liveImages, staticImages]) => {
+            const normalizedStatic = staticImages.map(img => ({
+                src:      img.src   || '',
+                bgc:      img.bgc   || '',
+                audio:    img.audio || '',
+                hear:     img.describ || '',
+                feel:     '',
+                user:     img.user  || '',
+                location: '',
+                day:      img.day,
+                time:     img.time,
+                date:     img.date,
+            }));
+            const images = [...liveImages, ...normalizedStatic];
+
+            // Build dynamic user filter buttons
+            const users = [...new Set(images.map(img => img.user).filter(Boolean))].sort();
+            const filterContainer = document.getElementById('user-filter-buttons');
+            users.forEach(u => {
+                const btn = document.createElement('button');
+                btn.className = 'view-btn';
+                btn.textContent = u;
+                btn.addEventListener('click', () => setFilter(u));
+                filterContainer.appendChild(btn);
+            });
+
+            {
             const { leftBound, rightBound } = computeVisibleBounds();
             images.forEach((img, index) => {
                 const button = document.createElement("button");
@@ -513,10 +536,18 @@
                         toggleButton2.classed("hidden", true);
                         toggleButton2.text(">");
                     }
-                    d3.select("#image-title").html(`<p>${img.title}</p>`);
-                    d3.select("#image-time").html(img.time ? `<p>${img.time}</p>` : '');
+                    const timeLabel = img.time ? (() => {
+                        const [hh] = img.time.split(':').map(Number);
+                        const period = hh < 6 ? 'Night' : hh < 12 ? 'Morning' : hh < 18 ? 'Afternoon' : 'Evening';
+                        return `${period} Moment – ${img.time}`;
+                    })() : '';
+                    d3.select("#image-title").html(img.user ? `<p>${img.user}</p>` : '');
+                    d3.select("#image-time").html(timeLabel ? `<p>${timeLabel}</p>` : '');
                     d3.select("#image-bgc").html(img.bgc ? `<img src="${img.bgc}" class="selected-image">` : '');
-                    d3.select("#image-describ").html(`<p>${img.describ}</p>`);
+                    const hearPart  = img.hear     ? `<p><strong>What I hear</strong><br>${img.hear}</p>` : '';
+                    const feelPart  = img.feel     ? `<p><strong>What I feel</strong><br>${img.feel}</p>` : '';
+                    const locPart   = img.location ? `<p><strong>Location</strong><br>${img.location}</p>` : '';
+                    d3.select("#image-describ").html(hearPart + feelPart + locPart);
 
                     let existingAudio  = document.querySelector(`audio[data-src='${img.audio}']`);
                     let volumeSlider   = document.querySelector(`input[data-src='${img.audio}']`);
@@ -771,6 +802,7 @@
 
                 document.getElementById("canvas-container").appendChild(button);
             });
+            }
         });
 
         window.addEventListener('resize', () => {

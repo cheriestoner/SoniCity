@@ -8,6 +8,7 @@ export class Moment {
     this.photoBlob = null;  // Blob (jpeg)
     this.photoUrl = null;   // dataURL
     this.text = '';
+    this.feel = '';
     this.locationName = '';
   }
 
@@ -48,6 +49,7 @@ export class Moment {
       hasAudio: !!this.audioBlob,
       hasPhoto: !!this.photoUrl,
       text: this.text,
+      feel: this.feel,
     };
   }
 }

@@ -24,19 +24,23 @@ db.exec(`
     location_lng REAL,
     location_accuracy REAL,
     location_name TEXT,
+    feel TEXT,
     timestamp TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )
 `);
 
+// Migrate existing DBs that don't yet have the feel column
+try { db.exec(`ALTER TABLE moments ADD COLUMN feel TEXT`); } catch (_) {}
+
 export function insertMoment(row) {
   const stmt = db.prepare(`
     INSERT OR REPLACE INTO moments
       (id, username, city, audio_path, photo_path, description,
-       location_lat, location_lng, location_accuracy, location_name, timestamp)
+       location_lat, location_lng, location_accuracy, location_name, feel, timestamp)
     VALUES
       (@id, @username, @city, @audio_path, @photo_path, @description,
-       @location_lat, @location_lng, @location_accuracy, @location_name, @timestamp)
+       @location_lat, @location_lng, @location_accuracy, @location_name, @feel, @timestamp)
   `);
   return stmt.run(row);
 }

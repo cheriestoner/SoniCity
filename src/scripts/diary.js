@@ -32,6 +32,7 @@ const openCameraBtn = document.getElementById('open-camera-btn');
 const retakePhotoBtn = document.getElementById('retake-photo-btn');
 const capturePhotoBtn = document.getElementById('capture-photo-btn');
 const momentText = document.getElementById('moment-text');
+const momentFeel = document.getElementById('moment-feel');
 const saveBtn = document.getElementById('save-btn');
 const saveHint = document.getElementById('save-hint');
 const playBtn = document.getElementById('play-btn');
@@ -447,6 +448,7 @@ async function persistMoment(moment) {
     location: moment.location,
     locationName: moment.locationName,
     text: moment.text,
+    feel: moment.feel,
   }));
 
   if (moment.audioBlob) {
@@ -477,6 +479,7 @@ async function saveMoment() {
   if (!activeMoment || !activeMoment.audioBlob) return;
 
   activeMoment.text = momentText.value.trim();
+  activeMoment.feel = momentFeel.value.trim();
   activeMoment.locationName = locationNameInput.value.trim();
 
   const saved = activeMoment;

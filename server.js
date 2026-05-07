@@ -298,6 +298,7 @@ app.post('/api/moments', upload.fields([
             audio_path: audioPath,
             photo_path: photoPath,
             description: meta.text || '',
+            feel: meta.feel || '',
             location_lat: meta.location?.lat ?? null,
             location_lng: meta.location?.lng ?? null,
             location_accuracy: meta.location?.accuracy ?? null,
@@ -335,6 +336,45 @@ app.get('/api/moments', (req, res) => {
         res.json({ moments: rows });
     } catch (error) {
         res.status(500).json({ error: 'Failed to get moments', details: error.message });
+    }
+});
+
+// Export all moments as CSV for city visualization
+app.get('/api/moments/csv', (_req, res) => {
+    try {
+        const rows = getAllMoments();
+
+        // Build sorted list of distinct dates to assign relative day numbers
+        const distinctDates = [...new Set(rows.map(r => r.timestamp.slice(0, 10)))].sort();
+        const dayIndex = Object.fromEntries(distinctDates.map((d, i) => [d, i + 1]));
+
+        function escapeCSV(val) {
+            const s = String(val ?? '');
+            return s.includes(',') || s.includes('"') || s.includes('\n')
+                ? `"${s.replace(/"/g, '""')}"` : s;
+        }
+
+        const header = 'src,bgc,audio,hear,feel,user,location,day,time,date';
+        const csvRows = rows.map(r => {
+            const src  = r.photo_path ? `/${r.photo_path}` : '';
+            const audio = r.audio_path ? `/${r.audio_path}` : '';
+            const ts   = new Date(r.timestamp);
+            const hh   = String(ts.getHours()).padStart(2, '0');
+            const mm   = String(ts.getMinutes()).padStart(2, '0');
+            const time = `${hh}:${mm}`;
+            const month = String(ts.getMonth() + 1).padStart(2, '0');
+            const day_of_month = String(ts.getDate()).padStart(2, '0');
+            const date = `${month}-${day_of_month}`;
+            const dateKey = r.timestamp.slice(0, 10);
+            const day  = dayIndex[dateKey] ?? 1;
+            return [src, src, audio, r.description || '', r.feel || '', r.username, r.location_name || '', day, time, date]
+                .map(escapeCSV).join(',');
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.send([header, ...csvRows].join('\n'));
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to export CSV', details: error.message });
     }
 });
 
