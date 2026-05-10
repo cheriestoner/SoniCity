@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Canvas</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="/src/i18n.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="/src/style/archive.css">
     <link rel="preload" href="/public/asset/font/ark-pixel-12px-monospaced-zh_cn.otf" as="font" type="font/otf" crossorigin>
@@ -623,6 +624,8 @@
         });
 
         // AI Generate Button Functionality
+        window.i18n.applyTranslations();
+
         document.getElementById("ai-generate").addEventListener("click", async () => {
             const prompt = document.getElementById("ai-prompt").value.trim();
             const duration = parseFloat(document.getElementById("ai-duration").value);

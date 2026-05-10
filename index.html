@@ -5,33 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Sound Diary</title>
     <link rel="stylesheet" href="/src/style/home.css">
+    <script src="/src/i18n.js"></script>
 </head>
 <body>
+    <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <span class="lang-sep">|</span>
+        <button class="lang-btn" data-lang="zh">中</button>
+    </div>
+
     <div class="main-container">
-        
+
         <div class="content-container">
             <div class="welcome-container">
-                <h1>Urban Sound Diary</h1>
-                <p>Listen, compose, and share your city.</p>
-                
+                <h1 data-i18n="app_title">Urban Sound Diary</h1>
+                <p data-i18n="tagline">Listen, compose, and share your city.</p>
+
                 <!-- Username Input Section -->
                 <div class="username-section">
                     <div id="profile-inputs">
                         <div class="username-input-group">
-                            <input type="text" id="username-input" placeholder="Username" maxlength="20">
-                            <input type="text" id="city-input" placeholder="City (e.g. Suzhou)" maxlength="40">
-                            <button id="set-username-btn" onclick="setUsername()">Set</button>
+                            <input type="text" id="username-input" data-i18n-placeholder="username_placeholder" placeholder="Username" maxlength="20">
+                            <input type="text" id="city-input" data-i18n-placeholder="city_placeholder" placeholder="City (e.g. Suzhou)" maxlength="40">
+                            <button id="set-username-btn" onclick="setUsername()" data-i18n="set">Set</button>
                         </div>
                     </div>
                     <div id="current-username-display" style="display: none;">
                         <span><strong id="username-display-text"></strong> · <span id="city-display-text"></span></span>
-                        <button onclick="changeUsername()" class="change-btn">Change</button>
+                        <button onclick="changeUsername()" class="change-btn" data-i18n="change">Change</button>
                     </div>
                 </div>
-                
+
                 <div class="navigation-buttons">
-                    <a href="/diary" class="start-button">Start Listening</a>
-                    <a href="/compose" class="start-button">Compose</a>
+                    <a href="/diary" class="start-button" data-i18n="start_listening">Start Listening</a>
+                    <a href="/compose" class="start-button" data-i18n="compose">Compose</a>
                 </div>
             </div>
         </div>
@@ -53,8 +60,13 @@
         </div>
     </div>
 
-    <!-- <script src="app.js"></script> -->
     <script>
+        // Init i18n and switcher
+        window.i18n.applyTranslations();
+        document.querySelectorAll('.lang-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() { window.i18n.setLang(btn.getAttribute('data-lang')); });
+        });
+
         // Check for existing username on page load
         window.onload = function() {
             const savedUsername = localStorage.getItem('usd_username');
@@ -69,7 +81,7 @@
             const city = document.getElementById('city-input').value.trim();
 
             if (!username) {
-                alert('Please enter a username');
+                alert(window.i18n.t('alert_enter_username'));
                 return;
             }
 
@@ -86,7 +98,7 @@
             document.getElementById('profile-inputs').style.display = 'none';
             document.getElementById('current-username-display').style.display = 'block';
             document.getElementById('username-display-text').textContent = username;
-            document.getElementById('city-display-text').textContent = city || 'no city set';
+            document.getElementById('city-display-text').textContent = city || window.i18n.t('no_city_set');
         }
 
         function changeUsername() {
@@ -105,4 +117,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

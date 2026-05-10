@@ -1,5 +1,8 @@
 import { Moment } from './models/Moment.js';
 
+function t(key) { return window.i18n ? window.i18n.t(key) : key; }
+function getLocale() { return window.i18n && window.i18n.getLang() === 'zh' ? 'zh-CN' : 'en-US'; }
+
 // ── State ────────────────────────────────────────────────────
 let moments = [];
 let activeMoment = null;
@@ -59,7 +62,7 @@ function getCity() {
 
 // ── Date helpers ─────────────────────────────────────────────
 function getTodayLabel() {
-  return new Date().toLocaleDateString('en-US', {
+  return new Date().toLocaleDateString(getLocale(), {
     weekday: 'short', month: 'short', day: 'numeric',
   });
 }
@@ -71,7 +74,7 @@ function formatTime(secs) {
 }
 
 function formatReviewTitle(isoString) {
-  return new Date(isoString).toLocaleTimeString('en-US', {
+  return new Date(isoString).toLocaleTimeString(getLocale(), {
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
 }
@@ -84,7 +87,7 @@ function formatDateLabel(dateKey) {
   const todayKey = new Date().toISOString().slice(0, 10);
   if (dateKey === todayKey) return getTodayLabel();
   // Parse as local midnight to get correct weekday
-  return new Date(dateKey + 'T00:00:00').toLocaleDateString('en-US', {
+  return new Date(dateKey + 'T00:00:00').toLocaleDateString(getLocale(), {
     weekday: 'short', month: 'short', day: 'numeric',
   });
 }
@@ -192,12 +195,12 @@ function closeFocusMode() {
 function openFocusMode() {
   activeMoment = new Moment();
   focusMode.dataset.mode = 'capture';
-  focusTitle.textContent = 'New Moment';
+  focusTitle.textContent = t('new_moment');
   resetCaptureUI();
-  metaTime.textContent = new Date(activeMoment.timestamp).toLocaleTimeString('en-US', {
+  metaTime.textContent = new Date(activeMoment.timestamp).toLocaleTimeString(getLocale(), {
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
-  metaCoords.textContent = 'Locating…';
+  metaCoords.textContent = t('locating');
   locationNameInput.value = '';
   openOverlay();
 }
@@ -209,7 +212,7 @@ function resetCaptureUI() {
   recordBtn.querySelector('img').src = '/icons/mic-on.svg';
   recordBtn.classList.remove('recording');
   recordBtnWrap.classList.remove('recording');
-  recordLabel.textContent = 'TAP TO RECORD';
+  recordLabel.textContent = t('tap_to_record');
   recordTimer.classList.remove('visible');
   recordTimer.textContent = '00:00';
   recordWaveform.classList.remove('active');
@@ -226,7 +229,7 @@ function resetCaptureUI() {
 function updateSaveBtn() {
   const hasAudio = activeMoment && activeMoment.audioBlob;
   saveBtn.disabled = !hasAudio;
-  saveHint.textContent = hasAudio ? '' : 'Record audio to save';
+  saveHint.textContent = hasAudio ? '' : t('record_to_save');
 }
 
 // ── Review mode ───────────────────────────────────────────────
@@ -246,12 +249,12 @@ function openReviewMode(moment) {
 
   setupAudioPlayer(moment.audioUrl);
 
-  metaTime.textContent = new Date(moment.timestamp).toLocaleTimeString('en-US', {
+  metaTime.textContent = new Date(moment.timestamp).toLocaleTimeString(getLocale(), {
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
   metaCoords.textContent = moment.location
     ? `${moment.location.lat.toFixed(4)}, ${moment.location.lng.toFixed(4)}`
-    : 'No location';
+    : t('no_location');
   locationNameDisplay.textContent = moment.locationName || '';
 
   openOverlay();
@@ -306,7 +309,7 @@ async function startRecording() {
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch {
-    alert('Microphone access denied.');
+    alert(t('mic_denied'));
     return;
   }
 
@@ -322,7 +325,7 @@ async function startRecording() {
   recordBtn.querySelector('img').src = '/icons/stop-square.svg';
   recordBtn.classList.add('recording');
   recordBtnWrap.classList.add('recording');
-  recordLabel.textContent = 'TAP TO STOP';
+  recordLabel.textContent = t('tap_to_stop');
   recordTimer.classList.add('visible');
   recordWaveform.classList.add('active');
 
@@ -353,7 +356,7 @@ function stopRecordingCleanup() {
     recordBtn.querySelector('img').src = '/icons/mic-on.svg';
     recordBtn.classList.remove('recording');
     recordBtnWrap.classList.remove('recording');
-    recordLabel.textContent = 'RECORDED';
+    recordLabel.textContent = t('recorded');
     recordWaveform.classList.remove('active');
   }
 }
@@ -366,7 +369,7 @@ async function onRecordingComplete() {
   await activeMoment.captureLocation();
   metaCoords.textContent = activeMoment.location
     ? `${activeMoment.location.lat.toFixed(4)}, ${activeMoment.location.lng.toFixed(4)}`
-    : 'No location';
+    : t('no_location');
   updateSaveBtn();
   setupAudioPlayer(activeMoment.audioUrl);
   focusMode.classList.add('has-recording');
@@ -390,7 +393,7 @@ async function openCamera() {
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
     } catch {
-      alert('Camera access denied.');
+      alert(t('cam_denied'));
       return;
     }
   }
@@ -594,3 +597,6 @@ async function initDiary() {
 }
 
 initDiary();
+
+window.i18n.applyTranslations();
+window.addEventListener('langchange', function () { window.i18n.applyTranslations(); });

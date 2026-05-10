@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Urban Sound Diary</title>
   <link rel="stylesheet" href="/src/style/diary.css">
+  <script src="/src/i18n.js"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -41,7 +42,7 @@
         <img src="/icons/arrowdown.svg" alt="Back">
       </button>
       <div class="focus-header-text">
-        <h2 id="focus-title">New Moment</h2>
+        <h2 id="focus-title" data-i18n="new_moment">New Moment</h2>
         <div id="review-meta" class="review-only review-meta"></div>
       </div>
     </div>
@@ -62,7 +63,7 @@
           <span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span>
         </div>
-        <span class="record-label capture-only" id="record-label">TAP TO RECORD</span>
+        <span class="record-label capture-only" id="record-label" data-i18n="tap_to_record">TAP TO RECORD</span>
 
         <!-- capture preview + review: audio player -->
         <div class="audio-player-row">
@@ -75,7 +76,7 @@
         <!-- capture preview: re-record -->
         <button class="rerecord-btn capture-only" id="rerecord-btn">
           <img src="/icons/refresh-cw.svg" alt="">
-          Re-record
+          <span data-i18n="re_record">Re-record</span>
         </button>
 
       </section>
@@ -86,25 +87,26 @@
         <canvas id="camera-canvas"></canvas>
         <img id="photo-preview" class="photo-preview" alt="Captured photo">
 
-        <button class="camera-capture-btn capture-only" id="capture-photo-btn">Take Photo</button>
+        <button class="camera-capture-btn capture-only" id="capture-photo-btn" data-i18n="take_photo">Take Photo</button>
 
         <div class="photo-controls capture-only">
           <button class="photo-btn" id="open-camera-btn">
             <img src="/icons/camera.svg" alt="">
-            Add Photo
+            <span data-i18n="add_photo">Add Photo</span>
           </button>
           <button class="photo-btn" id="retake-photo-btn" style="display:none">
             <img src="/icons/refresh-cw.svg" alt="">
-            Retake
+            <span data-i18n="retake">Retake</span>
           </button>
         </div>
       </section>
 
       <!-- ── Text ── -->
       <section class="text-section">
-        <label for="moment-text" id="moment-text-label">What do you hear?</label>
+        <label for="moment-text" id="moment-text-label" data-i18n="what_hear">What do you hear?</label>
         <textarea
           id="moment-text"
+          data-i18n-placeholder="describe_moment"
           placeholder="Describe this moment..."
           rows="3"
         ></textarea>
@@ -112,9 +114,10 @@
 
       <!-- ── Feel ── -->
       <section class="text-section">
-        <label for="moment-feel">What do you feel?</label>
+        <label for="moment-feel" data-i18n="what_feel">What do you feel?</label>
         <textarea
           id="moment-feel"
+          data-i18n-placeholder="describe_feel"
           placeholder="Describe how this makes you feel..."
           rows="3"
         ></textarea>
@@ -124,15 +127,16 @@
       <section class="meta-section">
 
         <div class="meta-row">
-          <span class="meta-label">Time</span>
+          <span class="meta-label" data-i18n="time_label">Time</span>
           <span id="meta-time" class="meta-value">—</span>
         </div>
 
         <div class="meta-row">
-          <span class="meta-label">Place</span>
+          <span class="meta-label" data-i18n="place_label">Place</span>
           <div class="meta-location-col">
             <input type="text" id="location-name-input"
                    class="location-name-input capture-only"
+                   data-i18n-placeholder="name_place"
                    placeholder="Name this place…"
                    maxlength="60" autocomplete="off">
             <span id="location-name-display" class="location-name-display review-only"></span>
@@ -144,15 +148,15 @@
 
       <!-- ── Save (capture only) ── -->
       <section class="save-section capture-only">
-        <button class="save-btn" id="save-btn" disabled>Save Moment</button>
-        <p class="save-hint" id="save-hint">Record audio to save</p>
+        <button class="save-btn" id="save-btn" disabled data-i18n="save_moment">Save Moment</button>
+        <p class="save-hint" id="save-hint" data-i18n="record_to_save">Record audio to save</p>
       </section>
 
     </div>
   </div>
 
   <footer class="diary-footer">
-    <span>Urban Sound Diary</span>
+    <span data-i18n="footer_title">Urban Sound Diary</span>
   </footer>
 
   <script type="module" src="/src/scripts/diary.js"></script>

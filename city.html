@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City A Sound Archive</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="/src/i18n.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="/src/style/archive.css">
     <link rel="preload" href="/public/asset/font/ark-pixel-12px-monospaced-zh_cn.otf" as="font" type="font/otf" crossorigin>
@@ -47,8 +48,8 @@
     <div id="canvas-container">
         <div id="sidebar1">
             <div class="sidebar-header">
-                <h2>City A</h2>
-                <a href="/" class="home-link">← Home</a>
+                <h2 data-i18n="city_a">City A</h2>
+                <a href="/" class="home-link" data-i18n="home_back">← Home</a>
             </div>
             <div id="image-title"></div>
             <div id="image-time"></div>
@@ -62,22 +63,22 @@
 
         <div id="sidebar2">
             <div class="sidebar2-body">
-                <h2>City A Sound Archive</h2>
-                <p>A collective sound diary — three participants recording 1–3 moments each day over seven days in City A.</p>
+                <h2 data-i18n="city_a_archive">City A Sound Archive</h2>
+                <p data-i18n="city_a_desc">A collective sound diary — three participants recording 1–3 moments each day over seven days in City A.</p>
 
                 <div class="view-toggle">
-                    <label class="ai-label">View</label>
+                    <label class="ai-label" data-i18n="view_label">View</label>
                     <div class="toggle-buttons">
-                        <button id="view-scatter" class="view-btn active">Scatter</button>
-                        <button id="view-timeline" class="view-btn">Timeline</button>
-                        <button id="view-clock" class="view-btn">Clock</button>
+                        <button id="view-scatter" class="view-btn active" data-i18n="scatter">Scatter</button>
+                        <button id="view-timeline" class="view-btn" data-i18n="timeline">Timeline</button>
+                        <button id="view-clock" class="view-btn" data-i18n="clock">Clock</button>
                     </div>
                 </div>
 
                 <div class="view-toggle">
-                    <label class="ai-label">User</label>
+                    <label class="ai-label" data-i18n="user_label">User</label>
                     <div class="toggle-buttons" id="user-filter-buttons">
-                        <button id="filter-all" class="view-btn active">All</button>
+                        <button id="filter-all" class="view-btn active" data-i18n="all">All</button>
                     </div>
                 </div>
             </div>
@@ -91,6 +92,7 @@
         <button id="reset-canvas">O</button>
     </div>
     <script>
+        const t = key => window.i18n.t(key);
         const sidebar1 = d3.select("#sidebar1");
         const sidebar2 = d3.select("#sidebar2");
         const toggleButton1 = d3.select("#toggle-sidebar1");
@@ -246,7 +248,7 @@
                     .attr("class", "timeline-day-label")
                     .attr("x", leftBound + d * cellW + cellW / 2)
                     .attr("y", 16)
-                    .text(dayDates[d] || `Day ${d + 1}`);
+                    .text(dayDates[d] || t('day_n').replace('{n}', d + 1));
             }
 
             // Time-of-day labels on left
@@ -276,7 +278,7 @@
             ];
             // Angles measured clockwise from top: morning=45°, afternoon=135°, evening=225°, night=315°
             const angles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
-            const names  = ['Morning', 'Afternoon', 'Evening', 'Night'];
+            const names  = [t('morning'), t('afternoon'), t('evening'), t('night')];
 
             names.forEach((name, i) => {
                 const a = angles[i];
@@ -538,15 +540,15 @@
                     }
                     const timeLabel = img.time ? (() => {
                         const [hh] = img.time.split(':').map(Number);
-                        const period = hh < 6 ? 'Night' : hh < 12 ? 'Morning' : hh < 18 ? 'Afternoon' : 'Evening';
-                        return `${period} Moment – ${img.time}`;
+                        const period = hh < 6 ? t('night') : hh < 12 ? t('morning') : hh < 18 ? t('afternoon') : t('evening');
+                        return t('moment_time').replace('{period}', period).replace('{time}', img.time);
                     })() : '';
                     d3.select("#image-title").html(img.user ? `<p>${img.user}</p>` : '');
                     d3.select("#image-time").html(timeLabel ? `<p>${timeLabel}</p>` : '');
                     d3.select("#image-bgc").html(img.bgc ? `<img src="${img.bgc}" class="selected-image">` : '');
-                    const hearPart  = img.hear     ? `<p><strong>What I hear</strong><br>${img.hear}</p>` : '';
-                    const feelPart  = img.feel     ? `<p><strong>What I feel</strong><br>${img.feel}</p>` : '';
-                    const locPart   = img.location ? `<p><strong>Location</strong><br>${img.location}</p>` : '';
+                    const hearPart  = img.hear     ? `<p><strong>${t('what_i_hear')}</strong><br>${img.hear}</p>` : '';
+                    const feelPart  = img.feel     ? `<p><strong>${t('what_i_feel')}</strong><br>${img.feel}</p>` : '';
+                    const locPart   = img.location ? `<p><strong>${t('location_label')}</strong><br>${img.location}</p>` : '';
                     d3.select("#image-describ").html(hearPart + feelPart + locPart);
 
                     let existingAudio  = document.querySelector(`audio[data-src='${img.audio}']`);
@@ -807,6 +809,12 @@
 
         window.addEventListener('resize', () => {
             centerResetButton();
+        });
+
+        window.i18n.applyTranslations();
+        window.addEventListener('langchange', () => {
+            window.i18n.applyTranslations();
+            if (currentView !== 'scatter') setView(currentView);
         });
 
         d3.select("#reset-canvas").on("click", () => {

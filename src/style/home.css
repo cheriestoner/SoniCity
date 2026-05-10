@@ -309,6 +309,44 @@ body {
     transform: translateY(1px);
 }
 
+/* Language switcher */
+.lang-switcher {
+    position: fixed;
+    top: 14px;
+    right: 20px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.lang-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    padding: 3px 5px;
+    color: #666;
+    opacity: 0.45;
+    border-radius: 3px;
+    transition: opacity 0.15s ease;
+}
+
+.lang-btn.active {
+    opacity: 1;
+    font-weight: 700;
+    color: #333;
+}
+
+.lang-btn:hover { opacity: 0.8; }
+
+.lang-sep {
+    font-size: 11px;
+    color: #bbb;
+    user-select: none;
+}
+
 /* Mobile-specific styles */
 @media (max-width: 480px) {
     .welcome-container h1 {
