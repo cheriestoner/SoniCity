@@ -45,6 +45,10 @@ const metaTime = document.getElementById('meta-time');
 const metaCoords = document.getElementById('meta-coords');
 const locationNameInput = document.getElementById('location-name-input');
 const locationNameDisplay = document.getElementById('location-name-display');
+const tagOptions = document.getElementById('tag-options');
+const tagSpecialCb = document.getElementById('tag-special-cb');
+const tagSpecialText = document.getElementById('tag-special-text');
+const tagDisplay = document.getElementById('tag-display');
 const diaryDateEl = document.getElementById('diary-date');
 const diaryDateBtn = document.getElementById('diary-date-btn');
 const dateDropdown = document.getElementById('date-dropdown');
@@ -223,6 +227,8 @@ function resetCaptureUI() {
   openCameraBtn.style.display = '';
   retakePhotoBtn.style.display = 'none';
   momentText.value = '';
+  tagOptions.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  tagSpecialText.value = '';
   updateSaveBtn();
 }
 
@@ -256,6 +262,18 @@ function openReviewMode(moment) {
     ? `${moment.location.lat.toFixed(4)}, ${moment.location.lng.toFixed(4)}`
     : t('no_location');
   locationNameDisplay.textContent = moment.locationName || '';
+
+  const tagKeyMap = {
+    on_the_way: 'tag_on_the_way',
+    open_space: 'tag_open_space',
+    commercial: 'tag_commercial',
+    historical: 'tag_historical',
+  };
+  tagDisplay.textContent = (moment.tags || []).map(tag => {
+    if (tag.startsWith('special:')) return `${t('tag_special')}: ${tag.slice(8)}`;
+    if (tag === 'special') return t('tag_special');
+    return tagKeyMap[tag] ? t(tagKeyMap[tag]) : tag;
+  }).join(', ');
 
   openOverlay();
 }
@@ -452,6 +470,7 @@ async function persistMoment(moment) {
     locationName: moment.locationName,
     text: moment.text,
     feel: moment.feel,
+    tags: moment.tags,
   }));
 
   if (moment.audioBlob) {
@@ -484,6 +503,13 @@ async function saveMoment() {
   activeMoment.text = momentText.value.trim();
   activeMoment.feel = momentFeel.value.trim();
   activeMoment.locationName = locationNameInput.value.trim();
+  activeMoment.tags = Array.from(tagOptions.querySelectorAll('input[type="checkbox"]:checked')).map(cb => {
+    if (cb.value === 'special') {
+      const label = tagSpecialText.value.trim();
+      return label ? `special:${label}` : 'special';
+    }
+    return cb.value;
+  });
 
   const saved = activeMoment;
   const dateKey = momentDateKey(saved.timestamp);
@@ -533,6 +559,7 @@ function renderMomentCard(moment) {
 
 // ── Event listeners ───────────────────────────────────────────
 addBtn.addEventListener('click', openFocusMode);
+addBtn.addEventListener('touchend', (e) => { e.preventDefault(); openFocusMode(); });
 focusBackBtn.addEventListener('click', closeFocusMode);
 recordBtn.addEventListener('click', toggleRecording);
 openCameraBtn.addEventListener('click', openCamera);

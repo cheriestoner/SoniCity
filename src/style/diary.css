@@ -192,6 +192,7 @@ body {
   justify-content: center;
   transition: border-color 0.2s, background 0.2s;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .add-moment-btn:hover,
@@ -222,6 +223,7 @@ body {
   position: relative;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .moment-card .card-photo {
@@ -793,3 +795,57 @@ body {
   color: #555;
   font-variant-numeric: tabular-nums;
 }
+
+.meta-row--tags { align-items: flex-start; }
+
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #1c1c1c;
+  border: 1.5px solid #333;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.tag-pill input[type="checkbox"] { display: none; }
+
+.tag-pill:has(input:checked) {
+  border-color: #fff;
+  color: #fff;
+  background: #2a2a2a;
+}
+
+.tag-pill--special {
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-special-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #444;
+  color: #ccc;
+  font-size: 0.78rem;
+  width: 100px;
+  outline: none;
+  margin-left: 0.2rem;
+  font-family: inherit;
+}
+
+.tag-display {
+  font-size: 0.82rem;
+  color: #ccc;
+}
+
+.tag-display:empty { display: none; }

@@ -10,6 +10,7 @@ export class Moment {
     this.text = '';
     this.feel = '';
     this.locationName = '';
+    this.tags = [];
   }
 
   get isComplete() {
@@ -50,6 +51,7 @@ export class Moment {
       hasPhoto: !!this.photoUrl,
       text: this.text,
       feel: this.feel,
+      tags: this.tags,
     };
   }
 }

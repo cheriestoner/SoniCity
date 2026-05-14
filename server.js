@@ -303,6 +303,7 @@ app.post('/api/moments', upload.fields([
             location_lng: meta.location?.lng ?? null,
             location_accuracy: meta.location?.accuracy ?? null,
             location_name: meta.locationName || null,
+            tags: meta.tags ? JSON.stringify(meta.tags) : null,
             timestamp: meta.timestamp || new Date().toISOString()
         });
 

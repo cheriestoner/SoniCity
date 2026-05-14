@@ -144,6 +144,23 @@
           </div>
         </div>
 
+        <div class="meta-row meta-row--tags">
+          <span class="meta-label" data-i18n="tag_label">Tags</span>
+          <div class="tag-options capture-only" id="tag-options">
+            <label class="tag-pill"><input type="checkbox" value="on_the_way"><span data-i18n="tag_on_the_way">On the way</span></label>
+            <label class="tag-pill"><input type="checkbox" value="open_space"><span data-i18n="tag_open_space">Open space</span></label>
+            <label class="tag-pill"><input type="checkbox" value="commercial"><span data-i18n="tag_commercial">Commercial space</span></label>
+            <label class="tag-pill"><input type="checkbox" value="historical"><span data-i18n="tag_historical">Historical place</span></label>
+            <label class="tag-pill tag-pill--special">
+              <input type="checkbox" value="special" id="tag-special-cb">
+              <span data-i18n="tag_special">Place special to me</span>
+              <input type="text" id="tag-special-text" class="tag-special-input"
+                     data-i18n-placeholder="tag_special_placeholder" placeholder="Describe…" maxlength="60">
+            </label>
+          </div>
+          <div class="tag-display review-only" id="tag-display"></div>
+        </div>
+
       </section>
 
       <!-- ── Save (capture only) ── -->
