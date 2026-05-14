@@ -46,9 +46,15 @@ const metaCoords = document.getElementById('meta-coords');
 const locationNameInput = document.getElementById('location-name-input');
 const locationNameDisplay = document.getElementById('location-name-display');
 const tagOptions = document.getElementById('tag-options');
-const tagSpecialCb = document.getElementById('tag-special-cb');
 const tagSpecialText = document.getElementById('tag-special-text');
 const tagDisplay = document.getElementById('tag-display');
+
+const TAG_KEY_MAP = {
+  on_the_way: 'tag_on_the_way',
+  open_space:  'tag_open_space',
+  commercial:  'tag_commercial',
+  historical:  'tag_historical',
+};
 const diaryDateEl = document.getElementById('diary-date');
 const diaryDateBtn = document.getElementById('diary-date-btn');
 const dateDropdown = document.getElementById('date-dropdown');
@@ -107,6 +113,7 @@ function rowToMoment(row) {
     : null;
   if (row.audio_path) m.audioUrl = `/${row.audio_path}`;
   if (row.photo_path) m.photoUrl = `/${row.photo_path}`;
+  if (row.tags) m.tags = JSON.parse(row.tags);
   return m;
 }
 
@@ -263,16 +270,10 @@ function openReviewMode(moment) {
     : t('no_location');
   locationNameDisplay.textContent = moment.locationName || '';
 
-  const tagKeyMap = {
-    on_the_way: 'tag_on_the_way',
-    open_space: 'tag_open_space',
-    commercial: 'tag_commercial',
-    historical: 'tag_historical',
-  };
   tagDisplay.textContent = (moment.tags || []).map(tag => {
     if (tag.startsWith('special:')) return `${t('tag_special')}: ${tag.slice(8)}`;
     if (tag === 'special') return t('tag_special');
-    return tagKeyMap[tag] ? t(tagKeyMap[tag]) : tag;
+    return TAG_KEY_MAP[tag] ? t(TAG_KEY_MAP[tag]) : tag;
   }).join(', ');
 
   openOverlay();
@@ -559,7 +560,6 @@ function renderMomentCard(moment) {
 
 // ── Event listeners ───────────────────────────────────────────
 addBtn.addEventListener('click', openFocusMode);
-addBtn.addEventListener('touchend', (e) => { e.preventDefault(); openFocusMode(); });
 focusBackBtn.addEventListener('click', closeFocusMode);
 recordBtn.addEventListener('click', toggleRecording);
 openCameraBtn.addEventListener('click', openCamera);
