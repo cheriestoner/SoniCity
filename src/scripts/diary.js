@@ -558,6 +558,14 @@ function renderMomentCard(moment) {
   grid.insertBefore(card, addBtn.nextSibling);
 }
 
+// ── Feel field: one-word constraint ──────────────────────────
+function enforceFeel() {
+  const lang = window.i18n ? window.i18n.getLang() : 'en';
+  let val = momentFeel.value.replace(/[^a-zA-Z一-鿿㐀-䶿豈-﫿]/g, '');
+  if (lang === 'zh' && val.length > 5) val = val.slice(0, 5);
+  momentFeel.value = val;
+}
+
 // ── Event listeners ───────────────────────────────────────────
 addBtn.addEventListener('click', openFocusMode);
 focusBackBtn.addEventListener('click', closeFocusMode);
@@ -568,6 +576,8 @@ retakePhotoBtn.addEventListener('click', retakePhoto);
 saveBtn.addEventListener('click', saveMoment);
 playBtn.addEventListener('click', togglePlayback);
 rerecordBtn.addEventListener('click', rerecord);
+momentFeel.addEventListener('input', (e) => { if (!e.isComposing) enforceFeel(); });
+momentFeel.addEventListener('compositionend', enforceFeel);
 
 diaryDateBtn.addEventListener('click', () => {
   if (dateDropdown.classList.contains('hidden')) openDateDropdown();
