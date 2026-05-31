@@ -37,7 +37,7 @@ if (isProduction) {
         res.sendFile(join(__dirname, 'suzhou.html'));
     });
 
-    app.get('/expand', (_req, res) => {
+    app.get('/compose', (_req, res) => {
         res.sendFile(join(__dirname, 'city.html'));
     });
 
@@ -56,7 +56,7 @@ if (isProduction) {
         res.sendFile(join(__dirname, 'suzhou.html'));
     });
 
-    app.get('/expand', (_req, res) => {
+    app.get('/compose', (_req, res) => {
         res.sendFile(join(__dirname, 'city.html'));
     });
 
