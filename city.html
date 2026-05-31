@@ -887,14 +887,16 @@
                         audioElement.lowpassFilter  = lowpassFilter;
                         audioElement.highpassFilter = highpassFilter;
                     } else {
-                        if (button.dataset.playing !== 'true') {
+                        // Toggle play/pause on the same button; other moments are unaffected
+                        if (existingAudio.paused) {
                             existingAudio.currentTime = 0;
                             existingAudio.play();
                             button.dataset.playing = 'true';
                             button.style.animation = "pulse 2s infinite";
 
+                            // Volume slider: show or create
                             if (volumeSlider) {
-                                volumeSlider.style.display = "block";
+                                volumeSlider.style.display = '';
                             } else {
                                 let slider = document.createElement("input");
                                 slider.type = "range";
@@ -907,78 +909,6 @@
                                 document.getElementById("canvas-container").appendChild(slider);
                                 slider.addEventListener("input", (event) => { existingAudio.volume = event.target.value; });
                             }
-
-                            if (panSlider) {
-                                panSlider.style.display  = "block";
-                                panLabel.style.display   = "block";
-                                leftLabel.style.display  = "block";
-                                rightLabel.style.display = "block";
-                            } else {
-                                let panLabelEl = document.createElement("label");
-                                panLabelEl.innerText = "PAN";
-                                panLabelEl.style.fontFamily = "ark-pixel"; panLabelEl.style.display = "block";
-                                panLabelEl.setAttribute("data-pan-src", img.audio);
-                                document.getElementById("sidebar1").appendChild(panLabelEl);
-
-                                let leftLabelEl = document.createElement("label");
-                                leftLabelEl.innerText = "left";
-                                leftLabelEl.style.fontFamily = "ark-pixel";
-                                leftLabelEl.setAttribute("data-left-src", img.audio);
-                                document.getElementById("sidebar1").appendChild(leftLabelEl);
-
-                                let panSliderEl = document.createElement("input");
-                                panSliderEl.type = "range"; panSliderEl.min = "-1"; panSliderEl.max = "1"; panSliderEl.step = "0.01";
-                                panSliderEl.value = existingAudio.panner.pan.value;
-                                panSliderEl.setAttribute("data-pan-src", img.audio);
-                                panSliderEl.classList.add("control-slider");
-                                document.getElementById("sidebar1").appendChild(panSliderEl);
-
-                                let rightLabelEl = document.createElement("label");
-                                rightLabelEl.innerText = "right";
-                                rightLabelEl.style.fontFamily = "ark-pixel";
-                                rightLabelEl.setAttribute("data-right-src", img.audio);
-                                document.getElementById("sidebar1").appendChild(rightLabelEl);
-
-                                panSliderEl.addEventListener("input", (event) => { existingAudio.panner.pan.value = event.target.value; });
-                            }
-
-                            if (lowpassSlider) {
-                                lowpassSlider.style.display = "block";
-                            } else {
-                                let lowpassLabelEl = document.createElement("label");
-                                lowpassLabelEl.innerText = "LOWPASS FILTER";
-                                lowpassLabelEl.style.fontFamily = "ark-pixel"; lowpassLabelEl.style.display = "block";
-                                lowpassLabelEl.setAttribute("data-low-src", img.audio);
-                                document.getElementById("sidebar1").appendChild(lowpassLabelEl);
-
-                                let lowpassSliderEl = document.createElement("input");
-                                lowpassSliderEl.type = "range"; lowpassSliderEl.min = "1"; lowpassSliderEl.max = "10000"; lowpassSliderEl.step = "1";
-                                lowpassSliderEl.value = existingAudio.lowpassFilter.frequency.value;
-                                lowpassSliderEl.setAttribute("data-lowpass-src", img.audio);
-                                lowpassSliderEl.classList.add("control-slider");
-                                document.getElementById("sidebar1").appendChild(lowpassSliderEl);
-
-                                lowpassSliderEl.addEventListener("input", (event) => { existingAudio.lowpassFilter.frequency.value = event.target.value; });
-                            }
-
-                            if (highpassSlider) {
-                                highpassSlider.style.display = "block";
-                            } else {
-                                let highpassLabelEl = document.createElement("label");
-                                highpassLabelEl.innerText = "HIGHPASS FILTER";
-                                highpassLabelEl.style.fontFamily = "ark-pixel"; highpassLabelEl.style.display = "block";
-                                highpassLabelEl.setAttribute("data-high-src", img.audio);
-                                document.getElementById("sidebar1").appendChild(highpassLabelEl);
-
-                                let highpassSliderEl = document.createElement("input");
-                                highpassSliderEl.type = "range"; highpassSliderEl.min = "1"; highpassSliderEl.max = "5000"; highpassSliderEl.step = "1";
-                                highpassSliderEl.value = existingAudio.highpassFilter.frequency.value;
-                                highpassSliderEl.setAttribute("data-highpass-src", img.audio);
-                                highpassSliderEl.classList.add("control-slider");
-                                document.getElementById("sidebar1").appendChild(highpassSliderEl);
-
-                                highpassSliderEl.addEventListener("input", (event) => { existingAudio.highpassFilter.frequency.value = event.target.value; });
-                            }
                         } else {
                             existingAudio.pause();
                             button.dataset.playing = 'false';
@@ -986,6 +916,64 @@
                             button.style.opacity = 0.5;
                             if (volumeSlider) { volumeSlider.style.display = "none"; }
                         }
+
+                        // Pan/filter controls: always create fresh (removed at top of handler)
+                        let panLabelEl = document.createElement("label");
+                        panLabelEl.innerText = "PAN";
+                        panLabelEl.style.fontFamily = "ark-pixel"; panLabelEl.style.display = "block";
+                        panLabelEl.setAttribute("data-pan-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(panLabelEl);
+
+                        let leftLabelEl = document.createElement("label");
+                        leftLabelEl.innerText = "left";
+                        leftLabelEl.style.fontFamily = "ark-pixel";
+                        leftLabelEl.setAttribute("data-left-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(leftLabelEl);
+
+                        let panSliderEl = document.createElement("input");
+                        panSliderEl.type = "range"; panSliderEl.min = "-1"; panSliderEl.max = "1"; panSliderEl.step = "0.01";
+                        panSliderEl.value = existingAudio.panner.pan.value;
+                        panSliderEl.setAttribute("data-pan-src", img.audio);
+                        panSliderEl.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(panSliderEl);
+
+                        let rightLabelEl = document.createElement("label");
+                        rightLabelEl.innerText = "right";
+                        rightLabelEl.style.fontFamily = "ark-pixel";
+                        rightLabelEl.setAttribute("data-right-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(rightLabelEl);
+
+                        panSliderEl.addEventListener("input", (event) => { existingAudio.panner.pan.value = event.target.value; });
+
+                        let lowpassLabelEl = document.createElement("label");
+                        lowpassLabelEl.innerText = "LOWPASS FILTER";
+                        lowpassLabelEl.style.fontFamily = "ark-pixel"; lowpassLabelEl.style.display = "block";
+                        lowpassLabelEl.setAttribute("data-low-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(lowpassLabelEl);
+
+                        let lowpassSliderEl = document.createElement("input");
+                        lowpassSliderEl.type = "range"; lowpassSliderEl.min = "1"; lowpassSliderEl.max = "10000"; lowpassSliderEl.step = "1";
+                        lowpassSliderEl.value = existingAudio.lowpassFilter.frequency.value;
+                        lowpassSliderEl.setAttribute("data-lowpass-src", img.audio);
+                        lowpassSliderEl.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(lowpassSliderEl);
+
+                        lowpassSliderEl.addEventListener("input", (event) => { existingAudio.lowpassFilter.frequency.value = event.target.value; });
+
+                        let highpassLabelEl = document.createElement("label");
+                        highpassLabelEl.innerText = "HIGHPASS FILTER";
+                        highpassLabelEl.style.fontFamily = "ark-pixel"; highpassLabelEl.style.display = "block";
+                        highpassLabelEl.setAttribute("data-high-src", img.audio);
+                        document.getElementById("sidebar1").appendChild(highpassLabelEl);
+
+                        let highpassSliderEl = document.createElement("input");
+                        highpassSliderEl.type = "range"; highpassSliderEl.min = "1"; highpassSliderEl.max = "5000"; highpassSliderEl.step = "1";
+                        highpassSliderEl.value = existingAudio.highpassFilter.frequency.value;
+                        highpassSliderEl.setAttribute("data-highpass-src", img.audio);
+                        highpassSliderEl.classList.add("control-slider");
+                        document.getElementById("sidebar1").appendChild(highpassSliderEl);
+
+                        highpassSliderEl.addEventListener("input", (event) => { existingAudio.highpassFilter.frequency.value = event.target.value; });
                     }
                 });
 
