@@ -113,6 +113,7 @@ function rowToMoment(row) {
     : null;
   if (row.audio_path) m.audioUrl = `/${row.audio_path}`;
   if (row.photo_path) m.photoUrl = `/${row.photo_path}`;
+  m.feel = row.feel || '';
   if (row.tags) m.tags = JSON.parse(row.tags);
   return m;
 }
@@ -124,7 +125,10 @@ function clearGrid() {
 
 function renderGrid(dateKey) {
   clearGrid();
-  for (const m of (dateCache[dateKey] || [])) renderMomentCard(m);
+  const sorted = [...(dateCache[dateKey] || [])].sort(
+    (a, b) => (a.timestamp > b.timestamp) - (a.timestamp < b.timestamp)
+  );
+  for (const m of sorted) renderMomentCard(m);
 }
 
 // ── Date dropdown ─────────────────────────────────────────────
@@ -529,31 +533,52 @@ function renderMomentCard(moment) {
   const card = document.createElement('div');
   card.className = 'moment-card' + (moment.photoUrl ? '' : ' no-photo');
 
+  const ts = moment.timestamp ? new Date(moment.timestamp) : null;
+  const timeStr = ts
+    ? `${String(ts.getHours()).padStart(2, '0')}:${String(ts.getMinutes()).padStart(2, '0')}`
+    : '';
+
+  const metaParts = [moment.locationName, moment.feel].filter(Boolean);
+
+  const playIcon = document.createElement('img');
+  playIcon.className = 'card-play-icon';
+  playIcon.src = '/icons/wave.svg';
+  playIcon.alt = '';
+  card.appendChild(playIcon);
+
+  const info = document.createElement('div');
+  info.className = 'card-info';
+
+  const top = document.createElement('div');
+  top.className = 'card-info-top';
+  if (timeStr) {
+    const timeEl = document.createElement('span');
+    timeEl.className = 'card-time';
+    timeEl.textContent = timeStr;
+    top.appendChild(timeEl);
+  }
+  const descEl = document.createElement('span');
+  descEl.className = 'card-desc';
+  descEl.textContent = moment.text || '';
+  top.appendChild(descEl);
+  info.appendChild(top);
+
+  if (metaParts.length) {
+    const metaEl = document.createElement('span');
+    metaEl.className = 'card-meta';
+    metaEl.textContent = metaParts.join('  ·  ');
+    info.appendChild(metaEl);
+  }
+  card.appendChild(info);
+
   if (moment.photoUrl) {
-    const img = document.createElement('img');
-    img.className = 'card-photo';
-    img.src = moment.photoUrl;
-    img.alt = 'moment photo';
-    card.appendChild(img);
+    const thumb = document.createElement('img');
+    thumb.className = 'card-thumb';
+    thumb.src = moment.photoUrl;
+    thumb.alt = '';
+    card.appendChild(thumb);
   }
 
-  const overlay = document.createElement('div');
-  overlay.className = 'card-overlay';
-
-  const waveIcon = document.createElement('img');
-  waveIcon.className = 'card-wave-icon';
-  waveIcon.src = '/icons/wave.svg';
-  waveIcon.alt = '';
-  overlay.appendChild(waveIcon);
-
-  if (moment.text) {
-    const textEl = document.createElement('span');
-    textEl.className = 'card-text';
-    textEl.textContent = moment.text;
-    overlay.appendChild(textEl);
-  }
-
-  card.appendChild(overlay);
   card.addEventListener('click', () => openReviewMode(moment));
   grid.insertBefore(card, addBtn.nextSibling);
 }

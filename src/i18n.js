@@ -2,13 +2,13 @@
   const TRANSLATIONS = {
     en: {
       app_title:             'Urban Sound Diary',
-      tagline:               'Listen, compose, and share your city.',
+      tagline:               'Listen, collect, and share your city.',
       username_placeholder:  'Username',
       city_placeholder:      'City (e.g. Suzhou)',
       set:                   'Set',
       change:                'Change',
       start_listening:       'Start Listening',
-      compose:               'Compose',
+      compose:               'City Archive',
       alert_enter_username:  'Please enter a username',
       no_city_set:           'no city set',
 
@@ -75,13 +75,13 @@
     },
     zh: {
       app_title:             '城市声音日记',
-      tagline:               '聆听、创作，分享你的城市。',
+      tagline:               '聆听、采集，分享你的城市。',
       username_placeholder:  '用户名',
       city_placeholder:      '城市（如：苏州）',
       set:                   '确认',
       change:                '修改',
       start_listening:       '开始聆听',
-      compose:               '创作',
+      compose:               '城市档案',
       alert_enter_username:  '请输入用户名',
       no_city_set:           '未设置城市',
 

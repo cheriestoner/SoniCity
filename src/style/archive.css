@@ -95,19 +95,19 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .home-link {
-    color: #007bff;
+    color: #000;
     text-decoration: none;
     font-size: 12px;
     padding: 5px 10px;
-    border: 1px solid #007bff;
+    border: 2px solid #000;
     border-radius: 4px;
     transition: all 0.2s ease;
     font-family: 'ark-pixel';
 }
 
 .home-link:hover {
-    background-color: #007bff;
-    color: white;
+    background-color: #000;
+    color: #fff;
 }
 
 #sidebar1 h3 {
