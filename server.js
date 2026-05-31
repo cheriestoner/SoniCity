@@ -355,7 +355,7 @@ app.get('/api/moments/csv', (_req, res) => {
                 ? `"${s.replace(/"/g, '""')}"` : s;
         }
 
-        const header = 'src,bgc,audio,hear,feel,user,location,day,time,date';
+        const header = 'src,bgc,audio,hear,feel,user,city,location,day,time,date';
         const csvRows = rows.map(r => {
             const src  = r.photo_path ? `/${r.photo_path}` : '';
             const audio = r.audio_path ? `/${r.audio_path}` : '';
@@ -368,7 +368,7 @@ app.get('/api/moments/csv', (_req, res) => {
             const date = `${month}-${day_of_month}`;
             const dateKey = r.timestamp.slice(0, 10);
             const day  = dayIndex[dateKey] ?? 1;
-            return [src, src, audio, r.description || '', r.feel || '', r.username, r.location_name || '', day, time, date]
+            return [src, src, audio, r.description || '', r.feel || '', r.username, r.city || '', r.location_name || '', day, time, date]
                 .map(escapeCSV).join(',');
         });
 

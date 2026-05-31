@@ -80,9 +80,18 @@
                 <div class="view-toggle">
                     <label class="ai-label" data-i18n="user_label">User</label>
                     <div class="toggle-buttons" id="user-filter-buttons">
-                        <button id="filter-me"     class="view-btn"        data-i18n="filter_me">Me</button>
-                        <button id="filter-all"    class="view-btn active"  data-i18n="all">All</button>
+                        <button id="filter-me"     class="view-btn active"  data-i18n="filter_me">Me</button>
+                        <button id="filter-all"    class="view-btn"         data-i18n="all">All</button>
                         <button id="filter-others" class="view-btn"         data-i18n="filter_others">Others</button>
+                    </div>
+                </div>
+
+                <div class="view-toggle">
+                    <label class="ai-label" data-i18n="city_label">City</label>
+                    <div class="toggle-buttons" id="city-filter-buttons">
+                        <button id="filter-suzhou"     class="view-btn active"  data-i18n="filter_suzhou">Suzhou</button>
+                        <button id="filter-two-cities" class="view-btn"         data-i18n="filter_two_cities">Two Cities</button>
+                        <button id="filter-shenzhen"   class="view-btn"         data-i18n="filter_shenzhen">Shenzhen</button>
                     </div>
                 </div>
             </div>
@@ -538,17 +547,22 @@
         document.getElementById('view-tag').addEventListener('click', () => setView('tag'));
         document.getElementById('view-feel').addEventListener('click', () => setView('feel'));
 
-        let currentFilter = 'all';
+        let currentFilter = 'me';
+        let currentCityFilter = 'suzhou';
 
-        function setFilter(mode) {
-            currentFilter = mode;
+        function applyFilters() {
             document.querySelectorAll('.image-button').forEach(btn => {
                 const u = btn.dataset.user;
-                const match = mode === 'all'
+                const c = btn.dataset.city;
+                const userMatch = currentFilter === 'all'
                     ? true
-                    : mode === 'me'
+                    : currentFilter === 'me'
                     ? u === currentUser
                     : u !== currentUser;
+                const cityMatch = currentCityFilter === 'two-cities'
+                    ? (c === 'suzhou' || c === 'shenzhen')
+                    : c === currentCityFilter;
+                const match = userMatch && cityMatch;
                 btn.style.display = match ? '' : 'none';
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
@@ -556,6 +570,10 @@
                     if (slider) slider.style.display = match ? '' : 'none';
                 }
             });
+        }
+
+        function setFilter(mode) {
+            currentFilter = mode;
             document.querySelectorAll('#user-filter-buttons .view-btn').forEach(btn => {
                 btn.classList.toggle('active',
                     (mode === 'all'    && btn.id === 'filter-all') ||
@@ -563,11 +581,27 @@
                     (mode === 'others' && btn.id === 'filter-others')
                 );
             });
+            applyFilters();
         }
 
-        document.getElementById('filter-me').addEventListener('click',     () => setFilter('me'));
-        document.getElementById('filter-all').addEventListener('click',    () => setFilter('all'));
-        document.getElementById('filter-others').addEventListener('click', () => setFilter('others'));
+        function setCityFilter(mode) {
+            currentCityFilter = mode;
+            document.querySelectorAll('#city-filter-buttons .view-btn').forEach(btn => {
+                btn.classList.toggle('active',
+                    (mode === 'two-cities' && btn.id === 'filter-two-cities') ||
+                    (mode === 'suzhou'     && btn.id === 'filter-suzhou') ||
+                    (mode === 'shenzhen'   && btn.id === 'filter-shenzhen')
+                );
+            });
+            applyFilters();
+        }
+
+        document.getElementById('filter-me').addEventListener('click',         () => setFilter('me'));
+        document.getElementById('filter-all').addEventListener('click',        () => setFilter('all'));
+        document.getElementById('filter-others').addEventListener('click',     () => setFilter('others'));
+        document.getElementById('filter-suzhou').addEventListener('click',     () => setCityFilter('suzhou'));
+        document.getElementById('filter-two-cities').addEventListener('click', () => setCityFilter('two-cities'));
+        document.getElementById('filter-shenzhen').addEventListener('click',   () => setCityFilter('shenzhen'));
 
         Promise.all([
             d3.csv("/api/moments/csv").catch(() => []),
@@ -581,6 +615,7 @@
                 feel:     img.feel  || '',
                 tag:      img.tag   || '',
                 user:     img.user  || '',
+                city:     img.city  || '',
                 location: '',
                 day:      img.day,
                 time:     img.time,
@@ -633,6 +668,7 @@
                 button.dataset.feelTop      = String(feelTop);
                 button.dataset.audioSrc     = img.audio;
                 button.dataset.user         = img.user;
+                button.dataset.city         = img.city || '';
                 button.style.left   = `${computedLeft}px`;
                 button.style.top    = `${computedTop}px`;
                 button.style.width  = `${buttonSize}px`;
@@ -956,6 +992,7 @@
                 document.getElementById("canvas-container").appendChild(button);
             });
             setView('timeline');
+            applyFilters();
             }
         });
 
@@ -997,6 +1034,7 @@
             // return to scatter view
             setView('scatter');
             setFilter('all');
+            setCityFilter('two-cities');
         });
     </script>
 </body>
