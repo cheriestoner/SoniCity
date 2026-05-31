@@ -53,6 +53,9 @@
             </div>
             <div id="image-title"></div>
             <div id="image-time"></div>
+            <div id="fav-toggle-wrap" style="display:none">
+                <button id="fav-toggle" class="view-btn" data-i18n="fav_add">☆ Favorite</button>
+            </div>
             <div id="image-bgc"></div>
             <div id="player" class="player elements">
                 <span id="image-audio"></span>
@@ -94,6 +97,14 @@
                         <button id="filter-shenzhen"   class="view-btn"         data-i18n="filter_shenzhen">Shenzhen</button>
                     </div>
                 </div>
+
+                <div class="view-toggle">
+                    <label class="ai-label" data-i18n="fav_label">Favorites</label>
+                    <div class="toggle-buttons" id="fav-filter-buttons">
+                        <button id="filter-all-fav"  class="view-btn active" data-i18n="all">All</button>
+                        <button id="filter-fav-only" class="view-btn"        data-i18n="fav_filter">★ Fav</button>
+                    </div>
+                </div>
             </div>
             <div class="sidebar2-footer">
                 <img src="/asset/logos/Logo-1.png" alt="Logo" class="sidebar2-logo primary">
@@ -107,6 +118,17 @@
     <script>
         const t = key => window.i18n.t(key);
         const currentUser = localStorage.getItem('usd_username') || 'anonymous';
+
+        const FAVE_KEY = 'sonicity_favorites';
+        function getFavorites() {
+            return new Set(JSON.parse(localStorage.getItem(FAVE_KEY) || '[]'));
+        }
+        function saveFavorites(set) {
+            localStorage.setItem(FAVE_KEY, JSON.stringify([...set]));
+        }
+
+        let currentFavFilter = 'all';
+        let selectedAudioSrc = null;
         const sidebar1 = d3.select("#sidebar1");
         const sidebar2 = d3.select("#sidebar2");
         const toggleButton1 = d3.select("#toggle-sidebar1");
@@ -562,7 +584,10 @@
                 const cityMatch = currentCityFilter === 'two-cities'
                     ? (c === 'suzhou' || c === 'shenzhen')
                     : c === currentCityFilter;
-                const match = userMatch && cityMatch;
+                const favMatch = currentFavFilter === 'all'
+                    ? true
+                    : btn.dataset.fav === 'true';
+                const match = userMatch && cityMatch && favMatch;
                 btn.style.display = match ? '' : 'none';
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
@@ -602,6 +627,41 @@
         document.getElementById('filter-suzhou').addEventListener('click',     () => setCityFilter('suzhou'));
         document.getElementById('filter-two-cities').addEventListener('click', () => setCityFilter('two-cities'));
         document.getElementById('filter-shenzhen').addEventListener('click',   () => setCityFilter('shenzhen'));
+
+        function setFavFilter(mode) {
+            currentFavFilter = mode;
+            document.querySelectorAll('#fav-filter-buttons .view-btn').forEach(btn => {
+                btn.classList.toggle('active',
+                    (mode === 'all'      && btn.id === 'filter-all-fav') ||
+                    (mode === 'fav-only' && btn.id === 'filter-fav-only')
+                );
+            });
+            applyFilters();
+        }
+
+        function updateFavButton(isFav) {
+            const btn = document.getElementById('fav-toggle');
+            btn.textContent = isFav ? t('fav_added') : t('fav_add');
+            btn.classList.toggle('active', isFav);
+        }
+
+        document.getElementById('filter-all-fav').addEventListener('click',  () => setFavFilter('all'));
+        document.getElementById('filter-fav-only').addEventListener('click', () => setFavFilter('fav-only'));
+
+        document.getElementById('fav-toggle').addEventListener('click', () => {
+            if (!selectedAudioSrc) return;
+            const favs = getFavorites();
+            if (favs.has(selectedAudioSrc)) {
+                favs.delete(selectedAudioSrc);
+            } else {
+                favs.add(selectedAudioSrc);
+            }
+            saveFavorites(favs);
+            updateFavButton(favs.has(selectedAudioSrc));
+            const imgBtn = document.querySelector(`.image-button[data-audio-src='${selectedAudioSrc}']`);
+            if (imgBtn) imgBtn.dataset.fav = favs.has(selectedAudioSrc) ? 'true' : 'false';
+            if (currentFavFilter !== 'all') applyFilters();
+        });
 
         Promise.all([
             d3.csv("/api/moments/csv").catch(() => []),
@@ -669,6 +729,7 @@
                 button.dataset.audioSrc     = img.audio;
                 button.dataset.user         = img.user;
                 button.dataset.city         = img.city || '';
+                button.dataset.fav          = getFavorites().has(img.audio) ? 'true' : 'false';
                 button.style.left   = `${computedLeft}px`;
                 button.style.top    = `${computedTop}px`;
                 button.style.width  = `${buttonSize}px`;
@@ -737,6 +798,10 @@
                     const feelPart  = img.feel     ? `<p><strong>${t('what_i_feel')}</strong><br>${img.feel}</p>` : '';
                     const locPart   = img.location ? `<p><strong>${t('location_label')}</strong><br>${img.location}</p>` : '';
                     d3.select("#image-describ").html(hearPart + feelPart + locPart);
+
+                    selectedAudioSrc = img.audio;
+                    document.getElementById('fav-toggle-wrap').style.display = '';
+                    updateFavButton(getFavorites().has(img.audio));
 
                     let existingAudio  = document.querySelector(`audio[data-src='${img.audio}']`);
                     let volumeSlider   = document.querySelector(`input[data-src='${img.audio}']`);
@@ -992,6 +1057,7 @@
         window.addEventListener('langchange', () => {
             window.i18n.applyTranslations();
             if (currentView !== 'scatter') setView(currentView);
+            if (selectedAudioSrc) updateFavButton(getFavorites().has(selectedAudioSrc));
         });
 
         d3.select("#reset-canvas").on("click", () => {
@@ -1019,10 +1085,13 @@
             d3.select("#image-bgc").html("");
             d3.select("#image-describ").html("");
             d3.select("#image-audio").html("");
-            // return to scatter view
+            // return to scatter view and reset filters (favorites data persists)
             setView('scatter');
             setFilter('all');
             setCityFilter('two-cities');
+            setFavFilter('all');
+            selectedAudioSrc = null;
+            document.getElementById('fav-toggle-wrap').style.display = 'none';
         });
     </script>
 </body>
