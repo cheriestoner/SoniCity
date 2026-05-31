@@ -16,6 +16,7 @@ let isRecording = false;
 let audioPlayer = null;
 let dateCache = {};   // { 'YYYY-MM-DD': Moment[] }
 let activeDate = null;
+let reviewedMoment = null;
 
 // ── DOM refs ─────────────────────────────────────────────────
 const grid = document.getElementById('moments-grid');
@@ -200,6 +201,7 @@ function closeFocusMode() {
   stopAudioPlayer();
   if (activeMoment) activeMoment.cleanup();
   activeMoment = null;
+  reviewedMoment = null;
   focusMode.classList.add('hidden');
   focusMode.dataset.mode = 'capture';
   momentText.readOnly = false;
@@ -251,6 +253,7 @@ function updateSaveBtn() {
 
 // ── Review mode ───────────────────────────────────────────────
 function openReviewMode(moment) {
+  reviewedMoment = moment;
   focusMode.dataset.mode = 'review';
   focusTitle.textContent = formatReviewTitle(moment.timestamp);
 
@@ -595,6 +598,26 @@ function enforceFeel() {
 addBtn.addEventListener('click', openFocusMode);
 addBtn.addEventListener('touchend', (e) => { e.preventDefault(); openFocusMode(); });
 focusBackBtn.addEventListener('click', closeFocusMode);
+
+document.getElementById('delete-btn').addEventListener('click', async () => {
+  if (!reviewedMoment) return;
+  const id = reviewedMoment.id;
+  const dateKey = momentDateKey(reviewedMoment.timestamp);
+  try {
+    const res = await fetch(`/api/moments/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+  } catch (err) {
+    console.error('Delete failed:', err);
+    return;
+  }
+  if (dateCache[dateKey]) {
+    dateCache[dateKey] = dateCache[dateKey].filter(m => m.id !== id);
+  }
+  const idx = moments.findIndex(m => m.id === id);
+  if (idx > -1) moments.splice(idx, 1);
+  closeFocusMode();
+  renderGrid(dateKey);
+});
 recordBtn.addEventListener('click', toggleRecording);
 openCameraBtn.addEventListener('click', openCamera);
 capturePhotoBtn.addEventListener('click', capturePhoto);

@@ -30,7 +30,7 @@
   <!-- ── Moments Grid ───────────────────────────────────── -->
   <main class="moments-grid" id="moments-grid">
     <button class="add-moment-btn" id="add-moment-btn" aria-label="Add moment">
-      <img src="/icons/plus.svg" alt="Add">
+      <span data-i18n="add_moment_btn">Record a new moment</span>
     </button>
   </main>
 
@@ -169,6 +169,11 @@
       <section class="save-section capture-only">
         <button class="save-btn" id="save-btn" disabled data-i18n="save_moment">Save Moment</button>
         <p class="save-hint" id="save-hint" data-i18n="record_to_save">Record audio to save</p>
+      </section>
+
+      <!-- ── Delete (review only) ── -->
+      <section class="delete-section review-only">
+        <button class="delete-btn" id="delete-btn" data-i18n="delete_moment">Delete Moment</button>
       </section>
 
     </div>

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import multer from 'multer';
-import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
+import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, deleteMoment, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
 dotenv.config();
 
@@ -337,6 +337,23 @@ app.get('/api/moments', (req, res) => {
         res.json({ moments: rows });
     } catch (error) {
         res.status(500).json({ error: 'Failed to get moments', details: error.message });
+    }
+});
+
+// Delete a single moment by id
+app.delete('/api/moments/:id', async (req, res) => {
+    try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const row = getAllMoments().find(r => r.id === req.params.id);
+        if (row) {
+            if (row.audio_path) await fs.unlink(path.join(__dirname, 'public', row.audio_path)).catch(() => {});
+            if (row.photo_path) await fs.unlink(path.join(__dirname, 'public', row.photo_path)).catch(() => {});
+        }
+        deleteMoment(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete moment', details: error.message });
     }
 });
 

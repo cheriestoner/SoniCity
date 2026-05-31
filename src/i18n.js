@@ -41,6 +41,8 @@
       locating:              'Locating…',
       no_location:           'No location',
       footer_title:          'Urban Sound Diary',
+      add_moment_btn:        'Record a new moment',
+      delete_moment:         'Delete Moment',
 
       home_back:             '← Home',
       city_archive:          'City Sound Archive',
@@ -114,6 +116,8 @@
       locating:              '定位中…',
       no_location:           '无位置信息',
       footer_title:          '城市声音日记',
+      add_moment_btn:        '记录新时刻',
+      delete_moment:         '删除时刻',
 
       home_back:             '← 首页',
       city_archive:          '城市声音档案',

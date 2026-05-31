@@ -77,4 +77,8 @@ export function deleteAllMoments() {
   return db.prepare('DELETE FROM moments').run();
 }
 
+export function deleteMoment(id) {
+  return db.prepare('DELETE FROM moments WHERE id = ?').run(id);
+}
+
 export default db;
