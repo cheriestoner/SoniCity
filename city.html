@@ -48,7 +48,6 @@
     <div id="canvas-container">
         <div id="sidebar1">
             <div class="sidebar-header">
-                <h2 data-i18n="city_a">City A</h2>
                 <a href="/" class="home-link" data-i18n="home_back">← Home</a>
             </div>
             <div id="image-title"></div>
@@ -665,7 +664,7 @@
 
         Promise.all([
             d3.csv("/api/moments/csv").catch(() => []),
-            d3.csv("imagedata-cityA.csv").catch(() => [])
+            d3.csv("imagedata-dummy.csv").catch(() => [])
         ]).then(([liveImages, staticImages]) => {
             const normalizedStatic = staticImages.map(img => ({
                 src:      img.src   || '',

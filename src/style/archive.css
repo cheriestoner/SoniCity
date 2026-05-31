@@ -97,7 +97,7 @@ input[type="range"]::-moz-range-thumb {
 .home-link {
     color: #007bff;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 12px;
     padding: 5px 10px;
     border: 1px solid #007bff;
     border-radius: 4px;
@@ -111,7 +111,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #sidebar1 h3 {
-    font-size: 1.15rem;
+    font-size: 0.9rem;
     font-weight: 400;
     line-height: 1.5rem;
     text-align: left;
@@ -120,7 +120,7 @@ input[type="range"]::-moz-range-thumb {
 
 #sidebar1 p {
     width: 100%;
-    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    font-size: clamp(0.8rem, 1.1vw, 0.95rem);
     line-height: 1.5rem;
     font-family: 'ark-pixel';
 }
@@ -133,13 +133,13 @@ input[type="range"]::-moz-range-thumb {
 #sidebar1 label[data-pan-src],
 #sidebar1 label[data-low-src],
 #sidebar1 label[data-high-src] {
-    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    font-size: clamp(0.8rem, 1.2vw, 0.95rem);
     margin: 12px 0 6px;
 }
 
 #sidebar1 label[data-left-src],
 #sidebar1 label[data-right-src] {
-    font-size: clamp(0.9rem, 1.4vw, 1rem);
+    font-size: clamp(0.7rem, 1vw, 0.8rem);
 }
 
 #sidebar1 .control-slider {
