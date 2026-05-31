@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <title>Urban Sound Diary</title>
   <link rel="stylesheet" href="/src/style/diary.css">
   <script src="/src/i18n.js"></script>
@@ -101,29 +101,7 @@
         </div>
       </section>
 
-      <!-- ── Text ── -->
-      <section class="text-section">
-        <label for="moment-text" id="moment-text-label" data-i18n="what_hear">What do you hear?</label>
-        <textarea
-          id="moment-text"
-          data-i18n-placeholder="describe_moment"
-          placeholder="Describe this moment..."
-          rows="3"
-        ></textarea>
-      </section>
-
-      <!-- ── Feel ── -->
-      <section class="text-section">
-        <label for="moment-feel" data-i18n="what_feel">What do you feel?</label>
-        <textarea
-          id="moment-feel"
-          data-i18n-placeholder="describe_feel"
-          placeholder="Describe how this makes you feel..."
-          rows="3"
-        ></textarea>
-      </section>
-
-      <!-- ── Metadata ── -->
+            <!-- ── Metadata ── -->
       <section class="meta-section">
 
         <div class="meta-row">
@@ -161,6 +139,29 @@
           <div class="tag-display review-only" id="tag-display"></div>
         </div>
 
+      </section>
+
+
+      <!-- ── Text ── -->
+      <section class="text-section">
+        <label for="moment-text" id="moment-text-label" data-i18n="what_hear">Describe what you recorded:</label>
+        <textarea
+          id="moment-text"
+          data-i18n-placeholder="describe_moment"
+          placeholder="Describe this moment..."
+          rows="3"
+        ></textarea>
+      </section>
+
+      <!-- ── Feel ── -->
+      <section class="text-section">
+        <label for="moment-feel" data-i18n="what_feel">What do you feel?</label>
+        <textarea
+          id="moment-feel"
+          data-i18n-placeholder="describe_feel"
+          placeholder="Describe how this makes you feel..."
+          rows="3"
+        ></textarea>
       </section>
 
       <!-- ── Save (capture only) ── -->

@@ -11,7 +11,7 @@
     <link rel="preload" href="/public/asset/font/ark-pixel-12px-monospaced-zh_cn.otf" as="font" type="font/otf" crossorigin>
     <style>
         .view-toggle { margin: 16px 0; }
-        .toggle-buttons { display: flex; gap: 8px; margin-top: 8px; }
+        .toggle-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .view-btn {
             font-family: 'ark-pixel', monospace;
             border-radius: 4px;
@@ -69,16 +69,20 @@
                 <div class="view-toggle">
                     <label class="ai-label" data-i18n="view_label">View</label>
                     <div class="toggle-buttons">
-                        <button id="view-scatter" class="view-btn active" data-i18n="scatter">Scatter</button>
-                        <button id="view-timeline" class="view-btn" data-i18n="timeline">Timeline</button>
+                        <button id="view-timeline" class="view-btn active" data-i18n="timeline">Timeline</button>
                         <button id="view-clock" class="view-btn" data-i18n="clock">Clock</button>
+                        <button id="view-tag" class="view-btn" data-i18n="tag_view">Tag</button>
+                        <button id="view-feel" class="view-btn" data-i18n="feel_view">Feel</button>
+                        <button id="view-scatter" class="view-btn" data-i18n="scatter">Scatter</button>
                     </div>
                 </div>
 
                 <div class="view-toggle">
                     <label class="ai-label" data-i18n="user_label">User</label>
                     <div class="toggle-buttons" id="user-filter-buttons">
-                        <button id="filter-all" class="view-btn active" data-i18n="all">All</button>
+                        <button id="filter-me"     class="view-btn"        data-i18n="filter_me">Me</button>
+                        <button id="filter-all"    class="view-btn active"  data-i18n="all">All</button>
+                        <button id="filter-others" class="view-btn"         data-i18n="filter_others">Others</button>
                     </div>
                 </div>
             </div>
@@ -93,6 +97,7 @@
     </div>
     <script>
         const t = key => window.i18n.t(key);
+        const currentUser = localStorage.getItem('usd_username') || 'anonymous';
         const sidebar1 = d3.select("#sidebar1");
         const sidebar2 = d3.select("#sidebar2");
         const toggleButton1 = d3.select("#toggle-sidebar1");
@@ -140,6 +145,16 @@
         // Clock grid group (hidden by default)
         const clockGrid = svg.append("g")
             .attr("id", "clock-grid")
+            .style("display", "none");
+
+        // Tag cluster grid group (hidden by default)
+        const tagGrid = svg.append("g")
+            .attr("id", "tag-grid")
+            .style("display", "none");
+
+        // Feel cluster grid group (hidden by default)
+        const feelGrid = svg.append("g")
+            .attr("id", "feel-grid")
             .style("display", "none");
 
         const g = svg.append("g");
@@ -350,19 +365,132 @@
             };
         }
 
+        // Tag cluster constants
+        const MAIN_TAGS = ['On the way', 'Open space', 'Commercial space', 'Historical place'];
+        const MAIN_TAG_QUADRANTS = [
+            { col: 0, row: 0 },
+            { col: 1, row: 0 },
+            { col: 0, row: 1 },
+            { col: 1, row: 1 },
+        ];
+        let tagCenters = {};
+
+        function buildTagCenters(images) {
+            const { leftBound, visibleWidth } = computeVisibleBounds();
+            const colW = visibleWidth / 2;
+            const rowH = height / 2;
+            tagCenters = {};
+            MAIN_TAGS.forEach((tag, i) => {
+                const { col, row } = MAIN_TAG_QUADRANTS[i];
+                tagCenters[tag] = {
+                    cx: leftBound + (col + 0.5) * colW,
+                    cy: (row + 0.5) * rowH,
+                };
+            });
+            const extraTags = [...new Set(images.map(img => img.tag).filter(t => t && !MAIN_TAGS.includes(t)))];
+            extraTags.forEach(tag => {
+                const rng = seededRngFromString('tag-center|' + tag);
+                const anchor = tagCenters[MAIN_TAGS[Math.floor(rng() * 4)]];
+                const offsetR = Math.min(colW, rowH) * 0.25;
+                tagCenters[tag] = {
+                    cx: anchor.cx + (rng() - 0.5) * 2 * offsetR,
+                    cy: anchor.cy + (rng() - 0.5) * 2 * offsetR,
+                };
+            });
+        }
+
+        function buildTagGrid() {
+            tagGrid.selectAll("*").remove();
+            Object.entries(tagCenters).forEach(([tag, { cx, cy }]) => {
+                tagGrid.append("text")
+                    .attr("x", cx)
+                    .attr("y", cy)
+                    .attr("text-anchor", "middle")
+                    .attr("class", "timeline-day-label")
+                    .style("font-size", "clamp(13px, 1.5vw, 18px)")
+                    .style("fill", "#bbb")
+                    .text(tag);
+            });
+        }
+
+        function computeTagPos(img, initLeft, initTop) {
+            const tag = img.tag || '';
+            const center = tagCenters[tag];
+            if (!center) return { tagLeft: initLeft, tagTop: initTop };
+            const { visibleWidth } = computeVisibleBounds();
+            const clusterR = (visibleWidth / 2) * 0.28;
+            const idKey = img.audio || img.src || img.title || '';
+            const rng = seededRngFromString(`tag-jitter|${randomSeed}|${idKey}`);
+            return {
+                tagLeft: Math.round(center.cx + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
+                tagTop:  Math.round(center.cy + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
+            };
+        }
+
+        // Feel cluster functions
+        let feelCenters = {};
+
+        function buildFeelCenters(images) {
+            const { leftBound, visibleWidth } = computeVisibleBounds();
+            const uniqueFeels = [...new Set(images.map(img => img.feel).filter(Boolean))];
+            feelCenters = {};
+            uniqueFeels.forEach(feel => {
+                const rng = seededRngFromString('feel-center|' + feel);
+                feelCenters[feel] = {
+                    cx: leftBound + rng() * visibleWidth,
+                    cy: rng() * height,
+                };
+            });
+        }
+
+        function buildFeelGrid() {
+            feelGrid.selectAll("*").remove();
+            Object.entries(feelCenters).forEach(([feel, { cx, cy }]) => {
+                feelGrid.append("text")
+                    .attr("x", cx)
+                    .attr("y", cy)
+                    .attr("text-anchor", "middle")
+                    .attr("class", "timeline-day-label")
+                    .style("font-size", "clamp(13px, 1.5vw, 18px)")
+                    .style("fill", "#bbb")
+                    .text(feel);
+            });
+        }
+
+        function computeFeelPos(img, initLeft, initTop) {
+            const feel = img.feel || '';
+            const center = feelCenters[feel];
+            if (!center) return { feelLeft: initLeft, feelTop: initTop };
+            const { visibleWidth } = computeVisibleBounds();
+            const numFeels = Object.keys(feelCenters).length || 1;
+            const clusterR = Math.min(visibleWidth / numFeels, height * 0.15);
+            const idKey = img.audio || img.src || img.title || '';
+            const rng = seededRngFromString(`feel-jitter|${randomSeed}|${idKey}`);
+            return {
+                feelLeft: Math.round(center.cx + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
+                feelTop:  Math.round(center.cy + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
+            };
+        }
+
         // View state
-        let currentView = 'scatter';
+        let currentView = 'timeline';
 
         function setView(view) {
             currentView = view;
             const isTimeline = view === 'timeline';
             const isClock    = view === 'clock';
+            const isTag      = view === 'tag';
+            const isFeel     = view === 'feel';
 
             if (isTimeline) buildTimelineGrid();
             if (isClock)    buildClockGrid();
+            if (isTag)      buildTagGrid();
+            if (isFeel)     buildFeelGrid();
 
             timelineGrid.style("display", isTimeline ? null : "none");
             clockGrid.style("display",    isClock    ? null : "none");
+            tagGrid.style("display",      isTag      ? null : "none");
+            feelGrid.style("display",     isFeel     ? null : "none");
 
             document.querySelectorAll(".image-button").forEach(btn => {
                 let targetLeft, targetTop;
@@ -372,6 +500,12 @@
                 } else if (isClock) {
                     targetLeft = parseInt(btn.dataset.clockLeft);
                     targetTop  = parseInt(btn.dataset.clockTop);
+                } else if (isTag) {
+                    targetLeft = parseInt(btn.dataset.tagLeft);
+                    targetTop  = parseInt(btn.dataset.tagTop);
+                } else if (isFeel) {
+                    targetLeft = parseInt(btn.dataset.feelLeft);
+                    targetTop  = parseInt(btn.dataset.feelTop);
                 } else {
                     targetLeft = parseInt(btn.dataset.initLeft);
                     targetTop  = parseInt(btn.dataset.initTop);
@@ -394,18 +528,27 @@
             document.getElementById('view-scatter').classList.toggle('active', view === 'scatter');
             document.getElementById('view-timeline').classList.toggle('active', isTimeline);
             document.getElementById('view-clock').classList.toggle('active', isClock);
+            document.getElementById('view-tag').classList.toggle('active', isTag);
+            document.getElementById('view-feel').classList.toggle('active', isFeel);
         }
 
         document.getElementById('view-scatter').addEventListener('click', () => setView('scatter'));
         document.getElementById('view-timeline').addEventListener('click', () => setView('timeline'));
         document.getElementById('view-clock').addEventListener('click', () => setView('clock'));
+        document.getElementById('view-tag').addEventListener('click', () => setView('tag'));
+        document.getElementById('view-feel').addEventListener('click', () => setView('feel'));
 
         let currentFilter = 'all';
 
-        function setFilter(user) {
-            currentFilter = user;
+        function setFilter(mode) {
+            currentFilter = mode;
             document.querySelectorAll('.image-button').forEach(btn => {
-                const match = user === 'all' || btn.dataset.user === user;
+                const u = btn.dataset.user;
+                const match = mode === 'all'
+                    ? true
+                    : mode === 'me'
+                    ? u === currentUser
+                    : u !== currentUser;
                 btn.style.display = match ? '' : 'none';
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
@@ -414,11 +557,17 @@
                 }
             });
             document.querySelectorAll('#user-filter-buttons .view-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.id === 'filter-all' ? user === 'all' : btn.textContent === user);
+                btn.classList.toggle('active',
+                    (mode === 'all'    && btn.id === 'filter-all') ||
+                    (mode === 'me'     && btn.id === 'filter-me') ||
+                    (mode === 'others' && btn.id === 'filter-others')
+                );
             });
         }
 
-        document.getElementById('filter-all').addEventListener('click', () => setFilter('all'));
+        document.getElementById('filter-me').addEventListener('click',     () => setFilter('me'));
+        document.getElementById('filter-all').addEventListener('click',    () => setFilter('all'));
+        document.getElementById('filter-others').addEventListener('click', () => setFilter('others'));
 
         Promise.all([
             d3.csv("/api/moments/csv").catch(() => []),
@@ -429,25 +578,21 @@
                 bgc:      img.bgc   || '',
                 audio:    img.audio || '',
                 hear:     img.describ || '',
-                feel:     '',
+                feel:     img.feel  || '',
+                tag:      img.tag   || '',
                 user:     img.user  || '',
                 location: '',
                 day:      img.day,
                 time:     img.time,
                 date:     img.date,
             }));
-            const images = [...liveImages, ...normalizedStatic];
+            const images = [
+                ...liveImages.map(img => ({ ...img, tag: img.tag || img.feel || '' })),
+                ...normalizedStatic
+            ];
 
-            // Build dynamic user filter buttons
-            const users = [...new Set(images.map(img => img.user).filter(Boolean))].sort();
-            const filterContainer = document.getElementById('user-filter-buttons');
-            users.forEach(u => {
-                const btn = document.createElement('button');
-                btn.className = 'view-btn';
-                btn.textContent = u;
-                btn.addEventListener('click', () => setFilter(u));
-                filterContainer.appendChild(btn);
-            });
+            buildTagCenters(images);
+            buildFeelCenters(images);
 
             {
             const { leftBound, rightBound } = computeVisibleBounds();
@@ -472,6 +617,8 @@
 
                 const { timelineLeft, timelineTop } = computeTimelinePos(img);
                 const { clockLeft, clockTop }       = computeClockPos(img);
+                const { tagLeft, tagTop }           = computeTagPos(img, computedLeft, computedTop);
+                const { feelLeft, feelTop }         = computeFeelPos(img, computedLeft, computedTop);
 
                 button.classList.add("image-button");
                 button.dataset.initLeft     = String(computedLeft);
@@ -480,6 +627,10 @@
                 button.dataset.timelineTop  = String(timelineTop);
                 button.dataset.clockLeft    = String(clockLeft);
                 button.dataset.clockTop     = String(clockTop);
+                button.dataset.tagLeft      = String(tagLeft);
+                button.dataset.tagTop       = String(tagTop);
+                button.dataset.feelLeft     = String(feelLeft);
+                button.dataset.feelTop      = String(feelTop);
                 button.dataset.audioSrc     = img.audio;
                 button.dataset.user         = img.user;
                 button.style.left   = `${computedLeft}px`;
@@ -804,6 +955,7 @@
 
                 document.getElementById("canvas-container").appendChild(button);
             });
+            setView('timeline');
             }
         });
 

@@ -234,8 +234,8 @@ function resetCaptureUI() {
   openCameraBtn.style.display = '';
   retakePhotoBtn.style.display = 'none';
   momentText.value = '';
-  tagOptions.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-  tagSpecialText.value = '';
+  tagOptions?.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+  if (tagSpecialText) tagSpecialText.value = '';
   updateSaveBtn();
 }
 
@@ -270,7 +270,7 @@ function openReviewMode(moment) {
     : t('no_location');
   locationNameDisplay.textContent = moment.locationName || '';
 
-  tagDisplay.textContent = (moment.tags || []).map(tag => {
+  if (tagDisplay) tagDisplay.textContent = (moment.tags || []).map(tag => {
     if (tag.startsWith('special:')) return `${t('tag_special')}: ${tag.slice(8)}`;
     if (tag === 'special') return t('tag_special');
     return TAG_KEY_MAP[tag] ? t(TAG_KEY_MAP[tag]) : tag;
@@ -568,6 +568,7 @@ function enforceFeel() {
 
 // ── Event listeners ───────────────────────────────────────────
 addBtn.addEventListener('click', openFocusMode);
+addBtn.addEventListener('touchend', (e) => { e.preventDefault(); openFocusMode(); });
 focusBackBtn.addEventListener('click', closeFocusMode);
 recordBtn.addEventListener('click', toggleRecording);
 openCameraBtn.addEventListener('click', openCamera);

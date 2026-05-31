@@ -3,7 +3,7 @@ import cors from 'cors';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import multer from 'multer';
 import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
@@ -26,42 +26,42 @@ const upload = multer({
 const isProduction = process.env.NODE_ENV === 'production' || __dirname.includes('dist');
 
 if (isProduction) {
-    app.use(express.static('public'));
-    app.use(express.static('.'));
+    app.use(express.static(join(__dirname, 'public')));
+    app.use(express.static(__dirname));
 
     app.get('/', (_req, res) => {
-        res.sendFile('index.html', { root: './' });
+        res.sendFile(join(__dirname, 'index.html'));
     });
 
     app.get('/suzhou', (_req, res) => {
-        res.sendFile('suzhou.html', { root: './' });
+        res.sendFile(join(__dirname, 'suzhou.html'));
     });
 
     app.get('/expand', (_req, res) => {
-        res.sendFile('city.html', { root: './' });
+        res.sendFile(join(__dirname, 'city.html'));
     });
 
     app.get('/diary', (_req, res) => {
-        res.sendFile('diary.html', { root: './' });
+        res.sendFile(join(__dirname, 'diary.html'));
     });
 } else {
-    app.use(express.static('public'));
-    app.use(express.static('.'));
+    app.use(express.static(join(__dirname, 'public')));
+    app.use(express.static(__dirname));
 
     app.get('/', (_req, res) => {
-        res.sendFile('index.html', { root: './' });
+        res.sendFile(join(__dirname, 'index.html'));
     });
 
     app.get('/suzhou', (_req, res) => {
-        res.sendFile('suzhou.html', { root: './' });
+        res.sendFile(join(__dirname, 'suzhou.html'));
     });
 
     app.get('/expand', (_req, res) => {
-        res.sendFile('city.html', { root: './' });
+        res.sendFile(join(__dirname, 'city.html'));
     });
 
     app.get('/diary', (_req, res) => {
-        res.sendFile('diary.html', { root: './' });
+        res.sendFile(join(__dirname, 'diary.html'));
     });
 }
 
