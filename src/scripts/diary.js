@@ -495,7 +495,11 @@ async function persistMoment(moment) {
 
   try {
     const response = await fetch('/api/moments', { method: 'POST', body: formData });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      console.error('Failed to persist moment — server error:', errBody);
+      throw new Error(`HTTP ${response.status}`);
+    }
     const data = await response.json();
     if (data.audioPath) moment.audioUrl = `/${data.audioPath}`;
     if (data.photoPath) moment.photoUrl = `/${data.photoPath}`;
