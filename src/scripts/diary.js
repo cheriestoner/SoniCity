@@ -290,11 +290,19 @@ function openReviewMode(moment) {
 function setupAudioPlayer(url) {
   stopAudioPlayer();
   audioPlayer = new Audio(url);
+  audioPlayer.addEventListener('loadedmetadata', () => {
+    if (isFinite(audioPlayer.duration)) {
+      playTimer.textContent = formatTime(Math.floor(audioPlayer.duration));
+    }
+  });
   audioPlayer.ontimeupdate = () => {
     playTimer.textContent = formatTime(Math.floor(audioPlayer.currentTime));
   };
   audioPlayer.onended = () => {
     playBtn.querySelector('img').src = '/icons/play-circle.svg';
+    if (isFinite(audioPlayer.duration)) {
+      playTimer.textContent = formatTime(Math.floor(audioPlayer.duration));
+    }
   };
   playTimer.textContent = '0:00';
   playBtn.querySelector('img').src = '/icons/play-circle.svg';

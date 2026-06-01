@@ -20,6 +20,10 @@ export class Moment {
   async captureLocation() {
     return new Promise((resolve) => {
       if (!navigator.geolocation) return resolve(null);
+      if (!window.isSecureContext) {
+        console.warn('captureLocation: geolocation requires a secure context (HTTPS). Skipping.');
+        return resolve(null);
+      }
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
           this.location = {
@@ -29,7 +33,10 @@ export class Moment {
           };
           resolve(this.location);
         },
-        () => resolve(null),
+        (err) => {
+          console.warn('captureLocation failed:', err.code, err.message);
+          resolve(null);
+        },
         { timeout: 5000 }
       );
     });
