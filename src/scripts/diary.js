@@ -596,12 +596,11 @@ function renderMomentCard(moment) {
   grid.insertBefore(card, addBtn.nextSibling);
 }
 
-// ── Feel field: one-word constraint ──────────────────────────
 function enforceFeel() {
-  const lang = window.i18n ? window.i18n.getLang() : 'en';
-  let val = momentFeel.value.replace(/[^a-zA-Z一-鿿㐀-䶿豈-﫿]/g, '');
-  if (lang === 'zh' && val.length > 5) val = val.slice(0, 5);
-  momentFeel.value = val;
+  const limit = window.i18n?.getLang() === 'zh' ? 20 : 100;
+  if (momentFeel.value.length > limit) {
+    momentFeel.value = momentFeel.value.slice(0, limit);
+  }
 }
 
 // ── Event listeners ───────────────────────────────────────────
