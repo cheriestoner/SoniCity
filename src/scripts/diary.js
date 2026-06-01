@@ -211,6 +211,7 @@ function closeFocusMode() {
 // ── Capture mode ─────────────────────────────────────────────
 function openFocusMode() {
   activeMoment = new Moment();
+  activeMoment._locationPromise = activeMoment.captureLocation();
   focusMode.dataset.mode = 'capture';
   focusTitle.textContent = t('new_moment');
   resetCaptureUI();
@@ -400,7 +401,7 @@ async function onRecordingComplete() {
   activeMoment.audioBlob = blob;
   activeMoment.audioUrl = URL.createObjectURL(blob);
 
-  await activeMoment.captureLocation();
+  await (activeMoment._locationPromise ?? activeMoment.captureLocation());
   metaCoords.textContent = activeMoment.location
     ? `${activeMoment.location.lat.toFixed(4)}, ${activeMoment.location.lng.toFixed(4)}`
     : t('no_location');

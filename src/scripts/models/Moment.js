@@ -37,7 +37,7 @@ export class Moment {
           console.warn('captureLocation failed:', err.code, err.message);
           resolve(null);
         },
-        { timeout: 5000 }
+        { timeout: 10000, maximumAge: 60000 }
       );
     });
   }
