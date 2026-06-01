@@ -26,7 +26,10 @@
                     <div id="profile-inputs">
                         <div class="username-input-group">
                             <input type="text" id="username-input" data-i18n-placeholder="username_placeholder" placeholder="Username" maxlength="20">
-                            <input type="text" id="city-input" data-i18n-placeholder="city_placeholder" placeholder="City (e.g. Suzhou)" maxlength="40">
+                            <select id="city-input">
+                              <option value="Suzhou" data-i18n="filter_suzhou">Suzhou</option>
+                              <option value="Shenzhen" data-i18n="filter_shenzhen">Shenzhen</option>
+                            </select>
                             <button id="set-username-btn" onclick="setUsername()" data-i18n="set">Set</button>
                         </div>
                     </div>
@@ -89,7 +92,7 @@
             localStorage.setItem('usd_city', city);
 
             document.getElementById('username-input').value = '';
-            document.getElementById('city-input').value = '';
+            document.getElementById('city-input').selectedIndex = 0;
 
             showCurrentProfile(username, city);
         }
@@ -111,9 +114,6 @@
 
         document.getElementById('username-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') document.getElementById('city-input').focus();
-        });
-        document.getElementById('city-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') setUsername();
         });
     </script>
 </body>
