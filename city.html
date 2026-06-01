@@ -254,6 +254,18 @@
         }
         centerResetButton();
 
+        if (window.innerWidth < 768) {
+            sidebar1Visible = false;
+            sidebar2Visible = false;
+            sidebar1.classed("hidden", true);
+            toggleButton1.classed("hidden", true);
+            toggleButton1.text(">");
+            sidebar2.classed("hidden", true);
+            toggleButton2.classed("hidden", true);
+            toggleButton2.text("<");
+            centerResetButton();
+        }
+
         // User index for timeline rows
         const userIndex = { alice: 0, bob: 1, carol: 2 };
         const userLabels = ['alice', 'bob', 'carol'];
@@ -569,7 +581,13 @@
         document.getElementById('view-feel').addEventListener('click', () => setView('feel'));
 
         let currentFilter = 'me';
-        let currentCityFilter = 'suzhou';
+
+        function resolveDefaultCity() {
+            const raw = (localStorage.getItem('usd_city') || '').toLowerCase().trim();
+            if (raw === 'shenzhen' || raw === '深圳') return 'shenzhen';
+            return 'suzhou';
+        }
+        let currentCityFilter = resolveDefaultCity();
 
         function applyFilters() {
             document.querySelectorAll('.image-button').forEach(btn => {
@@ -626,6 +644,7 @@
         document.getElementById('filter-suzhou').addEventListener('click',     () => setCityFilter('suzhou'));
         document.getElementById('filter-two-cities').addEventListener('click', () => setCityFilter('two-cities'));
         document.getElementById('filter-shenzhen').addEventListener('click',   () => setCityFilter('shenzhen'));
+        setCityFilter(currentCityFilter);
 
         function setFavFilter(mode) {
             currentFavFilter = mode;
