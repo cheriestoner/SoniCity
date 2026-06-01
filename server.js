@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import multer from 'multer';
-import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, deleteMoment, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
+import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, deleteMoment, updateMoment, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
 dotenv.config();
 
@@ -354,6 +354,22 @@ app.delete('/api/moments/:id', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete moment', details: error.message });
+    }
+});
+
+// Update editable fields of a moment (text, feel, locationName, tags)
+app.patch('/api/moments/:id', (req, res) => {
+    try {
+        const { description, feel, locationName, tags } = req.body;
+        updateMoment(req.params.id, {
+            description: description ?? '',
+            feel: feel ?? '',
+            locationName: locationName ?? '',
+            tags: typeof tags === 'string' ? tags : JSON.stringify(tags ?? []),
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update moment', details: error.message });
     }
 });
 

@@ -114,18 +114,17 @@
           <span class="meta-label" data-i18n="place_label">Place</span>
           <div class="meta-location-col">
             <input type="text" id="location-name-input"
-                   class="location-name-input capture-only"
+                   class="location-name-input"
                    data-i18n-placeholder="name_place"
                    placeholder="Name this place…"
                    maxlength="60" autocomplete="off">
-            <span id="location-name-display" class="location-name-display review-only"></span>
             <span id="meta-coords" class="meta-coords">—</span>
           </div>
         </div>
 
         <div class="meta-row meta-row--tags">
           <span class="meta-label" data-i18n="tag_label">Tags</span>
-          <div class="tag-options capture-only" id="tag-options">
+          <div class="tag-options" id="tag-options">
             <label class="tag-pill"><input type="checkbox" value="on_the_way"><span data-i18n="tag_on_the_way">On the way</span></label>
             <label class="tag-pill"><input type="checkbox" value="open_space"><span data-i18n="tag_open_space">Open space</span></label>
             <label class="tag-pill"><input type="checkbox" value="commercial"><span data-i18n="tag_commercial">Commercial space</span></label>
@@ -137,7 +136,6 @@
                      data-i18n-placeholder="tag_special_placeholder" placeholder="Describe…" maxlength="60">
             </label>
           </div>
-          <div class="tag-display review-only" id="tag-display"></div>
         </div>
 
       </section>
@@ -171,8 +169,9 @@
         <p class="save-hint" id="save-hint" data-i18n="record_to_save">Record audio to save</p>
       </section>
 
-      <!-- ── Delete (review only) ── -->
+      <!-- ── Delete / Save changes (review only) ── -->
       <section class="delete-section review-only">
+        <button class="save-changes-btn" id="save-changes-btn" data-i18n="save_changes">Save Changes</button>
         <button class="delete-btn" id="delete-btn" data-i18n="delete_moment">Delete Moment</button>
       </section>
 

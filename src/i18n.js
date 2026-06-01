@@ -43,6 +43,7 @@
       footer_title:          'Urban Sound Diary',
       add_moment_btn:        'Record a new moment',
       delete_moment:         'Delete Moment',
+      save_changes:          'Save Changes',
 
       home_back:             '← Home',
       city_archive:          'City Sound Archive',
@@ -118,6 +119,7 @@
       footer_title:          '城市声音日记',
       add_moment_btn:        '记录新时刻',
       delete_moment:         '删除时刻',
+      save_changes:          '保存修改',
 
       home_back:             '← 首页',
       city_archive:          '城市声音档案',

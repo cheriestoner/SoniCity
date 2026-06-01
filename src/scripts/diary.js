@@ -45,17 +45,8 @@ const rerecordBtn = document.getElementById('rerecord-btn');
 const metaTime = document.getElementById('meta-time');
 const metaCoords = document.getElementById('meta-coords');
 const locationNameInput = document.getElementById('location-name-input');
-const locationNameDisplay = document.getElementById('location-name-display');
 const tagOptions = document.getElementById('tag-options');
 const tagSpecialText = document.getElementById('tag-special-text');
-const tagDisplay = document.getElementById('tag-display');
-
-const TAG_KEY_MAP = {
-  on_the_way: 'tag_on_the_way',
-  open_space:  'tag_open_space',
-  commercial:  'tag_commercial',
-  historical:  'tag_historical',
-};
 const diaryDateEl = document.getElementById('diary-date');
 const diaryDateBtn = document.getElementById('diary-date-btn');
 const dateDropdown = document.getElementById('date-dropdown');
@@ -204,7 +195,6 @@ function closeFocusMode() {
   reviewedMoment = null;
   focusMode.classList.add('hidden');
   focusMode.dataset.mode = 'capture';
-  momentText.readOnly = false;
   document.body.style.overflow = '';
 }
 
@@ -266,7 +256,21 @@ function openReviewMode(moment) {
   }
 
   momentText.value = moment.text;
-  momentText.readOnly = true;
+  momentFeel.value = moment.feel || '';
+  locationNameInput.value = moment.locationName || '';
+
+  tagOptions?.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+  if (tagSpecialText) tagSpecialText.value = '';
+  (moment.tags || []).forEach(tag => {
+    if (tag.startsWith('special:')) {
+      const cb = document.getElementById('tag-special-cb');
+      if (cb) cb.checked = true;
+      if (tagSpecialText) tagSpecialText.value = tag.slice(8);
+    } else {
+      const cb = tagOptions?.querySelector(`input[value="${tag}"]`);
+      if (cb) cb.checked = true;
+    }
+  });
 
   setupAudioPlayer(moment.audioUrl);
 
@@ -276,13 +280,6 @@ function openReviewMode(moment) {
   metaCoords.textContent = moment.location
     ? `${moment.location.lat.toFixed(4)}, ${moment.location.lng.toFixed(4)}`
     : t('no_location');
-  locationNameDisplay.textContent = moment.locationName || '';
-
-  if (tagDisplay) tagDisplay.textContent = (moment.tags || []).map(tag => {
-    if (tag.startsWith('special:')) return `${t('tag_special')}: ${tag.slice(8)}`;
-    if (tag === 'special') return t('tag_special');
-    return TAG_KEY_MAP[tag] ? t(TAG_KEY_MAP[tag]) : tag;
-  }).join(', ');
 
   openOverlay();
 }
@@ -631,6 +628,44 @@ document.getElementById('delete-btn').addEventListener('click', async () => {
   closeFocusMode();
   renderGrid(dateKey);
 });
+
+document.getElementById('save-changes-btn').addEventListener('click', async () => {
+  if (!reviewedMoment) return;
+
+  reviewedMoment.text         = momentText.value.trim();
+  reviewedMoment.feel         = momentFeel.value.trim();
+  reviewedMoment.locationName = locationNameInput.value.trim();
+  reviewedMoment.tags = Array.from(tagOptions.querySelectorAll('input[type="checkbox"]:checked')).map(cb => {
+    if (cb.value === 'special') {
+      const label = tagSpecialText.value.trim();
+      return label ? `special:${label}` : 'special';
+    }
+    return cb.value;
+  });
+
+  const saved   = reviewedMoment;
+  const dateKey = momentDateKey(saved.timestamp);
+
+  closeFocusMode();
+  renderGrid(dateKey);
+
+  try {
+    const res = await fetch(`/api/moments/${saved.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: saved.text,
+        feel:        saved.feel,
+        locationName: saved.locationName,
+        tags:        JSON.stringify(saved.tags),
+      }),
+    });
+    if (!res.ok) throw new Error(`PATCH failed: ${res.status}`);
+  } catch (err) {
+    console.error('Save changes failed:', err);
+  }
+});
+
 recordBtn.addEventListener('click', toggleRecording);
 openCameraBtn.addEventListener('click', openCamera);
 capturePhotoBtn.addEventListener('click', capturePhoto);

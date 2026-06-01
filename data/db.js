@@ -81,4 +81,10 @@ export function deleteMoment(id) {
   return db.prepare('DELETE FROM moments WHERE id = ?').run(id);
 }
 
+export function updateMoment(id, { description, feel, locationName, tags }) {
+  return db.prepare(
+    'UPDATE moments SET description = ?, feel = ?, location_name = ?, tags = ? WHERE id = ?'
+  ).run(description, feel, locationName, tags, id);
+}
+
 export default db;
