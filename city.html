@@ -42,6 +42,19 @@
         .image-button {
             transition: none;
         }
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+        }
+        #week-label {
+            font-size: 0.82rem;
+            flex: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -77,6 +90,12 @@
                         <button id="view-feel" class="view-btn" data-i18n="feel_view">Feel</button>
                         <button id="view-scatter" class="view-btn" data-i18n="scatter">Scatter</button>
                     </div>
+                </div>
+
+                <div id="week-nav" class="week-nav" style="display:none">
+                    <button id="week-prev" class="view-btn">←</button>
+                    <span id="week-label"></span>
+                    <button id="week-next" class="view-btn">→</button>
                 </div>
 
                 <div class="view-toggle">
@@ -271,18 +290,56 @@
         const userLabels = ['alice', 'bob', 'carol'];
         const numDays = 7;
         const numUsers = 3;
-        const dayDates = new Array(numDays).fill('');
-        (function () {
-            const today = new Date();
-            const dow = today.getDay();
-            const monday = new Date(today);
-            monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-            for (let i = 0; i < numDays; i++) {
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + i);
-                dayDates[i] = (d.getMonth() + 1) + '/' + d.getDate();
-            }
-        })();
+        let weekOffset = 0;
+        let weekMonday = new Date();
+        const _wd = weekMonday.getDay();
+        weekMonday.setDate(weekMonday.getDate() - (_wd === 0 ? 6 : _wd - 1));
+        let dayDates = Array.from({ length: numDays }, (_, i) => {
+            const d = new Date(weekMonday);
+            d.setDate(weekMonday.getDate() + i);
+            return (d.getMonth() + 1) + '/' + d.getDate();
+        });
+        let currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
+            const d = new Date(weekMonday);
+            d.setDate(weekMonday.getDate() + i);
+            return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        });
+
+        function updateWeek(delta) {
+            weekOffset += delta;
+            const base = new Date();
+            const wd = base.getDay();
+            weekMonday = new Date(base);
+            weekMonday.setDate(base.getDate() - (wd === 0 ? 6 : wd - 1) + weekOffset * 7);
+
+            dayDates = Array.from({ length: numDays }, (_, i) => {
+                const d = new Date(weekMonday);
+                d.setDate(weekMonday.getDate() + i);
+                return (d.getMonth() + 1) + '/' + d.getDate();
+            });
+            currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
+                const d = new Date(weekMonday);
+                d.setDate(weekMonday.getDate() + i);
+                return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            });
+
+            const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endDay = new Date(weekMonday);
+            endDay.setDate(weekMonday.getDate() + 6);
+            const label = document.getElementById('week-label');
+            if (label) label.textContent = fmt(weekMonday) + ' – ' + fmt(endDay);
+
+            document.querySelectorAll('.image-button').forEach(btn => {
+                if (!btn._imgData) return;
+                const { timelineLeft, timelineTop } = computeTimelinePos(btn._imgData);
+                btn.dataset.timelineLeft = String(timelineLeft);
+                btn.dataset.timelineTop  = String(timelineTop);
+            });
+
+            buildTimelineGrid();
+            applyFilters();
+            setView('timeline');
+        }
 
         // Build timeline grid SVG elements (lines + labels)
         // Called once after data loads so we know visibleBounds
@@ -395,7 +452,8 @@
         function computeTimelinePos(img) {
             const { leftBound, visibleWidth } = computeVisibleBounds();
             const cellW = visibleWidth / numDays;
-            const dIdx = Math.max(0, parseInt(img.day, 10) - 1);
+            const dateIdx = currentWeekMDDates.indexOf(img.date);
+            const dIdx = dateIdx >= 0 ? dateIdx : Math.max(0, parseInt(img.day, 10) - 1);
 
             // X: center button in its day column
             const baseLeft = leftBound + dIdx * cellW + (cellW - buttonSize) / 2;
@@ -583,6 +641,11 @@
             document.getElementById('view-clock').classList.toggle('active', isClock);
             document.getElementById('view-tag').classList.toggle('active', isTag);
             document.getElementById('view-feel').classList.toggle('active', isFeel);
+
+            const weekNav = document.getElementById('week-nav');
+            if (weekNav) weekNav.style.display = isTimeline ? 'flex' : 'none';
+
+            applyFilters();
         }
 
         document.getElementById('view-scatter').addEventListener('click', () => setView('scatter'));
@@ -615,7 +678,8 @@
                 const favMatch = currentFavFilter === 'all'
                     ? true
                     : btn.dataset.fav === 'true';
-                const match = userMatch && cityMatch && favMatch;
+                const dateMatch = currentView !== 'timeline' || currentWeekMDDates.includes(btn.dataset.date);
+                const match = userMatch && cityMatch && favMatch && dateMatch;
                 btn.style.display = match ? '' : 'none';
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
@@ -744,6 +808,7 @@
                 const { feelLeft, feelTop }         = computeFeelPos(img, computedLeft, computedTop);
 
                 button.classList.add("image-button");
+                button._imgData             = img;
                 button.dataset.initLeft     = String(computedLeft);
                 button.dataset.initTop      = String(computedTop);
                 button.dataset.timelineLeft = String(timelineLeft);
@@ -758,6 +823,7 @@
                 button.dataset.user         = img.user;
                 button.dataset.city         = img.city || '';
                 button.dataset.fav          = getFavorites().has(img.audio) ? 'true' : 'false';
+                button.dataset.date         = img.date || '';
                 button.style.left   = `${computedLeft}px`;
                 button.style.top    = `${computedTop}px`;
                 button.style.width  = `${buttonSize}px`;
@@ -814,13 +880,14 @@
                         toggleButton2.classed("hidden", true);
                         toggleButton2.text(">");
                     }
-                    const timeLabel = img.time ? (() => {
-                        const [hh] = img.time.split(':').map(Number);
-                        const period = hh < 6 ? t('night') : hh < 12 ? t('morning') : hh < 18 ? t('afternoon') : t('evening');
-                        return t('moment_time').replace('{period}', period).replace('{time}', img.time);
+                    const dateLabel = img.date ? (() => {
+                        const [mm, dd] = img.date.split('-').map(Number);
+                        return new Date(new Date().getFullYear(), mm - 1, dd)
+                            .toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     })() : '';
                     d3.select("#image-title").html(img.user ? `<p>${img.user}</p>` : '');
-                    d3.select("#image-time").html(timeLabel ? `<p>${timeLabel}</p>` : '');
+                    const timeText = [dateLabel, img.time].filter(Boolean).join(' · ');
+                    d3.select("#image-time").html(timeText ? `<p>${timeText}</p>` : '');
                     d3.select("#image-bgc").html(img.bgc ? `<img src="${img.bgc}" class="selected-image">` : '');
                     const hearPart  = img.hear     ? `<p><strong>${t('what_i_hear')}</strong><br>${img.hear}</p>` : '';
                     const feelPart  = img.feel     ? `<p><strong>${t('what_i_feel')}</strong><br>${img.feel}</p>` : '';
@@ -1074,8 +1141,12 @@
             });
             setView('timeline');
             applyFilters();
+            updateWeek(0);
             }
         });
+
+        document.getElementById('week-prev').addEventListener('click', () => updateWeek(-1));
+        document.getElementById('week-next').addEventListener('click', () => updateWeek(+1));
 
         window.addEventListener('resize', () => {
             centerResetButton();
