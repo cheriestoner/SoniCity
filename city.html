@@ -272,6 +272,17 @@
         const numDays = 7;
         const numUsers = 3;
         const dayDates = new Array(numDays).fill('');
+        (function () {
+            const today = new Date();
+            const dow = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+            for (let i = 0; i < numDays; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                dayDates[i] = (d.getMonth() + 1) + '/' + d.getDate();
+            }
+        })();
 
         // Build timeline grid SVG elements (lines + labels)
         // Called once after data loads so we know visibleBounds
@@ -726,7 +737,6 @@
                 const computedTop  = Math.floor(minTop  + (maxTop  - minTop)  * yRand);
 
                 const dIdx = Math.max(0, parseInt(img.day, 10) - 1);
-                if (img.date) dayDates[dIdx] = img.date;
 
                 const { timelineLeft, timelineTop } = computeTimelinePos(img);
                 const { clockLeft, clockTop }       = computeClockPos(img);
