@@ -63,10 +63,10 @@ function getCity() {
 }
 
 // ── Date helpers ─────────────────────────────────────────────
-function getTodayLabel() {
-  return new Date().toLocaleDateString(getLocale(), {
-    weekday: 'short', month: 'short', day: 'numeric',
-  });
+function getTodayLabel(includeYear = false) {
+  const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+  if (includeYear) opts.year = 'numeric';
+  return new Date().toLocaleDateString(getLocale(), opts);
 }
 
 function formatTime(secs) {
@@ -85,13 +85,13 @@ function momentDateKey(isoString) {
   return isoString.slice(0, 10);
 }
 
-function formatDateLabel(dateKey) {
+function formatDateLabel(dateKey, includeYear = false) {
   const todayKey = new Date().toISOString().slice(0, 10);
-  if (dateKey === todayKey) return getTodayLabel();
+  if (dateKey === todayKey) return getTodayLabel(includeYear);
   // Parse as local midnight to get correct weekday
-  return new Date(dateKey + 'T00:00:00').toLocaleDateString(getLocale(), {
-    weekday: 'short', month: 'short', day: 'numeric',
-  });
+  const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+  if (includeYear) opts.year = 'numeric';
+  return new Date(dateKey + 'T00:00:00').toLocaleDateString(getLocale(), opts);
 }
 
 function rowToMoment(row) {
@@ -131,7 +131,7 @@ function populateDateDropdown(dates) {
     btn.className = 'date-option';
     btn.setAttribute('role', 'option');
     btn.dataset.date = dateKey;
-    btn.textContent = formatDateLabel(dateKey);
+    btn.textContent = formatDateLabel(dateKey, true);
     btn.addEventListener('click', () => selectDate(dateKey));
     dateDropdown.appendChild(btn);
   }
