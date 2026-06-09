@@ -672,9 +672,15 @@
                     : currentFilter === 'me'
                     ? u === currentUser
                     : u !== currentUser;
-                const cityMatch = currentCityFilter === 'two-cities'
-                    ? (c === 'suzhou' || c === 'shenzhen')
-                    : c === currentCityFilter;
+                const cn = (c || '').toLowerCase().trim();
+                let cityMatch;
+                if (!cn) {
+                    cityMatch = true;
+                } else if (currentCityFilter === 'two-cities') {
+                    cityMatch = cn === 'suzhou' || cn === 'shenzhen';
+                } else {
+                    cityMatch = cn === currentCityFilter;
+                }
                 const favMatch = currentFavFilter === 'all'
                     ? true
                     : btn.dataset.fav === 'true';
