@@ -984,6 +984,7 @@
                 let pointerDragging = false;
                 button.addEventListener("pointerdown", (event) => {
                     event.preventDefault();
+                    if (currentView !== 'scatter') return;
                     pointerDragging = false;
                     const startX = event.clientX;
                     const startY = event.clientY;
