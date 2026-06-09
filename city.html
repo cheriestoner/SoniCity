@@ -55,6 +55,12 @@
             text-align: center;
             white-space: nowrap;
         }
+        #buttons-layer {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0;
+            width: 0; height: 0;
+        }
     </style>
 </head>
 <body>
@@ -131,6 +137,7 @@
         </div>
         <button id="toggle-sidebar2">&gt;</button>
 
+        <div id="buttons-layer"></div>
         <button id="reset-canvas">O</button>
     </div>
     <script>
@@ -172,7 +179,7 @@
         // canvas container size
         const width = window.innerWidth * 0.96;
         const height = window.innerHeight * 0.94;
-        const buttonSize = Math.max(60, Math.min(120, Math.floor(Math.min(width, height) * 0.07)));
+        let buttonSize = Math.max(60, Math.min(120, Math.floor(Math.min(width, height) * 0.07)));
 
         const svg = d3.select("#canvas-container")
             .append("svg")
@@ -207,6 +214,21 @@
             .style("display", "none");
 
         const g = svg.append("g");
+
+        let zoomTransform = d3.zoomIdentity;
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 5])
+            .on('zoom', ({ transform }) => {
+                zoomTransform = transform;
+                g.attr('transform', transform);
+                timelineGrid.attr('transform', transform);
+                clockGrid.attr('transform', transform);
+                tagGrid.attr('transform', transform);
+                feelGrid.attr('transform', transform);
+                document.getElementById('buttons-layer').style.transform =
+                    `translate(${transform.x}px,${transform.y}px) scale(${transform.k})`;
+            });
+        svg.call(zoom);
 
         // Deterministic PRNG utilities (seeded)
         function cyrb128(str) {
@@ -285,6 +307,53 @@
             centerResetButton();
         }
 
+        function resolveViewOverlaps(viewName) {
+            const { leftBound, rightBound, visibleWidth } = computeVisibleBounds();
+            const r = buttonSize / 2 + 2;
+            const cellW = visibleWidth / numDays;
+
+            const nodes = [];
+            document.querySelectorAll('.image-button').forEach(btn => {
+                const lk = viewName === 'scatter' ? 'initLeft' : `${viewName}Left`;
+                const tk = viewName === 'scatter' ? 'initTop'  : `${viewName}Top`;
+                const x = parseInt(btn.dataset[lk]) + buttonSize / 2;
+                const y = parseInt(btn.dataset[tk]) + buttonSize / 2;
+                const node = { x, y, btn, lk, tk };
+                if (viewName === 'timeline') {
+                    const dateIdx = currentWeekMDDates.indexOf(btn.dataset.date);
+                    const col = dateIdx >= 0 ? dateIdx : 0;
+                    node.xMin = leftBound + col * cellW + r;
+                    node.xMax = leftBound + (col + 1) * cellW - r;
+                } else {
+                    node.xMin = leftBound + r;
+                    node.xMax = rightBound - r;
+                }
+                node.yMin = r;
+                node.yMax = height - r;
+                nodes.push(node);
+            });
+
+            const sim = d3.forceSimulation(nodes)
+                .force('collide', d3.forceCollide(r).iterations(4))
+                .stop();
+            for (let i = 0; i < 300; i++) {
+                sim.tick();
+                nodes.forEach(d => {
+                    d.x = Math.max(d.xMin, Math.min(d.xMax, d.x));
+                    d.y = Math.max(d.yMin, Math.min(d.yMax, d.y));
+                });
+            }
+
+            nodes.forEach(({ btn, x, y, lk, tk }) => {
+                btn.dataset[lk] = String(Math.round(x - buttonSize / 2));
+                btn.dataset[tk] = String(Math.round(y - buttonSize / 2));
+                if (lk === 'initLeft') {
+                    btn.style.left = btn.dataset.initLeft + 'px';
+                    btn.style.top  = btn.dataset.initTop  + 'px';
+                }
+            });
+        }
+
         // User index for timeline rows
         const userIndex = { alice: 0, bob: 1, carol: 2 };
         const userLabels = ['alice', 'bob', 'carol'];
@@ -336,6 +405,7 @@
                 btn.dataset.timelineTop  = String(timelineTop);
             });
 
+            resolveViewOverlaps('timeline');
             buildTimelineGrid();
             applyFilters();
             setView('timeline');
@@ -789,6 +859,12 @@
             buildFeelCenters(images);
 
             {
+            const maxSize = buttonSize;
+            const sizeFromArea = Math.floor(Math.sqrt(width * height * 0.25 / images.length));
+            buttonSize = Math.max(24, Math.min(maxSize, sizeFromArea));
+            }
+
+            {
             const { leftBound, rightBound } = computeVisibleBounds();
             images.forEach((img, index) => {
                 const button = document.createElement("button");
@@ -849,8 +925,8 @@
                     button.setPointerCapture(event.pointerId);
 
                     const onMove = (e) => {
-                        const dx = e.clientX - startX;
-                        const dy = e.clientY - startY;
+                        const dx = (e.clientX - startX) / zoomTransform.k;
+                        const dy = (e.clientY - startY) / zoomTransform.k;
                         if (!pointerDragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
                             pointerDragging = true;
                         }
@@ -1072,7 +1148,7 @@
                                 slider.style.left  = `${parseInt(button.style.left)}px`;
                                 slider.style.top   = `${parseInt(button.style.top) + buttonSize + 10}px`;
                                 slider.style.width = `${buttonSize}px`;
-                                document.getElementById("canvas-container").appendChild(slider);
+                                document.getElementById("buttons-layer").appendChild(slider);
                                 slider.addEventListener("input", (event) => { existingAudio.volume = event.target.value; });
                             }
                         } else {
@@ -1143,8 +1219,9 @@
                     }
                 });
 
-                document.getElementById("canvas-container").appendChild(button);
+                document.getElementById("buttons-layer").appendChild(button);
             });
+            ['scatter', 'timeline', 'clock', 'tag', 'feel'].forEach(resolveViewOverlaps);
             setView('timeline');
             applyFilters();
             updateWeek(0);
@@ -1180,7 +1257,7 @@
                 btn.dataset.playing  = 'false';
             });
             // remove volume sliders on canvas
-            document.querySelectorAll("#canvas-container input[type='range']").forEach(slider => slider.remove());
+            document.querySelectorAll("#buttons-layer input[type='range']").forEach(slider => slider.remove());
             // remove sliders and labels in sidebar1
             document.querySelectorAll("#sidebar1 input[type='range']").forEach(slider => slider.remove());
             document.querySelectorAll("#sidebar1 label").forEach(label => label.remove());
