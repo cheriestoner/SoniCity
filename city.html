@@ -217,16 +217,19 @@
 
         let zoomTransform = d3.zoomIdentity;
         const zoom = d3.zoom()
-            .scaleExtent([0.3, 5])
+            .scaleExtent([0.5, 7])
             .on('zoom', ({ transform }) => {
                 zoomTransform = transform;
-                g.attr('transform', transform);
-                timelineGrid.attr('transform', transform);
-                clockGrid.attr('transform', transform);
-                tagGrid.attr('transform', transform);
-                feelGrid.attr('transform', transform);
-                document.getElementById('buttons-layer').style.transform =
-                    `translate(${transform.x}px,${transform.y}px) scale(${transform.k})`;
+                if (currentView === 'timeline') {
+                    applyTimelineZoom(transform);
+                } else {
+                    g.attr('transform', transform);
+                    clockGrid.attr('transform', transform);
+                    tagGrid.attr('transform', transform);
+                    feelGrid.attr('transform', transform);
+                    document.getElementById('buttons-layer').style.transform =
+                        `translate(${transform.x}px,${transform.y}px) scale(${transform.k})`;
+                }
             });
         svg.call(zoom);
 
@@ -307,6 +310,47 @@
             centerResetButton();
         }
 
+        function applyTimelineZoom(transform) {
+            const newNumDays = Math.max(1, Math.min(14, Math.round(7 / transform.k)));
+            if (newNumDays === numDays) return;
+
+            numDays = newNumDays;
+
+            dayDates = Array.from({ length: numDays }, (_, i) => {
+                const d = new Date(weekMonday);
+                d.setDate(weekMonday.getDate() + i);
+                return (d.getMonth() + 1) + '/' + d.getDate();
+            });
+            currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
+                const d = new Date(weekMonday);
+                d.setDate(weekMonday.getDate() + i);
+                return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            });
+
+            const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endDay = new Date(weekMonday);
+            endDay.setDate(weekMonday.getDate() + numDays - 1);
+            const label = document.getElementById('week-label');
+            if (label) label.textContent = fmt(weekMonday) + ' – ' + fmt(endDay);
+
+            document.querySelectorAll('.image-button').forEach(btn => {
+                if (!btn._imgData) return;
+                const { timelineLeft, timelineTop } = computeTimelinePos(btn._imgData);
+                btn.dataset.timelineLeft = String(timelineLeft);
+                btn.dataset.timelineTop  = String(timelineTop);
+            });
+            resolveViewOverlaps('timeline');
+            buildTimelineGrid();
+
+            document.querySelectorAll('.image-button').forEach(btn => {
+                const dx = parseInt(btn.dataset.timelineLeft) - parseInt(btn.dataset.initLeft);
+                const dy = parseInt(btn.dataset.timelineTop)  - parseInt(btn.dataset.initTop);
+                btn.style.transition = 'transform 0.5s ease';
+                btn.style.transform  = `translate(${dx}px, ${dy}px)`;
+            });
+            applyFilters();
+        }
+
         function resolveViewOverlaps(viewName) {
             const { leftBound, rightBound, visibleWidth } = computeVisibleBounds();
             const r = buttonSize / 2 + 2;
@@ -357,7 +401,7 @@
         // User index for timeline rows
         const userIndex = { alice: 0, bob: 1, carol: 2 };
         const userLabels = ['alice', 'bob', 'carol'];
-        const numDays = 7;
+        let numDays = 7;
         const numUsers = 3;
         let weekOffset = 0;
         let weekMonday = new Date();
@@ -394,7 +438,7 @@
 
             const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const endDay = new Date(weekMonday);
-            endDay.setDate(weekMonday.getDate() + 6);
+            endDay.setDate(weekMonday.getDate() + numDays - 1);
             const label = document.getElementById('week-label');
             if (label) label.textContent = fmt(weekMonday) + ' – ' + fmt(endDay);
 
@@ -414,44 +458,67 @@
         // Build timeline grid SVG elements (lines + labels)
         // Called once after data loads so we know visibleBounds
         function buildTimelineGrid() {
-            timelineGrid.selectAll("*").remove();
             const { leftBound, rightBound, visibleWidth } = computeVisibleBounds();
             const cellW = visibleWidth / numDays;
             const labelPad = 4;
+            const dur = 500;
 
-            // Vertical dividers between day columns
-            for (let d = 1; d < numDays; d++) {
-                const x = leftBound + d * cellW;
-                timelineGrid.append("line")
-                    .attr("class", "timeline-grid-line")
-                    .attr("x1", x).attr("y1", 0)
-                    .attr("x2", x).attr("y2", height);
-            }
+            // Vertical dividers — animated slide + fade
+            const vData = Array.from({ length: numDays - 1 }, (_, i) => leftBound + (i + 1) * cellW);
+            timelineGrid.selectAll('.v-divider')
+                .data(vData)
+                .join(
+                    enter => enter.append('line')
+                        .attr('class', 'timeline-grid-line v-divider')
+                        .attr('y1', 0).attr('y2', height)
+                        .attr('x1', d => d).attr('x2', d => d)
+                        .style('opacity', 0),
+                    update => update,
+                    exit => exit.transition().duration(dur / 2).style('opacity', 0).remove()
+                )
+                .transition().duration(dur).ease(d3.easeQuadInOut)
+                .attr('x1', d => d).attr('x2', d => d)
+                .style('opacity', 1);
 
-            // Horizontal dividers every 6 hours
+            // Horizontal dividers — static, rebuild
+            timelineGrid.selectAll('.h-divider').remove();
             [6, 12, 18].forEach(h => {
                 const y = (h / 24) * height;
-                timelineGrid.append("line")
-                    .attr("class", "timeline-grid-line")
-                    .attr("x1", leftBound).attr("y1", y)
-                    .attr("x2", rightBound).attr("y2", y);
+                timelineGrid.append('line')
+                    .attr('class', 'timeline-grid-line h-divider')
+                    .attr('x1', leftBound).attr('y1', y)
+                    .attr('x2', rightBound).attr('y2', y);
             });
 
-            // Day / date labels along top
-            for (let d = 0; d < numDays; d++) {
-                timelineGrid.append("text")
-                    .attr("class", "timeline-day-label")
-                    .attr("x", leftBound + d * cellW + cellW / 2)
-                    .attr("y", 16)
-                    .text(dayDates[d] || t('day_n').replace('{n}', d + 1));
-            }
+            // Day labels — animated slide + fade, keyed by column index
+            const lblData = Array.from({ length: numDays }, (_, i) => ({
+                i,
+                x: leftBound + i * cellW + cellW / 2,
+                text: dayDates[i] || t('day_n').replace('{n}', i + 1)
+            }));
+            timelineGrid.selectAll('.timeline-day-label')
+                .data(lblData, d => d.i)
+                .join(
+                    enter => enter.append('text')
+                        .attr('class', 'timeline-day-label')
+                        .attr('y', 16)
+                        .attr('x', d => d.x)
+                        .style('opacity', 0)
+                        .text(d => d.text),
+                    update => update.text(d => d.text),
+                    exit => exit.transition().duration(dur / 2).style('opacity', 0).remove()
+                )
+                .transition().duration(dur).ease(d3.easeQuadInOut)
+                .attr('x', d => d.x)
+                .style('opacity', 1);
 
-            // Time-of-day labels on left
+            // Time-of-day labels — static, rebuild
+            timelineGrid.selectAll('.timeline-user-label').remove();
             ['00:00', '06:00', '12:00', '18:00', '24:00'].forEach((label, i) => {
-                timelineGrid.append("text")
-                    .attr("class", "timeline-user-label")
-                    .attr("x", leftBound - labelPad)
-                    .attr("y", (i / 4) * height + 4)
+                timelineGrid.append('text')
+                    .attr('class', 'timeline-user-label')
+                    .attr('x', leftBound - labelPad)
+                    .attr('y', (i / 4) * height + 4)
                     .text(label);
             });
         }
@@ -657,6 +724,7 @@
         let currentView = 'timeline';
 
         function setView(view) {
+            svg.call(zoom.transform, d3.zoomIdentity);
             currentView = view;
             const isTimeline = view === 'timeline';
             const isClock    = view === 'clock';
@@ -925,8 +993,9 @@
                     button.setPointerCapture(event.pointerId);
 
                     const onMove = (e) => {
-                        const dx = (e.clientX - startX) / zoomTransform.k;
-                        const dy = (e.clientY - startY) / zoomTransform.k;
+                        const scale = currentView === 'timeline' ? 1 : zoomTransform.k;
+                        const dx = (e.clientX - startX) / scale;
+                        const dy = (e.clientY - startY) / scale;
                         if (!pointerDragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
                             pointerDragging = true;
                         }
@@ -1246,32 +1315,27 @@
             // stop and remove all audio
             document.querySelectorAll("audio").forEach(audio => {
                 try { audio.pause(); } catch(_) {}
-                if (audio.parentElement) { audio.parentElement.removeChild(audio); }
+                if (audio.parentElement) audio.parentElement.removeChild(audio);
             });
-            // clear button styles and restore scatter positions
+            // clear button animation/opacity state
             document.querySelectorAll(".image-button").forEach(btn => {
-                btn.style.transition = 'none';
-                btn.style.transform  = 'translate(0,0)';
                 btn.style.animation  = "";
                 btn.style.opacity    = 0.5;
                 btn.dataset.playing  = 'false';
             });
             // remove volume sliders on canvas
-            document.querySelectorAll("#buttons-layer input[type='range']").forEach(slider => slider.remove());
+            document.querySelectorAll("#buttons-layer input[type='range']").forEach(s => s.remove());
             // remove sliders and labels in sidebar1
-            document.querySelectorAll("#sidebar1 input[type='range']").forEach(slider => slider.remove());
-            document.querySelectorAll("#sidebar1 label").forEach(label => label.remove());
-            // clear sidebar1 info
+            document.querySelectorAll("#sidebar1 input[type='range']").forEach(s => s.remove());
+            document.querySelectorAll("#sidebar1 label").forEach(l => l.remove());
+            // clear sidebar1 info panel
             d3.select("#image-title").html("");
             d3.select("#image-time").html("");
             d3.select("#image-bgc").html("");
             d3.select("#image-describ").html("");
             d3.select("#image-audio").html("");
-            // return to scatter view and reset filters (favorites data persists)
-            setView('scatter');
-            setFilter('all');
-            setCityFilter('two-cities');
-            setFavFilter('all');
+            // reset zoom and reposition buttons for current view
+            setView(currentView);
             selectedAudioSrc = null;
             document.getElementById('fav-toggle-wrap').style.display = 'none';
         });
