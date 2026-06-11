@@ -904,28 +904,9 @@
             if (currentFavFilter !== 'all') applyFilters();
         });
 
-        Promise.all([
-            d3.csv("/api/moments/csv").catch(() => []),
-            d3.csv("imagedata-dummy.csv").catch(() => [])
-        ]).then(([liveImages, staticImages]) => {
-            const normalizedStatic = staticImages.map(img => ({
-                src:      img.src   || '',
-                bgc:      img.bgc   || '',
-                audio:    img.audio || '',
-                hear:     img.describ || '',
-                feel:     img.feel  || '',
-                tag:      img.tag   || '',
-                user:     img.user  || '',
-                city:     img.city  || '',
-                location: '',
-                day:      img.day,
-                time:     img.time,
-                date:     img.date,
-            }));
-            const images = [
-                ...liveImages.map(img => ({ ...img, tag: img.tag || img.feel || '' })),
-                ...normalizedStatic
-            ];
+        d3.csv("/api/moments/csv").catch(() => [])
+        .then((liveImages) => {
+            const images = liveImages.map(img => ({ ...img, tag: img.tag || img.feel || '' }));
 
             buildTagCenters(images);
             buildFeelCenters(images);
