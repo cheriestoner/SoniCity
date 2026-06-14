@@ -29,7 +29,9 @@ function showSaveStatus(state) {
     toast.classList.add('visible', 'error');
     setTimeout(() => toast.classList.remove('visible'), 4000);
   } else {
-    toast.classList.remove('visible');
+    toast.textContent = t('save_success');
+    toast.classList.add('visible', 'success');
+    setTimeout(() => toast.classList.remove('visible'), 2000);
   }
 }
 

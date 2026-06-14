@@ -931,3 +931,4 @@ body {
 .save-toast.visible   { transform: translateX(-50%) translateY(0); }
 .save-toast.uploading { background: #444; }
 .save-toast.error     { background: #c00; }
+.save-toast.success   { background: #2a7a2a; }
