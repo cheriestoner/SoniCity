@@ -18,6 +18,21 @@ let dateCache = {};   // { 'YYYY-MM-DD': Moment[] }
 let activeDate = null;
 let reviewedMoment = null;
 
+function showSaveStatus(state) {
+  const toast = document.getElementById('save-toast');
+  toast.className = 'save-toast';
+  if (state === 'uploading') {
+    toast.textContent = t('uploading');
+    toast.classList.add('visible', 'uploading');
+  } else if (state === 'error') {
+    toast.textContent = t('save_error');
+    toast.classList.add('visible', 'error');
+    setTimeout(() => toast.classList.remove('visible'), 4000);
+  } else {
+    toast.classList.remove('visible');
+  }
+}
+
 // ── DOM refs ─────────────────────────────────────────────────
 const grid = document.getElementById('moments-grid');
 const addBtn = document.getElementById('add-moment-btn');
@@ -512,6 +527,7 @@ async function persistMoment(moment) {
     if (data.photoPath) moment.photoUrl = `/${data.photoPath}`;
   } catch (err) {
     console.warn('Failed to persist moment to server:', err);
+    showSaveStatus('error');
   }
 }
 
@@ -540,7 +556,9 @@ async function saveMoment() {
   if (activeDate === dateKey) renderMomentCard(saved);
 
   closeFocusMode();
+  showSaveStatus('uploading');
   await persistMoment(saved);
+  showSaveStatus('done');
 }
 
 function renderMomentCard(moment) {

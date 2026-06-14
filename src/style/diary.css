@@ -912,3 +912,22 @@ body {
 }
 
 .tag-display:empty { display: none; }
+
+.save-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  color: #fff;
+  font-family: 'ark-pixel', monospace;
+  font-size: 0.85rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  transition: transform 0.25s ease;
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.save-toast.visible   { transform: translateX(-50%) translateY(0); }
+.save-toast.uploading { background: #444; }
+.save-toast.error     { background: #c00; }

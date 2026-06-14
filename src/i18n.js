@@ -75,6 +75,8 @@
       night:                 'Night',
       day_n:                 'Day {n}',
       moment_time:           '{period} Moment – {time}',
+      uploading:             'Uploading…',
+      save_error:            'Could not save — please try again',
     },
     zh: {
       app_title:             '城市声音日记',
@@ -151,6 +153,8 @@
       night:                 '夜晚',
       day_n:                 '第{n}天',
       moment_time:           '{period}时刻 – {time}',
+      uploading:             '上传中…',
+      save_error:            '保存失败，请重试',
     },
   };
 
