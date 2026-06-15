@@ -380,11 +380,12 @@ async function startRecording() {
 
   recordingSeconds = 0;
   recordTimer.textContent = formatTime(0);
+  const recordingStart = Date.now();
   recordingInterval = setInterval(() => {
-    recordingSeconds++;
+    recordingSeconds = Math.floor((Date.now() - recordingStart) / 1000);
     recordTimer.textContent = formatTime(recordingSeconds);
     if (recordingSeconds >= 30) stopRecording();
-  }, 1000);
+  }, 200);
 }
 
 function stopRecording() {
