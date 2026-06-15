@@ -740,7 +740,7 @@ async function initDiary() {
     }
 
     const todayKey = new Date().toISOString().slice(0, 10);
-    activeDate = dateCache[todayKey] ? todayKey : Object.keys(dateCache).sort().at(-1) ?? todayKey;
+    activeDate = todayKey;
 
     diaryDateEl.textContent = formatDateLabel(activeDate);
     updateDropdownSelection();
