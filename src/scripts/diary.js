@@ -383,7 +383,7 @@ async function startRecording() {
   recordingInterval = setInterval(() => {
     recordingSeconds++;
     recordTimer.textContent = formatTime(recordingSeconds);
-    if (recordingSeconds >= 60) stopRecording();
+    if (recordingSeconds >= 30) stopRecording();
   }, 1000);
 }
 
