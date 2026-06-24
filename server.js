@@ -4,6 +4,7 @@ import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { writeFileSync, mkdirSync } from 'fs';
 import multer from 'multer';
 import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, deleteMoment, updateMoment, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
@@ -494,6 +495,93 @@ app.post('/api/clear-all-data', async (req, res) => {
             details: error.message,
             timestamp: new Date().toISOString()
         });
+    }
+});
+
+// Batch import of externally recorded moments (researcher tool)
+app.post('/api/admin/import', upload.fields([
+    { name: 'csv', maxCount: 1 },
+    { name: 'files' },
+]), (req, res) => {
+    try {
+        if (!req.files?.csv?.[0]) return res.status(400).json({ error: 'No CSV file uploaded' });
+
+        const csvText = req.files.csv[0].buffer.toString('utf8');
+        const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) return res.status(400).json({ error: 'CSV has no data rows' });
+
+        const header = lines[0].split(',').map(h => h.trim());
+        const col = name => header.indexOf(name);
+
+        const fileMap = {};
+        (req.files.files || []).forEach(f => { fileMap[f.originalname] = f; });
+
+        let inserted = 0;
+        const errors = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const vals = lines[i].split(',').map(v => v.trim());
+            const get = name => { const c = col(name); return c >= 0 ? (vals[c] || '') : ''; };
+
+            try {
+                const username  = get('username');
+                const tsRaw     = get('timestamp');
+                const audioFile = get('audio_file');
+
+                if (!username || !tsRaw || !audioFile) {
+                    errors.push(`Row ${i}: missing username, timestamp, or audio_file`);
+                    continue;
+                }
+
+                const ts = new Date(tsRaw).toISOString();
+                const id = `import_${username}_${tsRaw.replace(/\D/g, '').slice(0, 12)}_${audioFile.replace(/\.[^.]+$/, '')}`;
+
+                const userDir = join(__dirname, 'public', 'users', username);
+                mkdirSync(userDir, { recursive: true });
+
+                const audioEntry = fileMap[audioFile];
+                if (!audioEntry) { errors.push(`Row ${i}: audio file '${audioFile}' not uploaded`); continue; }
+                const audioExt  = audioFile.split('.').pop();
+                const audioName = `${id}.${audioExt}`;
+                writeFileSync(join(userDir, audioName), audioEntry.buffer);
+                const audio_path = `users/${username}/${audioName}`;
+
+                let photo_path = null;
+                const photoFile = get('photo_file');
+                if (photoFile && fileMap[photoFile]) {
+                    const photoExt  = photoFile.split('.').pop();
+                    const photoName = `${id}_photo.${photoExt}`;
+                    writeFileSync(join(userDir, photoName), fileMap[photoFile].buffer);
+                    photo_path = `users/${username}/${photoName}`;
+                }
+
+                const tagsRaw = get('tags');
+                const tags = tagsRaw
+                    ? JSON.stringify(tagsRaw.split(';').map(t => t.trim()).filter(Boolean))
+                    : null;
+
+                insertMoment({
+                    id, username,
+                    city:              get('city'),
+                    audio_path, photo_path,
+                    description:       get('description'),
+                    feel:              get('feel'),
+                    tags,
+                    location_name:     get('location_name'),
+                    location_lat:      null,
+                    location_lng:      null,
+                    location_accuracy: null,
+                    timestamp:         ts,
+                });
+                inserted++;
+            } catch (rowErr) {
+                errors.push(`Row ${i}: ${rowErr.message}`);
+            }
+        }
+
+        res.json({ inserted, errors });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
