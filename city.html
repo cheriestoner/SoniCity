@@ -156,6 +156,14 @@
             special:     'tag_special',
         };
         function tagLabel(key) { return key ? t(TAG_I18N[key] || key) : ''; }
+        const DISPLAY_TO_KEY = {
+            'On the way':          'on_the_way',
+            'Open space':          'open_space',
+            'Commercial space':    'commercial',
+            'Historical place':    'historical',
+            'Place special to me': 'special',
+        };
+        function normalizeTag(raw) { return DISPLAY_TO_KEY[raw] || raw; }
 
         const FAVE_KEY = 'sonicity_favorites';
         function getFavorites() {
@@ -916,7 +924,7 @@
 
         d3.csv("/api/moments/csv").catch(() => [])
         .then((liveImages) => {
-            const images = liveImages.map(img => ({ ...img, tag: img.tag || '' }));
+            const images = liveImages.map(img => ({ ...img, tag: normalizeTag(img.tag || '') }));
 
             buildTagCenters(images);
             buildFeelCenters(images);
