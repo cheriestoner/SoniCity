@@ -45,6 +45,10 @@ if (isProduction) {
     app.get('/diary', (_req, res) => {
         res.sendFile(join(__dirname, 'diary.html'));
     });
+
+    app.get(['/admin', '/admin.html'], (_req, res) => {
+        res.sendFile(join(__dirname, 'admin.html'));
+    });
 } else {
     app.use(express.static(join(__dirname, 'public')));
     app.use(express.static(__dirname));
@@ -63,6 +67,10 @@ if (isProduction) {
 
     app.get('/diary', (_req, res) => {
         res.sendFile(join(__dirname, 'diary.html'));
+    });
+
+    app.get(['/admin', '/admin.html'], (_req, res) => {
+        res.sendFile(join(__dirname, 'admin.html'));
     });
 }
 
