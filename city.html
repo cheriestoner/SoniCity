@@ -729,6 +729,7 @@
 
         function setView(view) {
             svg.call(zoom.transform, d3.zoomIdentity);
+            document.querySelectorAll('input[data-src]').forEach(s => s.style.display = 'none');
             currentView = view;
             const isTimeline = view === 'timeline';
             const isClock    = view === 'clock';
@@ -832,7 +833,7 @@
                 const audioSrc = btn.dataset.audioSrc;
                 if (audioSrc) {
                     const slider = document.querySelector(`input[data-src='${audioSrc}']`);
-                    if (slider) slider.style.display = match ? '' : 'none';
+                    if (slider && !match) slider.style.display = 'none';
                 }
             });
         }
