@@ -148,6 +148,15 @@
         const t = key => window.i18n.t(key);
         const currentUser = localStorage.getItem('usd_username') || 'anonymous';
 
+        const TAG_I18N = {
+            on_the_way:  'tag_on_the_way',
+            open_space:  'tag_open_space',
+            commercial:  'tag_commercial',
+            historical:  'tag_historical',
+            special:     'tag_special',
+        };
+        function tagLabel(key) { return key ? t(TAG_I18N[key] || key) : ''; }
+
         const FAVE_KEY = 'sonicity_favorites';
         function getFavorites() {
             return new Set(JSON.parse(localStorage.getItem(FAVE_KEY) || '[]'));
@@ -618,7 +627,7 @@
         }
 
         // Tag cluster constants
-        const MAIN_TAGS = ['On the way', 'Open space', 'Commercial space', 'Historical place'];
+        const MAIN_TAGS = ['on_the_way', 'open_space', 'commercial', 'historical'];
         const MAIN_TAG_QUADRANTS = [
             { col: 0, row: 0 },
             { col: 1, row: 0 },
@@ -661,7 +670,7 @@
                     .attr("class", "timeline-day-label")
                     .style("font-size", "clamp(13px, 1.5vw, 18px)")
                     .style("fill", "#bbb")
-                    .text(tag);
+                    .text(tagLabel(tag));
             });
         }
 
@@ -1030,7 +1039,8 @@
                     const hearPart  = img.hear     ? `<p><strong>${t('what_i_hear')}</strong><br>${img.hear}</p>` : '';
                     const feelPart  = img.feel     ? `<p><strong>${t('what_i_feel')}</strong><br>${img.feel}</p>` : '';
                     const locPart   = img.location ? `<p><strong>${t('location_label')}</strong><br>${img.location}</p>` : '';
-                    d3.select("#image-describ").html(hearPart + feelPart + locPart);
+                    const tagPart   = img.tag      ? `<p><strong>${t('tag_label')}</strong><br>${tagLabel(img.tag)}</p>` : '';
+                    d3.select("#image-describ").html(hearPart + feelPart + locPart + tagPart);
 
                     selectedAudioSrc = img.audio;
                     document.getElementById('fav-toggle-wrap').style.display = '';

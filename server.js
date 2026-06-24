@@ -373,13 +373,6 @@ app.patch('/api/moments/:id', (req, res) => {
     }
 });
 
-const TAG_DISPLAY = {
-    on_the_way:  'On the way',
-    open_space:  'Open space',
-    commercial:  'Commercial space',
-    historical:  'Historical place',
-};
-
 // Export all moments as CSV for city visualization
 app.get('/api/moments/csv', (_req, res) => {
     try {
@@ -412,7 +405,7 @@ app.get('/api/moments/csv', (_req, res) => {
             try {
                 const tags = r.tags ? JSON.parse(r.tags) : [];
                 const first = Array.isArray(tags) && tags.length > 0 ? tags[0] : '';
-                tagDisplay = TAG_DISPLAY[first] || (first.startsWith('special') ? 'Place special to me' : first);
+                tagDisplay = first.startsWith('special') ? 'special' : first;
             } catch (_) {}
             return [src, src, audio, r.description || '', r.feel || '', tagDisplay, r.username, r.city || '', r.location_name || '', day, time, date]
                 .map(escapeCSV).join(',');
