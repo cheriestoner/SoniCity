@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Moments — Admin</title>
+  <style>
+    body { font-family: monospace; max-width: 700px; margin: 3rem auto; padding: 0 1.5rem; color: #222; }
+    h1 { font-size: 1.2rem; margin-bottom: 0.25rem; }
+    p.sub { color: #666; font-size: 0.85rem; margin-top: 0; }
+    section { border: 1px solid #ccc; border-radius: 4px; padding: 1.2rem 1.5rem; margin: 1.5rem 0; }
+    section h2 { font-size: 0.9rem; margin: 0 0 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    label { display: block; margin-bottom: 0.6rem; font-size: 0.88rem; }
+    input[type="file"] { display: block; margin-top: 0.25rem; }
+    button { font-family: monospace; background: #000; color: #fff; border: none; padding: 0.55rem 1.4rem; font-size: 0.9rem; cursor: pointer; border-radius: 3px; margin-top: 0.5rem; }
+    button:disabled { background: #999; cursor: default; }
+    pre { background: #f4f4f4; padding: 1rem; border-radius: 3px; font-size: 0.82rem; white-space: pre-wrap; word-break: break-all; }
+    .ok  { color: #1a6b1a; }
+    .err { color: #b00; }
+    table { border-collapse: collapse; font-size: 0.8rem; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 0.3rem 0.5rem; text-align: left; }
+    th { background: #f0f0f0; }
+    code { background: #f0f0f0; padding: 0.1em 0.3em; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<h1>Urban Sound Diary — Import Moments</h1>
+<p class="sub">Batch-import externally recorded moments into the study database.</p>
+
+<section>
+  <h2>CSV template</h2>
+  <table>
+    <tr><th>Column</th><th>Format</th><th>Example</th></tr>
+    <tr><td>username</td><td>text</td><td>alice</td></tr>
+    <tr><td>city</td><td>text</td><td>Suzhou</td></tr>
+    <tr><td>timestamp</td><td>YYYY-MM-DD HH:MM</td><td>2024-06-20 09:15</td></tr>
+    <tr><td>description</td><td>text (what they heard)</td><td>Morning market noise</td></tr>
+    <tr><td>feel</td><td>text (optional)</td><td>Calm and familiar</td></tr>
+    <tr><td>tags</td><td>semicolon-separated keys (optional)</td><td>on_the_way;historical</td></tr>
+    <tr><td>location_name</td><td>text (optional)</td><td>Shantang Street</td></tr>
+    <tr><td>audio_file</td><td>filename of uploaded audio</td><td>rec1.m4a</td></tr>
+    <tr><td>photo_file</td><td>filename of uploaded photo (optional)</td><td>rec1.jpg</td></tr>
+  </table>
+  <p style="font-size:0.82rem;margin-top:0.8rem">
+    Valid tag keys: <code>on_the_way</code> · <code>open_space</code> · <code>commercial</code> · <code>historical</code> · <code>special</code>
+  </p>
+  <button onclick="downloadTemplate()">Download template CSV</button>
+</section>
+
+<section>
+  <h2>Upload</h2>
+  <form id="import-form">
+    <label>
+      Metadata CSV
+      <input type="file" id="csv-input" name="csv" accept=".csv" required>
+    </label>
+    <label>
+      Audio + photo files
+      <input type="file" id="files-input" name="files" multiple>
+    </label>
+    <button type="submit" id="submit-btn">Import</button>
+  </form>
+</section>
+
+<section id="result-section" style="display:none">
+  <h2>Result</h2>
+  <div id="result-body"></div>
+</section>
+
+<script>
+  function downloadTemplate() {
+    const rows = [
+      'username,city,timestamp,description,feel,tags,location_name,audio_file,photo_file',
+      'alice,Suzhou,2024-06-20 09:15,Morning market sounds,Calm and familiar,on_the_way;historical,Shantang Street,rec1.m4a,rec1.jpg',
+      'bob,Shenzhen,2024-06-20 14:30,Construction near office,,commercial,Futian CBD,rec2.mp3,',
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([rows], { type: 'text/csv' }));
+    a.download = 'import_template.csv';
+    a.click();
+  }
+
+  document.getElementById('import-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Importing…';
+
+    const form = new FormData();
+    form.append('csv', document.getElementById('csv-input').files[0]);
+    Array.from(document.getElementById('files-input').files).forEach(f => form.append('files', f));
+
+    try {
+      const resp = await fetch('/api/admin/import', { method: 'POST', body: form });
+      const data = await resp.json();
+      const section = document.getElementById('result-section');
+      const body = document.getElementById('result-body');
+      section.style.display = '';
+      if (data.error) {
+        body.innerHTML = `<p class="err">Error: ${data.error}</p>`;
+      } else {
+        const errHtml = data.errors?.length
+          ? `<p class="err">Errors (${data.errors.length}):</p><pre>${data.errors.join('\n')}</pre>`
+          : '';
+        body.innerHTML = `<p class="ok">Inserted: ${data.inserted}</p>${errHtml}`;
+      }
+    } catch (err) {
+      document.getElementById('result-body').textContent = 'Network error: ' + err.message;
+      document.getElementById('result-section').style.display = '';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Import';
+    }
+  });
+</script>
+</body>
+</html>
