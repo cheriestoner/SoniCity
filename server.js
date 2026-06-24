@@ -373,6 +373,13 @@ app.patch('/api/moments/:id', (req, res) => {
     }
 });
 
+const TAG_DISPLAY = {
+    on_the_way:  'On the way',
+    open_space:  'Open space',
+    commercial:  'Commercial space',
+    historical:  'Historical place',
+};
+
 // Export all moments as CSV for city visualization
 app.get('/api/moments/csv', (_req, res) => {
     try {
@@ -388,7 +395,7 @@ app.get('/api/moments/csv', (_req, res) => {
                 ? `"${s.replace(/"/g, '""')}"` : s;
         }
 
-        const header = 'src,bgc,audio,hear,feel,user,city,location,day,time,date';
+        const header = 'src,bgc,audio,hear,feel,tag,user,city,location,day,time,date';
         const csvRows = rows.map(r => {
             const src  = r.photo_path ? `/${r.photo_path}` : '';
             const audio = r.audio_path ? `/${r.audio_path}` : '';
@@ -401,7 +408,13 @@ app.get('/api/moments/csv', (_req, res) => {
             const date = `${month}-${day_of_month}`;
             const dateKey = r.timestamp.slice(0, 10);
             const day  = dayIndex[dateKey] ?? 1;
-            return [src, src, audio, r.description || '', r.feel || '', r.username, r.city || '', r.location_name || '', day, time, date]
+            let tagDisplay = '';
+            try {
+                const tags = r.tags ? JSON.parse(r.tags) : [];
+                const first = Array.isArray(tags) && tags.length > 0 ? tags[0] : '';
+                tagDisplay = TAG_DISPLAY[first] || (first.startsWith('special') ? 'Place special to me' : first);
+            } catch (_) {}
+            return [src, src, audio, r.description || '', r.feel || '', tagDisplay, r.username, r.city || '', r.location_name || '', day, time, date]
                 .map(escapeCSV).join(',');
         });
 

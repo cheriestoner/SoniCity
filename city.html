@@ -906,7 +906,7 @@
 
         d3.csv("/api/moments/csv").catch(() => [])
         .then((liveImages) => {
-            const images = liveImages.map(img => ({ ...img, tag: img.tag || img.feel || '' }));
+            const images = liveImages.map(img => ({ ...img, tag: img.tag || '' }));
 
             buildTagCenters(images);
             buildFeelCenters(images);
