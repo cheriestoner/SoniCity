@@ -1,0 +1,877 @@
+[
+  {
+    "id": "015ce30f-39b3-4572-8bb5-ac40cbfe5cb3",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "033baccc-f560-430e-b761-051ad2d161d3",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "03742f19-f6ba-4bd4-953f-a9c517740145",
+    "feel": "很开心，都是宝宝",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "05aa38b2-9dd3-42c9-99b2-75fca1d9f05b",
+    "feel": "喧嚣",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "084418c9-bf82-4f97-b51d-7eae0940853f",
+    "feel": "紧张害怕烦躁",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "0c0fe536-584e-4d99-96e3-3512f616e90b",
+    "feel": "test",
+    "feel_category": ""
+  },
+  {
+    "id": "0ce2c667-81d8-4939-963b-55d0bba0546e",
+    "feel": "内心平静，因为不平静也不行",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "0e16766c-3eac-444a-aa73-890986ac6c2b",
+    "feel": "热闹，放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "0f530f14-4d85-4d20-a722-8794899262f9",
+    "feel": "热闹 温馨",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "125c7f3e-0614-4329-b8dd-2d9c9778f559",
+    "feel": "感肃然，静谧",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "130d3860-6051-44c8-8770-5efeef56716a",
+    "feel": "焦急 隆隆的一切 不安",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "13839a15-86f4-4e0e-9f02-7c53c27d5e41",
+    "feel": "晚安",
+    "feel_category": ""
+  },
+  {
+    "id": "13caf748-e737-44af-a791-2e581c7239cf",
+    "feel": "1",
+    "feel_category": ""
+  },
+  {
+    "id": "145d13db-44e6-4ac2-8a67-742f4fc92df6",
+    "feel": "1",
+    "feel_category": ""
+  },
+  {
+    "id": "15b36c62-7fad-4565-8d5a-7737055055c9",
+    "feel": "当一切都静下来，小声音才得以体现",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "19ed78f9-7476-4c1f-b6fd-54afb9b83049",
+    "feel": "轻松开心愉快",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "1a50b11d-d4f7-4961-bd1a-d83a30b8fd03",
+    "feel": "人来人往行色匆匆的一种繁荣",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "1c248b03-4d70-4954-b4f7-f622ccb81886",
+    "feel": "test",
+    "feel_category": ""
+  },
+  {
+    "id": "1c69a47e-de00-4da4-ae5c-70fc27409d1a",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "1cac45d7-21c1-4874-aa25-ccdafd408764",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "1de7dc90-a21a-4503-8309-1a748a6dcff9",
+    "feel": "peace and stress（for exam）",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "1ec371c3-95f1-4ffb-b728-2923815e48e8",
+    "feel": "快节奏",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "1ee90a78-21ec-4570-9f97-1525592f78d2",
+    "feel": "非常惬意和祥和，感觉很美好，知了的白噪音让人很平静，鸟叫声很有活力，动物们的声音表现出的生命力非常感染我。",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "1f2d5183-5599-4bfc-8f8e-9832c43b2d96",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "24bd664c-d86f-4934-96a5-9e60c475b0b1",
+    "feel": "热闹",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "293ef918-ff5d-4cbf-9ce6-e897ae6b0e37",
+    "feel": "很烦很吵，小孩子也在pad上看视频外放",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "2eb79c27-43fd-4721-951e-3feb7e5f67ec",
+    "feel": "热，累，但是感觉到心安",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "3084f4fb-de81-4f42-9416-bcc61c6e8997",
+    "feel": "轻松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "32a6343b-53a2-449d-8f67-bc8be33f9b6a",
+    "feel": "轻松愉快，温度湿度很适合散步",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "36831746-d0e6-43e8-9fbd-460fdcfeb87f",
+    "feel": "出租车给我一种莫名的紧迫感",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "36b04a0d-f5a4-4cf2-a80b-5be213a169e1",
+    "feel": "热天气让我有点烦躁，但是鸟儿的歌声使我平",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "3731241b-f563-498c-a50f-8df7411eda28",
+    "feel": "喧嚣",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "3ab22f17-8ae4-4ff3-8652-c96d160c246e",
+    "feel": "夜晚经常湖边坐下吹吹风听听湖水的声音感受",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "3acc6048-4851-4030-80c4-d8e0b8ec93d0",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "3e3becc9-c60d-4ff2-af9b-ab60aa4e11fa",
+    "feel": "听过路人论我眼里的清泉潺潺",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "3f339800-c167-4904-ab0d-7ce6bb353b6c",
+    "feel": "假期最后一天 回家路上",
+    "feel_category": ""
+  },
+  {
+    "id": "3f76d5b7-d87c-46bb-8cc1-5e64ec4d63d6",
+    "feel": "但雨声让人很宁静，但外面装修的声音让我感觉很无奈也很stressful，有时还觉得生气",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "3f94b76b-61a7-4ff0-b2f6-f17222ac38ed",
+    "feel": "无奈又烦躁，明明广播说不要外放，表示到处都是但永远无法避开外放的声音，我觉得被迫收听很生气。很多人都在看视频，这个社会情况在人的认知和感知能力方面都令我感到很担忧。",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "4045a935-5dd7-4d94-8eeb-7cbeaa500b51",
+    "feel": "无",
+    "feel_category": ""
+  },
+  {
+    "id": "4408631e-57e1-4a6e-a9c2-9845e10e3998",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "468da01e-c6f0-427b-9b68-ef7abd2e54c6",
+    "feel": "啊！前面一段喵喵叫居然没有录下来，这次只录了他们吃饭的声音，下次补上",
+    "feel_category": ""
+  },
+  {
+    "id": "49212b11-c213-408e-8ab4-e1e0cb86e735",
+    "feel": "松了一口气",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "4b5c3c8b-bc95-4a25-bb05-8fea0db39207",
+    "feel": "清新 自在",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "4b68a409-7fea-457a-b614-0d74b112dc8d",
+    "feel": "迎接夏天的雨",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "4da5167b-18f2-4882-9d9a-673a527d5414",
+    "feel": "有点平静，但也时常被吓到因为自行车会突然从身后驶来突然鸣铃",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "4e1be7ab-cc8e-46a2-94cb-7867e698f19e",
+    "feel": "心烦意乱",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "5117844e-8453-4476-9f9c-13119bc599b7",
+    "feel": "舒适",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "526c0aba-96c9-4d6b-8964-930f6bbf681b",
+    "feel": "略微有点焦躁，明天有考试",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "52abc961-6b9a-4090-b25b-3f0f209336f8",
+    "feel": "非常吵",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "52fe3da7-70d8-4fa4-bcb4-b47a254ab235",
+    "feel": "游客的愉悦心情",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "53bf6149-e640-48ca-9df0-6410ba30eec2",
+    "feel": "深圳最近天天下雨，感到宁静，但也很心烦",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "54f6e1d3-6e46-4277-8165-c2c4a90a7309",
+    "feel": "很惊讶-高峰期的地铁列车竟然比平时安静！很舒服，因为几乎大家都在低声说话或保持安静，列车运行也没有发出尖锐刺耳的声音，所以有种舒缓的感觉。",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "55db3826-12e5-4998-9484-3fa9e1a1528b",
+    "feel": "舒适，音乐声不太大感觉很贴心",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "589682d0-6bb7-4db9-bb97-486c9f624d5f",
+    "feel": "轻松愉快",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "59341fcb-196b-4f45-b147-7a9d695f5748",
+    "feel": "平静，简简单单平凡的一天傍晚",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "598e9538-a842-4748-89b0-ab2d721f5d78",
+    "feel": "小区",
+    "feel_category": ""
+  },
+  {
+    "id": "60f7ce13-cd51-4f2d-8b37-4eed1fa69d54",
+    "feel": "分贝感觉蛮大的，耳机里的歌都听不见了",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "61a3cb33-23fa-47dc-a8c9-5e42057b82ba",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "6395e62d-2db4-43d9-95ca-03417032fe34",
+    "feel": "不规则的噪声让我心情无法放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "63d2535a-6e2c-4121-b47b-bc3f9b7a268c",
+    "feel": "怀旧（淡淡的忧伤），平和",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "659155b2-acf3-4db3-8bb7-cdf82379b2be",
+    "feel": "安宁",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "66b290b0-2f10-4729-bd9e-1f07c8aa135b",
+    "feel": "是安定的 有些新鲜的",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "66f8a7d6-43e4-42ed-b5a1-1d98ad993293",
+    "feel": "放松，惬意",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "67b386d7-0eca-4aa4-8d5e-144f35d95b6b",
+    "feel": "在苏州闲逛偶遇朋友，很惊喜",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "686c21bf-990f-4a86-9bed-d93b18620242",
+    "feel": "蜿蜒的亭台 人与人擦身的紧促",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "6b01d729-70bf-4401-bd6b-176d0533a7b4",
+    "feel": "从教室走出来是放松的是宁静的",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "6b6a3a33-c281-4ca0-ba4b-ec311bc4bcd6",
+    "feel": "平静，熟悉的下雨的苏州",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "6bb0657e-177c-4767-ba47-be3dc0de6877",
+    "feel": "兴奋，激动",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "6d9f480b-c7ec-493a-9426-1f92da02b29e",
+    "feel": "惬意",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "6db2855b-a713-4055-94eb-4396d717c76e",
+    "feel": "烦扰",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "6e378d5e-7942-4f4f-af35-05fc819ee569",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "707705fd-5189-4242-af09-f88a2b82e971",
+    "feel": "惆怅",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "72ba67e1-9b1b-4213-98d8-2f9a902b8e13",
+    "feel": "发呆",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "74ccf346-1fc7-4f8b-b728-a32a38f28d08",
+    "feel": "有点吵",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "758b1d5d-1a91-4345-90c4-cda303e7b3b5",
+    "feel": "感觉很新奇，因为下大雨今天这里的人比平时多，所以商店广告比平时多、声音也大。",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "75d4062d-d441-44e4-9814-759cebbcdf10",
+    "feel": "学校来了不少人有一点乱但是也有生机",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "77a89086-9e8f-4878-99ba-e8ec7402d2dc",
+    "feel": "声杂多，感纷扰",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "77d05c37-f6d4-4305-9998-3d70fe048fab",
+    "feel": "非常绝望，每天都在装修声中醒来，居家办公、家庭主妇或退休老人都需要持续一整天忍受这个声音。",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "78404834-3a4e-4e86-aea2-0f1247515a51",
+    "feel": "轻松属实，风吹过",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "7938db69-1f5b-4148-8659-c699d7c40eb1",
+    "feel": "听着风与树叶的合奏，让我感觉很平静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "7c180b5a-0d1b-4ee3-887e-53b25ed1d832",
+    "feel": "平静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "7dff2f5f-f6c1-43fe-9d57-b75681cdb40a",
+    "feel": "期待，开心，马上要吃晚饭了",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "7f04870a-5db4-419b-93f8-68194d685a47",
+    "feel": "平静，鸟叫声让我感觉它们很有活力，让人不自觉放松下来",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "84a30cf1-bf7b-4445-a284-c5d11cb8f11f",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "87169f57-b206-4c06-aefd-3451a21ff803",
+    "feel": "温度湿度适宜，很适合散步，心情愉快",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "87676bb8-b1b8-466e-84c7-5e626b88d7f4",
+    "feel": "开心，日常的感觉",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "8871cf7a-ae49-4361-b3ef-12408dd7cebe",
+    "feel": "omg晚上晴了一会居然又下大雨了😭",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "8cab7c39-30a0-4d15-a24e-6197ccb6abcc",
+    "feel": "忧郁，有淡淡的焦虑",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "926f0787-328e-4f0d-8f7e-60249ea312df",
+    "feel": "好想下班",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "973eedbd-156a-4927-94c1-55a53be33137",
+    "feel": "小区",
+    "feel_category": ""
+  },
+  {
+    "id": "97bb4be6-64cf-450f-916c-fc1ff47d753d",
+    "feel": "平静开心",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "9996d64b-c366-4142-b3a1-b2f1e477c7c4",
+    "feel": "嘈杂，烦躁",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "999a1de4-aac9-4ebc-ac3c-c4461163b52f",
+    "feel": "宁静，惬意，放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "9a3bdf9b-a061-4667-afdc-85e40060469b",
+    "feel": "纯粹的快乐",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "9c70a7eb-3aac-40e3-a850-b20990e63e78",
+    "feel": "很渴刚在外面逛完进入到室内急需一杯咖啡",
+    "feel_category": ""
+  },
+  {
+    "id": "9ea31263-d5d5-4887-a100-79158ac9bdc2",
+    "feel": "雨后的城市又恢复了活力",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "a29a01f4-30a8-4bf4-8f67-06beb53a3e37",
+    "feel": "因为是高峰期人很多挨在一起，烦躁又无奈，还有点紧张",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "a53c76e8-ce78-4eb1-a255-24134f6764d5",
+    "feel": "忙碌 不停歇",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "a626126e-b902-49e1-9d3d-d289320718fc",
+    "feel": "平静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "a820d949-63a6-4416-abe9-ae2722427839",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "a85c6544-0c36-408a-8338-5a42f6c1e39b",
+    "feel": "主要是汽车驶过刚刚下完雨的马路的的声音",
+    "feel_category": ""
+  },
+  {
+    "id": "ab17abce-79a4-4311-9d2c-739b85bc66b1",
+    "feel": "来来往往",
+    "feel_category": ""
+  },
+  {
+    "id": "abca6891-0f4d-4ce2-8b43-50b108976eae",
+    "feel": "比较平静，这就是城市里最普遍的声音",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "af6666e6-d943-4999-bf85-05fe6f9304cb",
+    "feel": "作为志愿者的责任感，为他人服务所获得的正",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "b1281622-f697-4250-a021-45136065d72f",
+    "feel": "月台在我心里代表宏大叙事的离别",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "b1395340-ee3c-4bcc-a4dd-f8dd3bd5b60c",
+    "feel": "匠心读韵与浑然天成的共生 熟悉的苏州方言",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "b45733db-7bd1-4db3-9417-95b990e506b4",
+    "feel": "奇妙的",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "b92dbe55-f150-4bb8-a076-f96836b732f4",
+    "feel": "平静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "bd415af0-3eea-422e-ad49-317abe672ddf",
+    "feel": "感受到放松 怅然若失的疲惫 安心的懈怠",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "bd6bce03-cda3-4362-9380-17fb03af9f6f",
+    "feel": "思考",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "be4f3fe4-ed6d-4f33-8861-19cb26335114",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "bed6a7d6-40f2-4a94-a9db-1739e44e629f",
+    "feel": "神清气爽 咖啡香混着茶香",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "bf07f36a-5f41-4374-906b-6402aad5a43c",
+    "feel": "这个声音和单独听雨声的不一样，会舒服一点",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "bf90eace-0b26-4b04-8ee4-ab1627de324b",
+    "feel": "非常愤怒和觉得可笑，感到本来很好的气氛可以休息的环境完全被打破了很烦躁",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "c2372fa9-4f8a-4ace-a26c-e61d4476de5c",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "c2d03b0c-44bd-4f16-9a73-5805a3231cd3",
+    "feel": "放松，但觉得循环播放的广告有些吵闹",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "c45fd8ef-3c90-405a-aa24-64b3df915f65",
+    "feel": "开心，刚考完试，很轻松",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "c5041f77-7ba0-4387-8057-136bd1da7322",
+    "feel": "等待吃饭，还想吃点零食解解烦",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "c58a28e2-9a64-424c-8e8f-5995835f1016",
+    "feel": "嘈杂",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "c7beeee4-648d-4b43-8b69-770fd1dd84d4",
+    "feel": "噪音持续了很久，我开始有点frustrated",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "c7c6bcbc-e94f-4ed7-8edd-296b607fab44",
+    "feel": "治愈宁静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "c964e8ed-5e0b-43d6-84a8-c06cf8b9ba63",
+    "feel": "每天都会路过听到的声音里面还有小鱼周边有",
+    "feel_category": ""
+  },
+  {
+    "id": "cddea1ab-363f-4475-82d7-7b0cfbf2b88d",
+    "feel": "在城市里感受着烟火气",
+    "feel_category": "热闹/有生机"
+  },
+  {
+    "id": "ce127f36-93b9-48fe-86be-dc8b98bcc99f",
+    "feel": "喂猫",
+    "feel_category": ""
+  },
+  {
+    "id": "cec3dcd7-6c88-4f86-9a77-ed8d6c458144",
+    "feel": "没什么感受",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "cf096fe2-7eb0-461a-9acd-9ace2b5ee59c",
+    "feel": "平静，又有些焦虑，需要复习但是不想复习",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "d02bd62c-371f-4c9f-af74-f947bd784e02",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d0350311-e6b1-4b83-a6ee-691df2c54f6a",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d0f186d1-86cb-43f7-aa6b-9f36d3369ffb",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d120bd99-d2f3-40c2-abf2-df4a5bb8e724",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d1398b04-e2ae-4446-a032-1faa925894d7",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d1a5c876-ddf9-4b73-a526-071663b5aec3",
+    "feel": "无",
+    "feel_category": ""
+  },
+  {
+    "id": "d1f9dd8e-6b11-4be3-a7e5-c9d0211c9144",
+    "feel": "小区",
+    "feel_category": ""
+  },
+  {
+    "id": "d2fa702f-c915-4267-9313-5469cb897a50",
+    "feel": "这就是平常的通勤路",
+    "feel_category": ""
+  },
+  {
+    "id": "d360ca98-fcac-4b4f-85ed-e0b53335bd8f",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "d467a5e9-8e79-4877-8733-78f61a161121",
+    "feel": "很无奈，并有点stressful，感觉很吵闹让人无法认真思考",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "d4ef6380-5b47-4aae-a43a-213cd5a1b3fa",
+    "feel": "闷热雨天到舒适的感觉",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "d6f3f97c-ef21-4237-95d2-bd2896fe21ce",
+    "feel": "不太好，要干活的声音",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "d8a9eb9f-cb2d-4f9a-8d09-ae7fe8a16041",
+    "feel": "愉悦，富有食欲😆",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "d95706aa-fae5-4552-b60d-33f0eedca015",
+    "feel": "治愈，节奏慢下来的感受",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "d9ca4353-0465-41ff-b84f-e25e5ce22ab2",
+    "feel": "城市被大雨打乱节奏时感觉到的自由",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "da6e25ac-1241-441f-aa84-ac8ddd45a79c",
+    "feel": "依然没啥波澜",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "dc0be610-a061-42bd-bc3d-aef8e729e9bb",
+    "feel": "休息日的休闲回忆童年时光",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "dcf45c7e-8e90-492c-8a24-bda4f3a146e7",
+    "feel": "小区",
+    "feel_category": ""
+  },
+  {
+    "id": "df1a9fe6-0ba5-40b2-bdaf-86f1555271a6",
+    "feel": "舒服放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "df50f52a-1e4f-4ff8-a415-302655373cd7",
+    "feel": "焦急 隆隆的一切 不安",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "e1a15fe8-d28e-43af-824c-100251ceea74",
+    "feel": "晚安",
+    "feel_category": ""
+  },
+  {
+    "id": "e38ba834-1f7a-45ca-ad2b-228041b08da3",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "e48a45ee-5bf6-43e0-80c8-5c040c2bca22",
+    "feel": "满足",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "e7fc02dc-c388-44db-8401-023985ef44e2",
+    "feel": "治愈，放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "e818adb6-6d78-482a-b7e5-1eb9b2cd5776",
+    "feel": "深夜这座城市已经入眠走在街道上聆听自然",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "e8624a3e-6e73-447b-841b-13fba780c62b",
+    "feel": "郁闷，鞋子湿透了",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "e86367aa-0a88-4b1e-9c6c-f65d5652b47d",
+    "feel": "",
+    "feel_category": ""
+  },
+  {
+    "id": "e8a7d40d-603d-49af-a83f-8ee21cf2897d",
+    "feel": "test",
+    "feel_category": ""
+  },
+  {
+    "id": "e9001c0b-b6d2-42c3-b697-92bcca1181a2",
+    "feel": "非常惬意，感觉很舒适",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "eac84786-00ca-4135-89ec-0df62b35a8a3",
+    "feel": "心里很乱，很难受",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "eae19d29-208a-4ef2-b580-7d5b060d353e",
+    "feel": "平静，有点困",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "ebda9fb4-14fa-45c0-a6dc-ce0d5aa84383",
+    "feel": "观鱼池的设计让园林更有生命力静观水波流转",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "ee5a34c6-7fe3-4dc5-8a17-a8c08668bd03",
+    "feel": "平静，但空调还是有点吵",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "f26ba0ed-b304-4f96-bd04-59b8e366a8cb",
+    "feel": "隔壁老登邻居听到这么重的脚步声会不会很抓狂",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "f64df670-6c29-491c-b92c-0611e34145ee",
+    "feel": "应该没有什么我用的上的",
+    "feel_category": ""
+  },
+  {
+    "id": "f8055809-ee9a-44c2-8dda-4ef5ae45c110",
+    "feel": "很烦躁，因为要被迫听手机视频外放的声音。很多人都在看，明明不要外放的标识很明显，广播也循环播放，手机短视频所以公众认知能力和感知力的负面影响都令我很担忧。",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "f9e7248c-6ee0-4138-8c54-5ffb66ef7a3c",
+    "feel": "很平静吧",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "fa502683-4b40-4e74-b273-4ac9b4280c21",
+    "feel": "清静、闲凉",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "fd36d005-4e8a-4985-8d2f-97515eac4eb3",
+    "feel": "轻松愉悦，富有食欲",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "fd370b05-2694-4716-86b3-115547e33d41",
+    "feel": "清醒 自在",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "ff7367af-fca8-468c-9222-bac86ba5c1c1",
+    "feel": "开心，马上要吃到好吃的了",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "import_09_20266152025_a20260615-02",
+    "feel": "雨滴和明亮便捷的书柜让我感到非常愉悦和平和，但同时旁边的手机视频外放让我觉得又烦躁又讽刺，很煞风景的遗憾感觉。",
+    "feel_category": "烦躁/压抑"
+  },
+  {
+    "id": "import_8_20266151725_a806151725",
+    "feel": "清冷",
+    "feel_category": "感慨/联想"
+  },
+  {
+    "id": "import_8_20266182219_a82606182219",
+    "feel": "惬意",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "import_8_2026618441_a82606180441",
+    "feel": "平静",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "import_8_20266191611_a82606191611",
+    "feel": "着急",
+    "feel_category": "焦虑/紧张"
+  },
+  {
+    "id": "import_8_20266202032_a82606202032",
+    "feel": "幸福 激动（因为bgm是我很喜欢的歌手唱的）",
+    "feel_category": "愉悦/满足"
+  },
+  {
+    "id": "import_8_20266212033_a82606212033",
+    "feel": "超级放松",
+    "feel_category": "平静/放松"
+  },
+  {
+    "id": "import_8_20266221936_a82606221936",
+    "feel": "细碎的安稳",
+    "feel_category": "平静/放松"
+  }
+]

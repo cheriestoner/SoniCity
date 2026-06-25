@@ -78,6 +78,13 @@
       uploading:             'Uploading…',
       save_success:          'Saved',
       save_error:            'Could not save — please try again',
+
+      feel_cat_pleased:      'Joyful / Satisfied',
+      feel_cat_irritated:    'Irritated / Suppressed',
+      feel_cat_anxious:      'Anxious / Tense',
+      feel_cat_calm:         'Calm / Relaxed',
+      feel_cat_lively:       'Lively / Vibrant',
+      feel_cat_moved:        'Moved / Reflective',
     },
     zh: {
       app_title:             '城市声音日记',
@@ -157,6 +164,13 @@
       uploading:             '上传中…',
       save_success:          '已保存',
       save_error:            '保存失败，请重试',
+
+      feel_cat_pleased:      '愉悦/满足',
+      feel_cat_irritated:    '烦躁/压抑',
+      feel_cat_anxious:      '焦虑/紧张',
+      feel_cat_calm:         '平静/放松',
+      feel_cat_lively:       '热闹/有生机',
+      feel_cat_moved:        '感慨/联想',
     },
   };
 

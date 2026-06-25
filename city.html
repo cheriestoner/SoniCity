@@ -61,6 +61,23 @@
             transform-origin: 0 0;
             width: 0; height: 0;
         }
+        #feel-labels-layer {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0;
+            width: 0; height: 0;
+            pointer-events: none;
+            z-index: 10;
+            display: none;
+        }
+        .feel-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            color: #bbb;
+            font-family: 'ark-pixel-cn', 'ark-pixel', monospace;
+            font-size: clamp(13px, 1.5vw, 18px);
+            white-space: nowrap;
+        }
         @media (max-width: 768px) {
             #toggle-sidebar2,
             #week-prev, #week-next { display: none; }
@@ -142,6 +159,7 @@
         <button id="toggle-sidebar2">&gt;</button>
 
         <div id="buttons-layer"></div>
+        <div id="feel-labels-layer"></div>
         <button id="reset-canvas">O</button>
     </div>
     <script>
@@ -248,8 +266,9 @@
                     clockGrid.attr('transform', transform);
                     tagGrid.attr('transform', transform);
                     feelGrid.attr('transform', transform);
-                    document.getElementById('buttons-layer').style.transform =
-                        `translate(${transform.x}px,${transform.y}px) scale(${transform.k})`;
+                    const layerTransform = `translate(${transform.x}px,${transform.y}px) scale(${transform.k})`;
+                    buttonsLayerEl.style.transform    = layerTransform;
+                    feelLabelsLayerEl.style.transform = layerTransform;
                 }
             });
         svg.call(zoom);
@@ -389,12 +408,31 @@
                     const col = dateIdx >= 0 ? dateIdx : 0;
                     node.xMin = leftBound + col * cellW + r;
                     node.xMax = leftBound + (col + 1) * cellW - r;
+                    node.yMin = r;
+                    node.yMax = height - r;
+                } else if (viewName === 'feel') {
+                    const feelIdx = FEEL_CATEGORIES.indexOf(btn.dataset.feelCategory || '');
+                    const fCol = feelIdx >= 0 ? feelIdx % 2 : -1;
+                    const fRow = feelIdx >= 0 ? Math.floor(feelIdx / 2) : -1;
+                    const colW = visibleWidth / 2;
+                    const rowH = height / 3;
+                    if (fCol >= 0 && fRow >= 0) {
+                        node.xMin = leftBound + fCol * colW + r;
+                        node.xMax = leftBound + (fCol + 1) * colW - r;
+                        node.yMin = fRow * rowH + r;
+                        node.yMax = (fRow + 1) * rowH - r;
+                    } else {
+                        node.xMin = leftBound + r;
+                        node.xMax = rightBound - r;
+                        node.yMin = r;
+                        node.yMax = height - r;
+                    }
                 } else {
                     node.xMin = leftBound + r;
                     node.xMax = rightBound - r;
+                    node.yMin = r;
+                    node.yMax = height - r;
                 }
-                node.yMin = r;
-                node.yMax = height - r;
                 nodes.push(node);
             });
 
@@ -697,13 +735,27 @@
         }
 
         // Feel cluster functions
+        const FEEL_CATEGORIES = ['愉悦/满足', '烦躁/压抑', '焦虑/紧张', '平静/放松', '热闹/有生机', '感慨/联想'];
+        const FEEL_CATEGORY_KEYS = ['feel_cat_pleased', 'feel_cat_irritated', 'feel_cat_anxious', 'feel_cat_calm', 'feel_cat_lively', 'feel_cat_moved'];
         let feelCenters = {};
+        let feelClusterR = 0;
+        const buttonsLayerEl    = document.getElementById('buttons-layer');
+        const feelLabelsLayerEl = document.getElementById('feel-labels-layer');
 
         function buildFeelCenters(images) {
             const { leftBound, visibleWidth } = computeVisibleBounds();
-            const uniqueFeels = [...new Set(images.map(img => img.feel).filter(Boolean))];
+            const colW = visibleWidth / 2;
+            const rowH = height / 3;
+            feelClusterR = Math.min(colW, rowH) * 0.3;
             feelCenters = {};
-            uniqueFeels.forEach(feel => {
+            const known = new Set(FEEL_CATEGORIES);
+            FEEL_CATEGORIES.forEach((feel, i) => {
+                feelCenters[feel] = {
+                    cx: leftBound + (i % 2 + 0.5) * colW,
+                    cy: (Math.floor(i / 2) + 0.5) * rowH,
+                };
+            });
+            [...new Set(images.map(img => img.feel_category).filter(f => f && !known.has(f)))].forEach(feel => {
                 const rng = seededRngFromString('feel-center|' + feel);
                 feelCenters[feel] = {
                     cx: leftBound + rng() * visibleWidth,
@@ -713,31 +765,27 @@
         }
 
         function buildFeelGrid() {
-            feelGrid.selectAll("*").remove();
+            feelLabelsLayerEl.innerHTML = '';
             Object.entries(feelCenters).forEach(([feel, { cx, cy }]) => {
-                feelGrid.append("text")
-                    .attr("x", cx)
-                    .attr("y", cy)
-                    .attr("text-anchor", "middle")
-                    .attr("class", "timeline-day-label")
-                    .style("font-size", "clamp(13px, 1.5vw, 18px)")
-                    .style("fill", "#bbb")
-                    .text(feel);
+                const el = document.createElement('div');
+                el.className = 'feel-label';
+                const keyIdx = FEEL_CATEGORIES.indexOf(feel);
+                el.textContent = keyIdx >= 0 ? t(FEEL_CATEGORY_KEYS[keyIdx]) : feel;
+                el.style.left = cx + 'px';
+                el.style.top  = cy + 'px';
+                feelLabelsLayerEl.appendChild(el);
             });
         }
 
         function computeFeelPos(img, initLeft, initTop) {
-            const feel = img.feel || '';
+            const feel = img.feel_category || '';
             const center = feelCenters[feel];
             if (!center) return { feelLeft: initLeft, feelTop: initTop };
-            const { visibleWidth } = computeVisibleBounds();
-            const numFeels = Object.keys(feelCenters).length || 1;
-            const clusterR = Math.min(visibleWidth / numFeels, height * 0.15);
             const idKey = img.audio || img.src || img.title || '';
             const rng = seededRngFromString(`feel-jitter|${randomSeed}|${idKey}`);
             return {
-                feelLeft: Math.round(center.cx + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
-                feelTop:  Math.round(center.cy + (rng() - 0.5) * 2 * clusterR - buttonSize / 2),
+                feelLeft: Math.round(center.cx + (rng() - 0.5) * 2 * feelClusterR - buttonSize / 2),
+                feelTop:  Math.round(center.cy + (rng() - 0.5) * 2 * feelClusterR - buttonSize / 2),
             };
         }
 
@@ -746,6 +794,7 @@
 
         function setView(view) {
             svg.call(zoom.transform, d3.zoomIdentity);
+            feelLabelsLayerEl.style.transform = '';
             document.querySelectorAll('input[data-src]').forEach(s => s.style.display = 'none');
             currentView = view;
             const isTimeline = view === 'timeline';
@@ -761,7 +810,8 @@
             timelineGrid.style("display", isTimeline ? null : "none");
             clockGrid.style("display",    isClock    ? null : "none");
             tagGrid.style("display",      isTag      ? null : "none");
-            feelGrid.style("display",     isFeel     ? null : "none");
+            feelGrid.style("display",     "none");
+            feelLabelsLayerEl.style.display = isFeel ? 'block' : 'none';
 
             document.querySelectorAll(".image-button").forEach(btn => {
                 let targetLeft, targetTop;
@@ -972,6 +1022,7 @@
                 button.dataset.tagTop       = String(tagTop);
                 button.dataset.feelLeft     = String(feelLeft);
                 button.dataset.feelTop      = String(feelTop);
+                button.dataset.feelCategory = img.feel_category || '';
                 button.dataset.audioSrc     = img.audio;
                 button.dataset.user         = img.user;
                 button.dataset.city         = img.city || '';

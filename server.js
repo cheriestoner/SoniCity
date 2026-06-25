@@ -4,7 +4,7 @@ import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import multer from 'multer';
 import { insertMoment, getMomentsByUsername, getAllMoments, deleteAllMoments, deleteMoment, updateMoment, getMomentDates, getMomentsRecent, getMomentsByDate } from './data/db.js';
 
@@ -15,6 +15,14 @@ const PORT = process.env.PORT || 3001;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+let feelCategoryMap = {};
+try {
+    const raw = readFileSync(join(__dirname, 'data', 'feel_categories.json'), 'utf8');
+    JSON.parse(raw).forEach(({ id, feel_category }) => {
+        if (id && feel_category) feelCategoryMap[id] = feel_category;
+    });
+} catch (_) {}
 
 app.use(cors());
 app.use(express.json());
@@ -397,7 +405,7 @@ app.get('/api/moments/csv', (_req, res) => {
                 ? `"${s.replace(/"/g, '""')}"` : s;
         }
 
-        const header = 'src,bgc,audio,hear,feel,tag,user,city,location,day,time,date';
+        const header = 'src,bgc,audio,hear,feel,feel_category,tag,user,city,location,day,time,date';
         const csvRows = rows.map(r => {
             const src  = r.photo_path ? `/${r.photo_path}` : '';
             const audio = r.audio_path ? `/${r.audio_path}` : '';
@@ -410,13 +418,14 @@ app.get('/api/moments/csv', (_req, res) => {
             const date = `${month}-${day_of_month}`;
             const dateKey = r.timestamp.slice(0, 10);
             const day  = dayIndex[dateKey] ?? 1;
+            const feelCategory = feelCategoryMap[r.id] || '';
             let tagDisplay = '';
             try {
                 const tags = r.tags ? JSON.parse(r.tags) : [];
                 const first = Array.isArray(tags) && tags.length > 0 ? tags[0] : '';
                 tagDisplay = first.startsWith('special') ? 'special' : first;
             } catch (_) {}
-            return [src, src, audio, r.description || '', r.feel || '', tagDisplay, r.username, r.city || '', r.location_name || '', day, time, date]
+            return [src, src, audio, r.description || '', r.feel || '', feelCategory, tagDisplay, r.username, r.city || '', r.location_name || '', day, time, date]
                 .map(escapeCSV).join(',');
         });
 
