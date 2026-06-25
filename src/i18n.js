@@ -53,7 +53,7 @@
       timeline:              'Timeline',
       clock:                 'Clock',
       tag_view:              'Tag',
-      feel_view:             'Feel',
+      feel_view:             'Feeling',
       user_label:            'User',
       all:                   'All',
       filter_me:             'Me',
