@@ -28,6 +28,9 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 
+# Environment variables
+.env
+
 # User-submitted recordings (runtime data)
 # Exceptions: curated field study data committed deliberately
 public/users/
@@ -39,3 +42,6 @@ public/users/
 !public/users/lola/**
 !public/users/tt/
 !public/users/tt/**
+
+.env
+.claude/
