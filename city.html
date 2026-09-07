@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="/src/style/archive.css">
     <link rel="preload" href="/public/asset/font/ark-pixel-12px-monospaced-zh_cn.otf" as="font" type="font/otf" crossorigin>
     <style>
-        .view-toggle { margin: 16px 0; }
-        .toggle-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .view-toggle { margin: 0 0 12px; }
+        .toggle-buttons { display: flex; justify-content: center; gap: 8px; margin-top: 0; flex-wrap: wrap; }
         .view-btn {
             font-family: 'ark-pixel', monospace;
             border-radius: 4px;
@@ -19,20 +19,20 @@
             background: #fff;
             cursor: pointer;
             padding: 6px 14px;
-            font-size: clamp(11px, 1.2vw, 14px);
+            font-size: clamp(15px, 1.25vw, 21px);
         }
         .view-btn.active { background: #000; color: #fff; }
         .timeline-day-label {
             font-family: 'ark-pixel', monospace;
-            font-size: clamp(9px, 1vw, 12px);
-            fill: #555;
+            font-size: clamp(14px, 1.2vw, 20px);
+            fill: #777;
             text-anchor: middle;
         }
         .timeline-user-label {
             font-family: 'ark-pixel', monospace;
-            font-size: clamp(9px, 1vw, 12px);
-            fill: #555;
-            text-anchor: end;
+            font-size: clamp(14px, 1.2vw, 20px);
+            fill: #777;
+            text-anchor: start;
         }
         .timeline-grid-line {
             stroke: #ccc;
@@ -44,13 +44,19 @@
         }
         .week-nav {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            padding: 0.4rem 0;
+            justify-content: center;
+            gap: 0.25rem;
+            margin: 0 0 12px;
+            padding: 0;
+        }
+        #week-nav .ai-label {
+            margin-bottom: 0;
+            text-align: center;
         }
         #week-label {
-            font-size: 0.82rem;
+            font-size: clamp(16px, 1.15vw, 20px);
             flex: 1;
             text-align: center;
             white-space: nowrap;
@@ -73,13 +79,10 @@
         .feel-label {
             position: absolute;
             transform: translate(-50%, -50%);
-            color: #bbb;
-            font-family: 'ark-pixel-cn', 'ark-pixel', monospace;
-            font-size: clamp(13px, 1.5vw, 18px);
+            color: #777;
+            font-family: 'fusion-pixel-cn', 'ark-pixel', monospace;
+            font-size: clamp(16px, 1.6vw, 24px);
             white-space: nowrap;
-        }
-        @media (max-width: 768px) {
-            #toggle-sidebar1, #toggle-sidebar2 { display: none; }
         }
     </style>
 </head>
@@ -89,7 +92,10 @@
             <div class="sidebar-header">
                 <a href="/" class="home-link" data-i18n="home_back">← Home</a>
             </div>
-            <div id="image-title"></div>
+            <div id="image-title">
+                <p><strong data-i18n="participant_id_label">Participant ID:</strong> <span id="participant-id-value"></span></p>
+            </div>
+            <h3 id="moment-details-heading" data-i18n="moment_details_label" hidden>Moment details</h3>
             <div id="image-time"></div>
             <div id="fav-toggle-wrap" style="display:none">
                 <button id="fav-toggle" class="view-btn" data-i18n="fav_add">☆ Favorite</button>
@@ -100,12 +106,21 @@
             </div>
             <div id="image-describ" style="margin-bottom: 20px;"></div>
         </div>
-        <button id="toggle-sidebar1">←</button>
-
         <div id="sidebar2">
             <div class="sidebar2-body">
                 <h2 data-i18n="city_archive">Sound Diary Archive</h2>
-                <p data-i18n="archive_desc" style="margin-bottom: 50px;">A collective sound diary — three participants recording 1–3 moments each day over seven days in City A.</p>
+                <p class="archive-intro" data-i18n="archive_desc">Personal and shared sonic traces reveal how people reflect on and reconstruct the everyday soundscapes of Suzhou and Shenzhen.</p>
+
+                <h3 class="archive-controls-heading" data-i18n="explore_archive_label">Explore archive</h3>
+
+                <div id="week-nav" class="week-nav" style="display:none">
+                    <label class="ai-label guide-label" tabindex="0" aria-describedby="date-range-guide">
+                        <span data-i18n="date_range_label">Date range</span>
+                        <span class="guide-mark" aria-hidden="true">?</span>
+                        <span id="date-range-guide" class="guide-tooltip" role="tooltip" data-i18n="date_range_guide">Scroll over the timeline with a mouse wheel or trackpad to zoom and select a date range.</span>
+                    </label>
+                    <span id="week-label"></span>
+                </div>
 
                 <div class="view-toggle">
                     <label class="ai-label" data-i18n="view_label">View</label>
@@ -116,10 +131,6 @@
                         <button id="view-feel" class="view-btn" data-i18n="feel_view">Feel</button>
                         <button id="view-scatter" class="view-btn" data-i18n="scatter">Scatter</button>
                     </div>
-                </div>
-
-                <div id="week-nav" class="week-nav" style="display:none">
-                    <span id="week-label"></span>
                 </div>
 
                 <div class="view-toggle">
@@ -153,15 +164,13 @@
                 <img src="/asset/logos/SSG-Logo-v1-black.svg" alt="SSG Logo" class="sidebar2-logo secondary">
             </div>
         </div>
-        <button id="toggle-sidebar2">→</button>
-
         <div id="buttons-layer"></div>
         <div id="feel-labels-layer"></div>
-        <button id="reset-canvas">O</button>
     </div>
     <script>
         const t = key => window.i18n.t(key);
         const currentUser = localStorage.getItem('usd_username') || 'anonymous';
+        document.getElementById('participant-id-value').textContent = currentUser;
 
         const TAG_I18N = {
             on_the_way:  'tag_on_the_way',
@@ -171,6 +180,79 @@
             special:     'tag_special',
         };
         function tagLabel(key) { return key ? t(TAG_I18N[key] || key) : ''; }
+
+        function arrangeControlGroups() {
+            const sidebar = document.getElementById('sidebar1');
+            sidebar.querySelector('.audio-controls-heading')?.remove();
+            const makeTick = text => {
+                const tick = document.createElement('span');
+                tick.className = 'audio-control-tick';
+                tick.textContent = text;
+                return tick;
+            };
+            const buildGroup = (name, title, slider, leftTick, rightTick) => {
+                if (!title || !slider) return;
+                const group = document.createElement('div');
+                group.className = `audio-control-group audio-control-${name}`;
+                const endpoints = document.createElement('div');
+                endpoints.className = 'audio-control-endpoints';
+
+                sidebar.insertBefore(group, title);
+                group.append(title, slider);
+                endpoints.append(leftTick, rightTick);
+                group.appendChild(endpoints);
+            };
+
+            buildGroup(
+                'pan',
+                sidebar.querySelector('label[data-pan-src]'),
+                sidebar.querySelector('input[data-pan-src]'),
+                sidebar.querySelector('label[data-left-src]'),
+                sidebar.querySelector('label[data-right-src]')
+            );
+            buildGroup(
+                'lowpass',
+                sidebar.querySelector('label[data-low-src]'),
+                sidebar.querySelector('input[data-lowpass-src]'),
+                makeTick('1 Hz'),
+                makeTick('10 kHz')
+            );
+            buildGroup(
+                'highpass',
+                sidebar.querySelector('label[data-high-src]'),
+                sidebar.querySelector('input[data-highpass-src]'),
+                makeTick('1 Hz'),
+                makeTick('5 kHz')
+            );
+
+            const firstControlGroup = sidebar.querySelector('.audio-control-group');
+            if (firstControlGroup) {
+                const heading = document.createElement('h3');
+                heading.className = 'audio-controls-heading guide-label';
+                heading.tabIndex = 0;
+                heading.setAttribute('aria-describedby', 'audio-controls-guide');
+
+                const headingText = document.createElement('span');
+                headingText.dataset.i18n = 'audio_controls_label';
+                headingText.textContent = t('audio_controls_label');
+
+                const guideMark = document.createElement('span');
+                guideMark.className = 'guide-mark';
+                guideMark.setAttribute('aria-hidden', 'true');
+                guideMark.textContent = '?';
+
+                const guideTooltip = document.createElement('span');
+                guideTooltip.id = 'audio-controls-guide';
+                guideTooltip.className = 'guide-tooltip';
+                guideTooltip.setAttribute('role', 'tooltip');
+                guideTooltip.dataset.i18n = 'audio_controls_guide';
+                guideTooltip.textContent = t('audio_controls_guide');
+
+                heading.append(headingText, guideMark, guideTooltip);
+                sidebar.insertBefore(heading, firstControlGroup);
+            }
+        }
+
         const DISPLAY_TO_KEY = {
             'On the way':          'on_the_way',
             'Open space':          'open_space',
@@ -192,18 +274,39 @@
         let selectedAudioSrc = null;
         const sidebar1 = d3.select("#sidebar1");
         const sidebar2 = d3.select("#sidebar2");
-        const toggleButton1 = d3.select("#toggle-sidebar1");
-        const toggleButton2 = d3.select("#toggle-sidebar2");
         let sidebar1Visible = true;
         let sidebar2Visible = true;
-
-        toggleButton1.on("click", () => updateWeek(-1));
-        toggleButton2.on("click", () => updateWeek(+1));
 
         // canvas container size
         const width = window.innerWidth * 0.96;
         const height = window.innerHeight * 0.94;
         let buttonSize = Math.max(60, Math.min(120, Math.floor(Math.min(width, height) * 0.07)));
+        const volumeSliderGap = 10;
+        const volumeSliderHeight = 16;
+        const canvasEdgePadding = 12;
+
+        function positionVolumeSlider(slider, button, targetTop = null) {
+            const initLeft = parseFloat(button.dataset.initLeft || button.style.left) || 0;
+            const initTop = parseFloat(button.dataset.initTop || button.style.top) || 0;
+            let visualTop = targetTop;
+
+            if (visualTop == null) {
+                const transform = new DOMMatrix(getComputedStyle(button).transform);
+                visualTop = initTop + transform.m42;
+            }
+
+            const belowTop = visualTop + buttonSize + volumeSliderGap;
+            const fitsBelow = belowTop + volumeSliderHeight <= height - canvasEdgePadding;
+            const sliderTop = fitsBelow
+                ? initTop + buttonSize + volumeSliderGap
+                : initTop - volumeSliderGap - volumeSliderHeight;
+
+            slider.style.position = 'absolute';
+            slider.style.left = `${Math.max(canvasEdgePadding, Math.min(initLeft, width - buttonSize - canvasEdgePadding))}px`;
+            slider.style.top = `${Math.max(canvasEdgePadding, sliderTop)}px`;
+            slider.style.width = `${buttonSize}px`;
+            slider.style.transform = button.style.transform;
+        }
 
         const svg = d3.select("#canvas-container")
             .append("svg")
@@ -313,88 +416,60 @@
             return { leftBound, rightBound, visibleWidth, midX };
         }
 
-        function centerResetButton() {
-            const { leftBound, rightBound } = computeVisibleBounds();
-            const midX = leftBound + (rightBound - leftBound) / 2;
-            const resetBtn = document.getElementById("reset-canvas");
-            if (resetBtn) {
-                resetBtn.style.left = `${Math.round(midX - resetBtn.offsetWidth / 2)}px`;
-            }
-        }
-        centerResetButton();
-
         if (window.innerWidth < 768) {
             sidebar1Visible = false;
             sidebar2Visible = false;
             sidebar1.classed("hidden", true);
-            toggleButton1.classed("hidden", true);
-            toggleButton1.text(">");
             sidebar2.classed("hidden", true);
-            toggleButton2.classed("hidden", true);
-            toggleButton2.text("<");
-            centerResetButton();
         }
 
+        // Zoom changes the number of visible days, but the window is always
+        // clamped to the 11-day study period (Jun 12–Jun 22).
         function applyTimelineZoom(transform) {
-            const newNumDays = Math.max(1, Math.min(14, Math.round(7 / transform.k)));
+            const newNumDays = Math.max(1, Math.min(
+                TIMELINE_NUM_DAYS,
+                Math.round(TIMELINE_NUM_DAYS / transform.k)
+            ));
             if (newNumDays === numDays) return;
 
-            numDays = newNumDays;
-
-            dayDates = Array.from({ length: numDays }, (_, i) => {
-                const d = new Date(weekMonday);
-                d.setDate(weekMonday.getDate() + i);
-                return (d.getMonth() + 1) + '/' + d.getDate();
-            });
-            currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
-                const d = new Date(weekMonday);
-                d.setDate(weekMonday.getDate() + i);
-                return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            });
-
-            const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const endDay = new Date(weekMonday);
-            endDay.setDate(weekMonday.getDate() + numDays - 1);
-            const label = document.getElementById('week-label');
-            if (label) label.textContent = fmt(weekMonday) + ' – ' + fmt(endDay);
-
-            document.querySelectorAll('.image-button').forEach(btn => {
-                if (!btn._imgData) return;
-                const { timelineLeft, timelineTop } = computeTimelinePos(btn._imgData);
-                btn.dataset.timelineLeft = String(timelineLeft);
-                btn.dataset.timelineTop  = String(timelineTop);
-            });
-            resolveViewOverlaps('timeline');
-            buildTimelineGrid();
-
-            document.querySelectorAll('.image-button').forEach(btn => {
-                const dx = parseInt(btn.dataset.timelineLeft) - parseInt(btn.dataset.initLeft);
-                const dy = parseInt(btn.dataset.timelineTop)  - parseInt(btn.dataset.initTop);
-                btn.style.transition = 'transform 0.5s ease';
-                btn.style.transform  = `translate(${dx}px, ${dy}px)`;
-            });
-            applyFilters();
+            const currentCenter = timelineStartIndex + (numDays - 1) / 2;
+            const nextStart = Math.round(currentCenter - (newNumDays - 1) / 2);
+            setTimelineWindow(nextStart, newNumDays);
         }
 
-        function resolveViewOverlaps(viewName) {
+        function resolveViewOverlaps(viewName, visibleOnly = false) {
             const { leftBound, rightBound, visibleWidth } = computeVisibleBounds();
             const r = buttonSize / 2 + 2;
             const cellW = visibleWidth / numDays;
 
             const nodes = [];
             document.querySelectorAll('.image-button').forEach(btn => {
+                if (visibleOnly && btn.style.display === 'none') return;
                 const lk = viewName === 'scatter' ? 'initLeft' : `${viewName}Left`;
                 const tk = viewName === 'scatter' ? 'initTop'  : `${viewName}Top`;
-                const x = parseInt(btn.dataset[lk]) + buttonSize / 2;
-                const y = parseInt(btn.dataset[tk]) + buttonSize / 2;
-                const node = { x, y, btn, lk, tk };
+                const idealLeft = viewName === 'timeline'
+                    ? parseInt(btn.dataset.timelineIdealLeft ?? btn.dataset[lk])
+                    : parseInt(btn.dataset[lk]);
+                const idealTop = viewName === 'timeline'
+                    ? parseInt(btn.dataset.timelineIdealTop ?? btn.dataset[tk])
+                    : parseInt(btn.dataset[tk]);
+                const x = idealLeft + buttonSize / 2;
+                const y = idealTop + buttonSize / 2;
+                const node = { x, y, anchorX: x, anchorY: y, btn, lk, tk };
                 if (viewName === 'timeline') {
                     const dateIdx = currentWeekMDDates.indexOf(btn.dataset.date);
                     const col = dateIdx >= 0 ? dateIdx : 0;
-                    node.xMin = leftBound + col * cellW + r;
-                    node.xMax = leftBound + (col + 1) * cellW - r;
-                    node.yMin = r;
-                    node.yMax = height - r;
+                    const columnLeft = leftBound + col * cellW;
+                    const columnRight = columnLeft + cellW;
+                    const horizontalInset = Math.min(r, cellW * 0.25);
+                    const maxTimelineDrift = Math.min(height / 16, r * 1.5);
+                    node.xMin = columnLeft + horizontalInset;
+                    node.xMax = columnRight - horizontalInset;
+                    // Keep moments close to their real time while allowing a small
+                    // vertical spread when horizontal separation is not enough.
+                    // height / 16 equals 90 minutes on the 24-hour axis.
+                    node.yMin = Math.max(r, y - maxTimelineDrift);
+                    node.yMax = Math.min(height - r, y + maxTimelineDrift);
                 } else if (viewName === 'feel') {
                     const feelIdx = FEEL_CATEGORIES.indexOf(btn.dataset.feelCategory || '');
                     const fCol = feelIdx >= 0 ? feelIdx % 2 : -1;
@@ -422,8 +497,13 @@
             });
 
             const sim = d3.forceSimulation(nodes)
-                .force('collide', d3.forceCollide(r).iterations(4))
-                .stop();
+                .force('collide', d3.forceCollide(r).iterations(4));
+            if (viewName === 'timeline') {
+                sim
+                    .force('x', d3.forceX(d => d.anchorX).strength(0.16))
+                    .force('y', d3.forceY(d => d.anchorY).strength(0.32));
+            }
+            sim.stop();
             for (let i = 0; i < 300; i++) {
                 sim.tick();
                 nodes.forEach(d => {
@@ -445,58 +525,79 @@
         // User index for timeline rows
         const userIndex = { alice: 0, bob: 1, carol: 2 };
         const userLabels = ['alice', 'bob', 'carol'];
-        let numDays = 7;
+        const TIMELINE_START_DATE = new Date(2026, 5, 12);
+        const TIMELINE_NUM_DAYS = 11;
+        let numDays = TIMELINE_NUM_DAYS;
         const numUsers = 3;
-        let weekOffset = 0;
-        let weekMonday = new Date();
-        const _wd = weekMonday.getDay();
-        weekMonday.setDate(weekMonday.getDate() - (_wd === 0 ? 6 : _wd - 1));
+        let timelineStartIndex = 0;
+        let timelineWindowStart = new Date(TIMELINE_START_DATE);
         let dayDates = Array.from({ length: numDays }, (_, i) => {
-            const d = new Date(weekMonday);
-            d.setDate(weekMonday.getDate() + i);
+            const d = new Date(timelineWindowStart);
+            d.setDate(timelineWindowStart.getDate() + i);
             return (d.getMonth() + 1) + '/' + d.getDate();
         });
         let currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
-            const d = new Date(weekMonday);
-            d.setDate(weekMonday.getDate() + i);
+            const d = new Date(timelineWindowStart);
+            d.setDate(timelineWindowStart.getDate() + i);
             return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         });
 
-        function updateWeek(delta) {
-            weekOffset += delta;
-            const base = new Date();
-            const wd = base.getDay();
-            weekMonday = new Date(base);
-            weekMonday.setDate(base.getDate() - (wd === 0 ? 6 : wd - 1) + weekOffset * 7);
+        function setTimelineWindow(startIndex, visibleDays) {
+            numDays = Math.max(1, Math.min(TIMELINE_NUM_DAYS, Math.round(visibleDays)));
+            const maxStart = TIMELINE_NUM_DAYS - numDays;
+            timelineStartIndex = Math.max(0, Math.min(maxStart, Math.round(startIndex)));
+            timelineWindowStart = new Date(TIMELINE_START_DATE);
+            timelineWindowStart.setDate(TIMELINE_START_DATE.getDate() + timelineStartIndex);
 
             dayDates = Array.from({ length: numDays }, (_, i) => {
-                const d = new Date(weekMonday);
-                d.setDate(weekMonday.getDate() + i);
+                const d = new Date(timelineWindowStart);
+                d.setDate(timelineWindowStart.getDate() + i);
                 return (d.getMonth() + 1) + '/' + d.getDate();
             });
             currentWeekMDDates = Array.from({ length: numDays }, (_, i) => {
-                const d = new Date(weekMonday);
-                d.setDate(weekMonday.getDate() + i);
+                const d = new Date(timelineWindowStart);
+                d.setDate(timelineWindowStart.getDate() + i);
                 return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             });
 
             const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const endDay = new Date(weekMonday);
-            endDay.setDate(weekMonday.getDate() + numDays - 1);
+            const endDay = new Date(timelineWindowStart);
+            endDay.setDate(timelineWindowStart.getDate() + numDays - 1);
             const label = document.getElementById('week-label');
-            if (label) label.textContent = fmt(weekMonday) + ' – ' + fmt(endDay);
+            if (label) {
+                label.textContent = numDays === 1
+                    ? fmt(timelineWindowStart)
+                    : fmt(timelineWindowStart) + ' – ' + fmt(endDay);
+            }
 
             document.querySelectorAll('.image-button').forEach(btn => {
                 if (!btn._imgData) return;
                 const { timelineLeft, timelineTop } = computeTimelinePos(btn._imgData);
+                btn.dataset.timelineIdealLeft = String(timelineLeft);
+                btn.dataset.timelineIdealTop  = String(timelineTop);
                 btn.dataset.timelineLeft = String(timelineLeft);
                 btn.dataset.timelineTop  = String(timelineTop);
             });
 
             resolveViewOverlaps('timeline');
             buildTimelineGrid();
+
+            document.querySelectorAll('.image-button').forEach(btn => {
+                const targetLeft = parseInt(btn.dataset.timelineLeft);
+                const targetTop = parseInt(btn.dataset.timelineTop);
+                const dx = targetLeft - parseInt(btn.dataset.initLeft);
+                const dy = targetTop - parseInt(btn.dataset.initTop);
+                btn.style.transition = 'transform 0.5s ease';
+                btn.style.transform = `translate(${dx}px, ${dy}px)`;
+
+                const slider = document.querySelector(`input[data-src='${btn.dataset.audioSrc}']`);
+                if (slider) {
+                    slider.style.transition = 'transform 0.5s ease';
+                    positionVolumeSlider(slider, btn, targetTop);
+                }
+            });
+
             applyFilters();
-            setView('timeline');
         }
 
         // Build timeline grid SVG elements (lines + labels)
@@ -545,7 +646,7 @@
                 .join(
                     enter => enter.append('text')
                         .attr('class', 'timeline-day-label')
-                        .attr('y', 16)
+                        .attr('y', 30)
                         .attr('x', d => d.x)
                         .style('opacity', 0)
                         .text(d => d.text),
@@ -554,6 +655,7 @@
                 )
                 .transition().duration(dur).ease(d3.easeQuadInOut)
                 .attr('x', d => d.x)
+                .attr('y', 30)
                 .style('opacity', 1);
 
             // Time-of-day labels — static, rebuild
@@ -561,8 +663,8 @@
             ['00:00', '06:00', '12:00', '18:00', '24:00'].forEach((label, i) => {
                 timelineGrid.append('text')
                     .attr('class', 'timeline-user-label')
-                    .attr('x', leftBound - labelPad)
-                    .attr('y', (i / 4) * height + 4)
+                    .attr('x', leftBound + labelPad)
+                    .attr('y', i === 0 ? 50 : i === 4 ? height - 8 : (i / 4) * height + 4)
                     .text(label);
             });
         }
@@ -593,8 +695,8 @@
                     .attr("y", cy - lo * Math.cos(a) + 4)
                     .attr("text-anchor", "middle")
                     .attr("class", "timeline-day-label")
-                    .style("font-size", "clamp(11px, 1.2vw, 15px)")
-                    .style("fill", "#bbb")
+                    .style("font-size", "clamp(16px, 1.6vw, 24px)")
+                    .style("fill", "#777")
                     .text(name);
             });
         }
@@ -699,8 +801,8 @@
                     .attr("y", cy)
                     .attr("text-anchor", "middle")
                     .attr("class", "timeline-day-label")
-                    .style("font-size", "clamp(13px, 1.5vw, 18px)")
-                    .style("fill", "#bbb")
+                    .style("font-size", "clamp(16px, 1.6vw, 24px)")
+                    .style("fill", "#777")
                     .text(tagLabel(tag));
             });
         }
@@ -826,7 +928,7 @@
                     const slider = document.querySelector(`input[data-src='${audioSrc}']`);
                     if (slider) {
                         slider.style.transition = 'transform 0.5s ease';
-                        slider.style.transform  = `translate(${dx}px, ${dy}px)`;
+                        positionVolumeSlider(slider, btn, targetTop);
                     }
                 }
             });
@@ -839,8 +941,6 @@
 
             const weekNav = document.getElementById('week-nav');
             if (weekNav) weekNav.style.display = isTimeline ? 'flex' : 'none';
-            toggleButton1.style("display", isTimeline ? null : "none");
-            toggleButton2.style("display", isTimeline ? null : "none");
 
             applyFilters();
         }
@@ -859,6 +959,28 @@
             return 'suzhou';
         }
         let currentCityFilter = resolveDefaultCity();
+
+        function positionVisibleTimelineMoments() {
+            resolveViewOverlaps('timeline', true);
+            document.querySelectorAll('.image-button').forEach(btn => {
+                if (btn.style.display === 'none') return;
+                const targetLeft = parseInt(btn.dataset.timelineLeft);
+                const targetTop = parseInt(btn.dataset.timelineTop);
+                const dx = targetLeft - parseInt(btn.dataset.initLeft);
+                const dy = targetTop - parseInt(btn.dataset.initTop);
+                btn.style.transition = 'transform 0.35s ease';
+                btn.style.transform = `translate(${dx}px, ${dy}px)`;
+
+                const audioSrc = btn.dataset.audioSrc;
+                const slider = audioSrc
+                    ? document.querySelector(`input[data-src='${audioSrc}']`)
+                    : null;
+                if (slider && slider.style.display !== 'none') {
+                    slider.style.transition = 'transform 0.35s ease';
+                    positionVolumeSlider(slider, btn, targetTop);
+                }
+            });
+        }
 
         function applyFilters() {
             document.querySelectorAll('.image-button').forEach(btn => {
@@ -890,6 +1012,7 @@
                     if (slider && !match) slider.style.display = 'none';
                 }
             });
+            if (currentView === 'timeline') positionVisibleTimelineMoments();
         }
 
         function setFilter(mode) {
@@ -1001,6 +1124,8 @@
                 button._imgData             = img;
                 button.dataset.initLeft     = String(computedLeft);
                 button.dataset.initTop      = String(computedTop);
+                button.dataset.timelineIdealLeft = String(timelineLeft);
+                button.dataset.timelineIdealTop  = String(timelineTop);
                 button.dataset.timelineLeft = String(timelineLeft);
                 button.dataset.timelineTop  = String(timelineTop);
                 button.dataset.clockLeft    = String(clockLeft);
@@ -1054,6 +1179,8 @@
                     const onUp = () => {
                         button.removeEventListener("pointermove", onMove);
                         button.removeEventListener("pointerup",   onUp);
+                        const slider = document.querySelector(`input[data-src='${img.audio}']`);
+                        if (slider) positionVolumeSlider(slider, button);
                     };
                     button.addEventListener("pointermove", onMove);
                     button.addEventListener("pointerup",   onUp);
@@ -1064,21 +1191,18 @@
                     if (!sidebar1Visible) {
                         sidebar1Visible = false;
                         sidebar1.classed("hidden", true);
-                        toggleButton1.classed("hidden", true);
-                        toggleButton1.text("<");
                     }
                     if (!sidebar2Visible) {
                         sidebar2Visible = false;
                         sidebar2.classed("hidden", true);
-                        toggleButton2.classed("hidden", true);
-                        toggleButton2.text(">");
                     }
                     const dateLabel = img.date ? (() => {
                         const [mm, dd] = img.date.split('-').map(Number);
                         return new Date(new Date().getFullYear(), mm - 1, dd)
                             .toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     })() : '';
-                    d3.select("#image-title").html(img.user ? `<p>${img.user}</p>` : '');
+                    document.getElementById('participant-id-value').textContent = img.user || currentUser;
+                    document.getElementById('moment-details-heading').hidden = false;
                     const timeText = [dateLabel, img.time].filter(Boolean).join(' · ');
                     d3.select("#image-time").html(timeText ? `<p>${timeText}</p>` : '');
                     d3.select("#image-bgc").html(img.bgc ? `<img src="${img.bgc}" class="selected-image">` : '');
@@ -1092,6 +1216,7 @@
                     document.getElementById('fav-toggle-wrap').style.display = '';
                     updateFavButton(getFavorites().has(img.audio));
 
+                    document.querySelectorAll('#sidebar1 .audio-control-group, #sidebar1 .audio-controls-heading').forEach(element => element.remove());
                     let existingAudio  = document.querySelector(`audio[data-src='${img.audio}']`);
                     let volumeSlider   = document.querySelector(`input[data-src='${img.audio}']`);
                     let panLabel       = document.querySelector(`label[data-pan-src='${img.audio}']`);
@@ -1146,11 +1271,7 @@
                         slider.step = "0.01";
                         slider.value = "1";
                         slider.setAttribute("data-src", img.audio);
-                        slider.style.position = "absolute";
-                        slider.style.left = button.style.left;
-                        slider.style.top  = `${parseInt(button.dataset.initTop) + buttonSize + 10}px`;
-                        slider.style.transform = button.style.transform;
-                        slider.style.width = `${buttonSize}px`;
+                        positionVolumeSlider(slider, button);
                         document.getElementById("canvas-container").appendChild(slider);
 
                         slider.addEventListener("input", (event) => {
@@ -1250,17 +1371,15 @@
 
                             // Volume slider: show or create
                             if (volumeSlider) {
+                                positionVolumeSlider(volumeSlider, button);
                                 volumeSlider.style.display = '';
                             } else {
                                 let slider = document.createElement("input");
                                 slider.type = "range";
                                 slider.min = "0"; slider.max = "1"; slider.step = "0.01"; slider.value = "1";
                                 slider.setAttribute("data-src", img.audio);
-                                slider.style.position = "absolute";
-                                slider.style.left  = `${parseInt(button.style.left)}px`;
-                                slider.style.top   = `${parseInt(button.style.top) + buttonSize + 10}px`;
-                                slider.style.width = `${buttonSize}px`;
-                                document.getElementById("buttons-layer").appendChild(slider);
+                                positionVolumeSlider(slider, button);
+                                document.getElementById("canvas-container").appendChild(slider);
                                 slider.addEventListener("input", (event) => { existingAudio.volume = event.target.value; });
                             }
                         } else {
@@ -1329,6 +1448,7 @@
 
                         highpassSliderEl.addEventListener("input", (event) => { existingAudio.highpassFilter.frequency.value = event.target.value; });
                     }
+                    requestAnimationFrame(arrangeControlGroups);
                 });
 
                 document.getElementById("buttons-layer").appendChild(button);
@@ -1336,12 +1456,8 @@
             ['scatter', 'timeline', 'clock', 'tag', 'feel'].forEach(resolveViewOverlaps);
             setView('timeline');
             applyFilters();
-            updateWeek(0);
+            setTimelineWindow(0, numDays);
             }
-        });
-
-        window.addEventListener('resize', () => {
-            centerResetButton();
         });
 
         window.i18n.applyTranslations();
@@ -1351,34 +1467,6 @@
             if (selectedAudioSrc) updateFavButton(getFavorites().has(selectedAudioSrc));
         });
 
-        d3.select("#reset-canvas").on("click", () => {
-            // stop and remove all audio
-            document.querySelectorAll("audio").forEach(audio => {
-                try { audio.pause(); } catch(_) {}
-                if (audio.parentElement) audio.parentElement.removeChild(audio);
-            });
-            // clear button animation/opacity state
-            document.querySelectorAll(".image-button").forEach(btn => {
-                btn.style.animation  = "";
-                btn.style.opacity    = 0.5;
-                btn.dataset.playing  = 'false';
-            });
-            // remove volume sliders on canvas
-            document.querySelectorAll("#buttons-layer input[type='range']").forEach(s => s.remove());
-            // remove sliders and labels in sidebar1
-            document.querySelectorAll("#sidebar1 input[type='range']").forEach(s => s.remove());
-            document.querySelectorAll("#sidebar1 label").forEach(l => l.remove());
-            // clear sidebar1 info panel
-            d3.select("#image-title").html("");
-            d3.select("#image-time").html("");
-            d3.select("#image-bgc").html("");
-            d3.select("#image-describ").html("");
-            d3.select("#image-audio").html("");
-            // reset zoom and reposition buttons for current view
-            setView(currentView);
-            selectedAudioSrc = null;
-            document.getElementById('fav-toggle-wrap').style.display = 'none';
-        });
     </script>
 </body>
 </html>
