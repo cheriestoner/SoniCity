@@ -79,9 +79,9 @@
         .feel-label {
             position: absolute;
             transform: translate(-50%, -50%);
-            color: #777;
+            color: #555;
             font-family: 'fusion-pixel-cn', 'ark-pixel', monospace;
-            font-size: clamp(16px, 1.6vw, 24px);
+            font-size: clamp(22px, 2vw, 32px);
             white-space: nowrap;
         }
     </style>
@@ -695,8 +695,8 @@
                     .attr("y", cy - lo * Math.cos(a) + 4)
                     .attr("text-anchor", "middle")
                     .attr("class", "timeline-day-label")
-                    .style("font-size", "clamp(16px, 1.6vw, 24px)")
-                    .style("fill", "#777")
+                    .style("font-size", "clamp(22px, 2vw, 32px)")
+                    .style("fill", "#555")
                     .text(name);
             });
         }
@@ -801,8 +801,8 @@
                     .attr("y", cy)
                     .attr("text-anchor", "middle")
                     .attr("class", "timeline-day-label")
-                    .style("font-size", "clamp(16px, 1.6vw, 24px)")
-                    .style("fill", "#777")
+                    .style("font-size", "clamp(22px, 2vw, 32px)")
+                    .style("fill", "#555")
                     .text(tagLabel(tag));
             });
         }
