@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sonicity-local-ui-preview
+    runtime: node
+    plan: free
+    region: singapore
+    branch: codex/local-ui-updates
+    buildCommand: npm ci
+    startCommand: npm run server
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
