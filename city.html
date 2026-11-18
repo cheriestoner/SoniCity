@@ -136,8 +136,8 @@
                 <div class="view-toggle">
                     <label class="ai-label" data-i18n="user_label">User</label>
                     <div class="toggle-buttons" id="user-filter-buttons">
-                        <button id="filter-me"     class="view-btn active"  data-i18n="filter_me">Me</button>
-                        <button id="filter-all"    class="view-btn"         data-i18n="all">All</button>
+                        <button id="filter-me"     class="view-btn"         data-i18n="filter_me">Me</button>
+                        <button id="filter-all"    class="view-btn active"  data-i18n="all">All</button>
                         <button id="filter-others" class="view-btn"         data-i18n="filter_others">Others</button>
                     </div>
                 </div>
@@ -951,7 +951,7 @@
         document.getElementById('view-tag').addEventListener('click', () => setView('tag'));
         document.getElementById('view-feel').addEventListener('click', () => setView('feel'));
 
-        let currentFilter = 'me';
+        let currentFilter = 'all';
 
         function resolveDefaultCity() {
             const raw = (localStorage.getItem('usd_city') || '').toLowerCase().trim();
